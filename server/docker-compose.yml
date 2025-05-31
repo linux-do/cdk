@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  # CDK分发平台API服务
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cdk-platform-controller
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./configs:/app/configs
+      - ./logs:/app/logs
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - cdk-network
+    environment:
+      - TZ=Asia/Shanghai
+
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: cdk-platform-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=cdk_platform
+      - TZ=Asia/Shanghai
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - cdk-network
+
+  # Redis缓存
+  redis:
+    image: redis:7.0-alpine
+    container_name: cdk-platform-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - cdk-network
+
+networks:
+  cdk-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data: 

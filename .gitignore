@@ -1,0 +1,56 @@
+# 编译生成的文件
+/cdk-platform
+/cdk-platform.exe
+
+
+# 日志文件
+/server/logs/
+
+# 依赖目录
+/server/vendor/
+
+# 前端构建和依赖
+/frontend/node_modules/
+/frontend/dist/
+/frontend/build/
+/frontend/.cache/
+/frontend/coverage/
+
+# IDE和编辑器文件
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 测试文件
+*.test
+*.out
+coverage.txt
+
+# 环境变量文件
+/server/.env
+/frontend/.env
+
+# 临时文件
+tmp/
+temp/
+
+# 构建目录
+/build/
+/bin/
+/dist/
+
+# Go工作区文件
+go.work
+go.work.sum
+
+# 前端日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log* 
