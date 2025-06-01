@@ -2,7 +2,11 @@ package middleware
 
 import (
 	"errors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"log"
 	"net/http"
+	utils "server/internal/plugin/common/utils"
 	"strings"
 	"time"
 
@@ -132,4 +136,16 @@ func validateToken(tokenString string) (*JWTClaims, error) {
 // 解析JWT密钥
 func jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	return []byte(config.AppConfig.App.JWTSecret), nil
+}
+
+// SetupOAuthSessionMiddleware OAuth session中间件
+func SetupOAuthSessionMiddleware() gin.HandlerFunc {
+	// 生成随机session密钥
+	sessionKey, err := utils.GenerateRandomString(24)
+	if err != nil {
+		log.Fatal("生成session密钥失败:", err)
+	}
+
+	store := cookie.NewStore([]byte(sessionKey))
+	return sessions.Sessions("oauth_session", store)
 }

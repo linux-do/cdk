@@ -52,8 +52,7 @@ func registerAPIHandlers(router *gin.RouterGroup) {
 
 	// 定义路由组
 	routeGroups := map[string]routeGroup{
-		"/oauth2": {oauth.RegisterRoutes, "Linux DO 认证模块", nil},
-	}
+		"/oauth2": {oauth.RegisterRoutes, "Linux DO 认证模块", []gin.HandlerFunc{middleware.SetupOAuthSessionMiddleware()}}}
 
 	for prefix, group := range routeGroups {
 		g := router.Group(prefix)
