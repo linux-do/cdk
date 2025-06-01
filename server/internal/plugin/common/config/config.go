@@ -11,6 +11,7 @@ var AppConfig *Config
 // Config 应用配置结构
 type Config struct {
 	App      appConfig      `mapstructure:"app"`
+	OAuth2   OAuth2Config   `mapstructure:"oauth2"`
 	Database databaseConfig `mapstructure:"database"`
 	Redis    redisConfig    `mapstructure:"redis"`
 	Log      logConfig      `mapstructure:"log"`
@@ -30,6 +31,15 @@ type appConfig struct {
 	CORSDomains  []string `mapstructure:"cors_domains"`
 	JWTSecret    string   `mapstructure:"jwt_secret"`
 	JWTTTL       int      `mapstructure:"jwt_ttl"`
+}
+
+type OAuth2Config struct {
+	ClientID              string `mapstructure:"client_id"`
+	ClientSecret          string `mapstructure:"client_secret"`
+	RedirectURI           string `mapstructure:"redirect_uri"`
+	AuthorizationEndpoint string `mapstructure:"authorization_endpoint"`
+	TokenEndpoint         string `mapstructure:"token_endpoint"`
+	UserEndpoint          string `mapstructure:"user_endpoint"`
 }
 
 // databaseConfig 数据库配置
@@ -103,6 +113,8 @@ func GetDSN() string {
 	}
 
 	db := AppConfig.Database
+	fmt.Printf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local\n",
+		db.Username, db.Password, db.Host, db.Port, db.Database)
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		db.Username, db.Password, db.Host, db.Port, db.Database)
 }
