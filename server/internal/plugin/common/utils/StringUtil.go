@@ -133,3 +133,12 @@ func StrToBase64(s string) string {
 	return encoded
 
 }
+
+// GenerateRandomString 生成随机字符串
+func GenerateRandomString(length int) (string, error) {
+	bytes := make([]byte, length)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}

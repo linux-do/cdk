@@ -1,19 +1,20 @@
 package oauth
 
 import (
+	"github.com/gin-contrib/sessions/cookie"
 	"log"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	oauthService "server/internal/logic/oauth"
-	"server/internal/logic/utils"
+	utils "server/internal/plugin/common/utils"
 )
 
 // RegisterRoutes 注册OAuth路由
 func RegisterRoutes(router *gin.RouterGroup) {
 	// 设置session中间件
-	utils.SetupOAuthSession(router)
+	setupOAuthSession(router)
 
 	// OAuth路由
 	router.GET("/initiate", InitiateHandler)
@@ -67,4 +68,16 @@ func CallbackHandler(c *gin.Context) {
 
 	log.Printf("用户信息: %+v", userInfo)
 	c.JSON(http.StatusOK, userInfo)
+}
+
+// setupOAuthSession 设置OAuth session中间件
+func setupOAuthSession(router *gin.RouterGroup) {
+	// 生成随机session密钥
+	sessionKey, err := utils.GenerateRandomString(24)
+	if err != nil {
+		log.Fatal("生成session密钥失败:", err)
+	}
+
+	store := cookie.NewStore([]byte(sessionKey))
+	router.Use(sessions.Sessions("oauth_session", store))
 }
