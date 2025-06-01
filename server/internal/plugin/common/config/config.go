@@ -33,6 +33,7 @@ type appConfig struct {
 	JWTTTL       int      `mapstructure:"jwt_ttl"`
 }
 
+// OAuth2Config OAuth2认证配置
 type OAuth2Config struct {
 	ClientID              string `mapstructure:"client_id"`
 	ClientSecret          string `mapstructure:"client_secret"`
