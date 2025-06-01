@@ -24,14 +24,14 @@ func Serve() {
 	r.Use(gin.Recovery(), gin.LoggerWithWriter(logger.GetLogWriter()))
 	r.Use(sessions.Sessions("_s", cookie.NewStore([]byte(config.Config.App.SessionSecret))))
 
-	// API
-	apiRouter := r.Group("/api")
+	// Swagger
+	r.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// API V1
+	apiV1Router := r.Group("/api/v1")
 	{
 		// Health
-		apiRouter.GET("/health", health.Health)
-
-		// Swagger
-		apiRouter.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		apiV1Router.GET("/health", health.Health)
 	}
 
 	// Serve

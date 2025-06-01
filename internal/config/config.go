@@ -13,7 +13,7 @@ func init() {
 	// 加载配置文件路径
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		configPath = "configModel.yaml"
+		configPath = "config.yaml"
 	}
 
 	// 设置配置文件

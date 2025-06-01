@@ -4,7 +4,7 @@
 # App
 app:
   env: "development" # development, testing, production
-  addr: ":8080"
+  addr: ":8000"
   session_secret: "<uniq string>" # you can't change this after first time start
 
 # OAuth2
