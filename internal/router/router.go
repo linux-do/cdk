@@ -46,7 +46,7 @@ func Serve() {
 			Secure:   config.Config.App.SessionSecure, // 若用 HTTPS 可以设 true
 		},
 	)
-	r.Use(sessions.Sessions("_s", sessionStore))
+	r.Use(sessions.Sessions(config.Config.App.SessionCookieName, sessionStore))
 
 	apiGroup := r.Group(config.Config.App.APIPrefix)
 	{

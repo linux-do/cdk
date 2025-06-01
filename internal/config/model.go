@@ -10,14 +10,15 @@ type configModel struct {
 
 // appConfig 应用基本配置
 type appConfig struct {
-	Env             string `mapstructure:"env"`
-	Addr            string `mapstructure:"addr"`
-	APIPrefix       string `mapstructure:"api_prefix"`
-	SessionSecret   string `mapstructure:"session_secret"`
-	SessionDomain   string `mapstructure:"session_domain"`
-	SessionAge      int    `mapstructure:"session_age"`
-	SessionHttpOnly bool   `mapstructure:"session_http_only"`
-	SessionSecure   bool   `mapstructure:"session_secure"`
+	Env               string `mapstructure:"env"`
+	Addr              string `mapstructure:"addr"`
+	APIPrefix         string `mapstructure:"api_prefix"`
+	SessionCookieName string `mapstructure:"session_cookie_name"`
+	SessionSecret     string `mapstructure:"session_secret"`
+	SessionDomain     string `mapstructure:"session_domain"`
+	SessionAge        int    `mapstructure:"session_age"`
+	SessionHttpOnly   bool   `mapstructure:"session_http_only"`
+	SessionSecure     bool   `mapstructure:"session_secure"`
 }
 
 // OAuth2Config OAuth2认证配置
