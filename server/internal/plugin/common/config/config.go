@@ -114,8 +114,6 @@ func GetDSN() string {
 	}
 
 	db := AppConfig.Database
-	fmt.Printf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local\n",
-		db.Username, db.Password, db.Host, db.Port, db.Database)
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		db.Username, db.Password, db.Host, db.Port, db.Database)
 }
