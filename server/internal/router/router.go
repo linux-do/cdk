@@ -3,11 +3,18 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"server/internal/controller/oauth"
 	"server/internal/plugin/common/config"
 	util "server/internal/plugin/common/utils"
 	"server/internal/plugin/middleware"
 	"time"
 )
+
+type routeGroup struct {
+	initFunc    func(*gin.RouterGroup) // 初始化函数
+	comment     string                 // 注释，解释路由组的作用
+	middlewares []gin.HandlerFunc      // 中间件列表
+}
 
 func SetupRouter() *gin.Engine {
 	r := gin.New()
@@ -43,8 +50,16 @@ func SetupRouter() *gin.Engine {
 // 注册API处理器
 func registerAPIHandlers(router *gin.RouterGroup) {
 
-	//adminRouter := router.Group("")
-	//adminRouter.Use(middleware.AuthMiddleware(), middleware.RoleMiddleware(model.UserRoleAdmin))
-	//{
-	//}
+	// 定义路由组
+	routeGroups := map[string]routeGroup{
+		"/oauth2": {oauth.RegisterRoutes, "Linux DO 认证模块", nil},
+	}
+
+	for prefix, group := range routeGroups {
+		g := router.Group(prefix)
+		if group.middlewares != nil {
+			g.Use(group.middlewares...)
+		}
+		group.initFunc(g)
+	}
 }
