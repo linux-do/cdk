@@ -2,7 +2,7 @@
 /cdk-platform
 /cdk-platform.exe
 
-/server/configs/config.yaml
+/server/config_yaml/config.yaml
 
 # 日志文件
 /server/logs/
