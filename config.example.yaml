@@ -1,0 +1,53 @@
+# Linux Do CDK Config
+# Copy to config.yaml for runtime
+
+# App
+app:
+  env: "development" # development, testing, production
+  addr: ":8080"
+  session_secret: "<uniq string>" # you can't change this after first time start
+
+# OAuth2
+oauth2:
+  client_id: "<OAUTH2_CLIENT_ID>"
+  client_secret: "<OAUTH2_CLIENT_SECRET>"
+  redirect_uri: "<OAUTH2_REDIRECT_URI>"
+  authorization_endpoint: "https://connect.linux.do/oauth2/authorize"
+  token_endpoint: "https://connect.linux.do/oauth2/token"
+  user_endpoint: "https://connect.linux.do/api/user"
+
+# DB
+database:
+  host: "127.0.0.1"
+  port: 3306
+  username: "root"
+  password: ""
+  database: "linux_do_cdk"
+  max_idle_conn: 10
+  max_open_conn: 100
+  conn_max_lifetime: 3600
+  log_level: "info"  # error, warn, info, debug, silent
+
+# Redis配置
+redis:
+  host: "127.0.0.1"
+  port: 6379
+  username: ""
+  password: ""
+  db: 0
+  pool_size: 100
+  min_idle_conn: 10
+  dial_timeout: 5
+  read_timeout: 3
+  write_timeout: 3
+
+# Log
+log:
+  level: "info"  # debug, info, warn, error, fatal, panic
+  format: "json"  # text, json
+  output: "stdout"  # stdout, file
+  file_path: "./logs/app.log"
+  max_size: 100
+  max_age: 30
+  max_backups: 10
+  compress: true

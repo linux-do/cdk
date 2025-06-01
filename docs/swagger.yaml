@@ -1,0 +1,25 @@
+definitions:
+  health.HealthResponse:
+    properties:
+      data: {}
+      error_code:
+        type: integer
+      error_msg:
+        type: string
+    type: object
+info:
+  contact: {}
+  title: Linux Do CDK
+paths:
+  /api/v1/health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/health.HealthResponse'
+      tags:
+      - health
+swagger: "2.0"
