@@ -24,8 +24,8 @@ func SetupRouter() *gin.Engine {
 	// 使用自定义的 Logger 和 Recovery 中间件
 	r.Use(gin.LoggerWithWriter(util.GetLogWriter()), gin.Recovery())
 
-	store := cookie.NewStore([]byte("nlkngLNmnbfnlanfajk>Fgan"))
-	r.Use(sessions.Sessions("oauth_session", store))
+	store := cookie.NewStore([]byte("tat>k8fg>al>yf"))
+	r.Use(sessions.Sessions("_s", store))
 
 	// 跨域中间件
 	if config.AppConfig.App.AllowCORS {
