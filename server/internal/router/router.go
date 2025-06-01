@@ -1,6 +1,8 @@
 package router
 
 import (
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"server/internal/controller/oauth"
@@ -21,6 +23,9 @@ func SetupRouter() *gin.Engine {
 
 	// 使用自定义的 Logger 和 Recovery 中间件
 	r.Use(gin.LoggerWithWriter(util.GetLogWriter()), gin.Recovery())
+
+	store := cookie.NewStore([]byte("nlkngLNmnbfnlanfajk>Fgan"))
+	r.Use(sessions.Sessions("oauth_session", store))
 
 	// 跨域中间件
 	if config.AppConfig.App.AllowCORS {
@@ -52,7 +57,7 @@ func registerAPIHandlers(router *gin.RouterGroup) {
 
 	// 定义路由组
 	routeGroups := map[string]routeGroup{
-		"/oauth2": {oauth.RegisterRoutes, "Linux DO 认证模块", []gin.HandlerFunc{middleware.SetupOAuthSessionMiddleware()}}}
+		"/oauth2": {oauth.RegisterRoutes, "Linux DO 认证模块", nil}}
 
 	for prefix, group := range routeGroups {
 		g := router.Group(prefix)
