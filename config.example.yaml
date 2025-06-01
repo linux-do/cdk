@@ -10,7 +10,6 @@ app:
   session_age: 86400
   session_secure: false
   session_http_only: false
-  max_idle_connections: 1000000
   api_prefix: "/api"
 
 # OAuth2

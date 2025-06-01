@@ -27,7 +27,7 @@ func Serve() {
 
 	// Session
 	sessionStore, err := redis.NewStore(
-		config.Config.App.MaxIdleConnections,
+		config.Config.Redis.MinIdleConn,
 		"tcp",
 		fmt.Sprintf("%s:%d", config.Config.Redis.Host, config.Config.Redis.Port),
 		config.Config.Redis.Username,
