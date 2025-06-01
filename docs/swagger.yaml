@@ -2,8 +2,26 @@ definitions:
   health.HealthResponse:
     properties:
       data: {}
-      error_code:
-        type: integer
+      error_msg:
+        type: string
+    type: object
+  oauth.CallbackRequest:
+    properties:
+      code:
+        type: string
+      state:
+        type: string
+    type: object
+  oauth.CallbackResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
+  oauth.GetLoginURLResponse:
+    properties:
+      data:
+        type: string
       error_msg:
         type: string
     type: object
@@ -22,4 +40,33 @@ paths:
             $ref: '#/definitions/health.HealthResponse'
       tags:
       - health
+  /api/v1/oauth/callback:
+    post:
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/oauth.CallbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth.CallbackResponse'
+      tags:
+      - oauth
+  /api/v1/oauth/login:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth.GetLoginURLResponse'
+      tags:
+      - oauth
 swagger: "2.0"

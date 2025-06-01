@@ -32,6 +32,53 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/oauth/callback": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/oauth.CallbackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/oauth.CallbackResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/oauth/login": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/oauth.GetLoginURLResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -39,8 +86,36 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {},
-                "error_code": {
-                    "type": "integer"
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "oauth.CallbackRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "oauth.CallbackResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "oauth.GetLoginURLResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
                 },
                 "error_msg": {
                     "type": "string"

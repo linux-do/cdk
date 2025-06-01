@@ -6,6 +6,12 @@ app:
   env: "development" # development, testing, production
   addr: ":8000"
   session_secret: "<uniq string>" # you can't change this after first time start
+  session_domain: ".linux.do"
+  session_age: 86400
+  session_secure: false
+  session_http_only: false
+  max_idle_connections: 1000000
+  api_prefix: "/api"
 
 # OAuth2
 oauth2:
