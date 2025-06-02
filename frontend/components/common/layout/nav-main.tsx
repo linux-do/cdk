@@ -1,16 +1,16 @@
-"use client"
+'use client';
 
-import { Github, PlusCircle, type LucideIcon } from "lucide-react"
+import {Github, PlusCircle, type LucideIcon} from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
+import {Button} from '@/components/ui/button';
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import Link from "next/link"
+} from '@/components/ui/sidebar';
+import Link from 'next/link';
 export function NavMain({
   items,
 }: {
@@ -62,5 +62,5 @@ export function NavMain({
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

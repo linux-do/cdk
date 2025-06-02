@@ -1,6 +1,6 @@
-import { AppSidebar } from "@/components/common/layout/app-sidebar"
-import { SiteHeader } from "@/components/common/layout/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import {AppSidebar} from '@/components/common/layout/app-sidebar';
+import {SiteHeader} from '@/components/common/layout/site-header';
+import {SidebarInset, SidebarProvider} from '@/components/ui/sidebar';
 
 export default function ProjectLayout({
   children,
@@ -11,8 +11,8 @@ export default function ProjectLayout({
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
+          '--sidebar-width': 'calc(var(--spacing) * 72)',
+          '--header-height': 'calc(var(--spacing) * 12)',
         } as React.CSSProperties
       }
     >
@@ -28,5 +28,5 @@ export default function ProjectLayout({
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
-} 
+  );
+}

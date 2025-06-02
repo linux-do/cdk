@@ -13,6 +13,9 @@ config.yaml
 frontend/build
 frontend/disk
 frontend/node_modules
+frontend/.next/cache
+frontend/next-env.d.ts
+frontend/package-lock.json
 
 # os
 .DS_Store

@@ -1,16 +1,16 @@
-import { GalleryVerticalEnd } from "lucide-react"
+import {GalleryVerticalEnd} from 'lucide-react';
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { LinuxDo } from "@/components/icons/logo"
+import {cn} from '@/lib/utils';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {LinuxDo} from '@/components/icons/logo';
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<'div'>) {
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <form>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
@@ -63,9 +63,9 @@ export function LoginForm({
         </div>
       </form>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        点击登录，即表示您同意我们的 <a href="#">服务条款</a> 和{" "}
+        点击登录，即表示您同意我们的 <a href="#">服务条款</a> 和{' '}
         <a href="#">隐私政策</a>.
       </div>
     </div>
-  )
+  );
 }

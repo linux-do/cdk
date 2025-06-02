@@ -4,5 +4,5 @@ export default function Explore() {
     <div>
       <h1>Explore</h1>
     </div>
-  )
+  );
 }

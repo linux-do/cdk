@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface LogoProps {
   width?: number;
@@ -6,15 +6,15 @@ interface LogoProps {
   className?: string;
 }
 
-function LinuxDo({ width = 120, height = 120, className }: LogoProps) {
+function LinuxDo({width = 120, height = 120, className}: LogoProps) {
   return (
-    <svg 
-      width={width} 
-      height={height} 
-      viewBox="0 0 120 120" 
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 120 120"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      style={{ minWidth: width, minHeight: height, flexShrink: 0 }}
+      style={{minWidth: width, minHeight: height, flexShrink: 0}}
       fill="none"
     >
       <clipPath id="a"><circle cx="60" cy="60" r="47"/></clipPath>
@@ -27,4 +27,4 @@ function LinuxDo({ width = 120, height = 120, className }: LogoProps) {
 }
 
 // 统一导出所有图标
-export { LinuxDo }; 
+export {LinuxDo};

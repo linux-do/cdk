@@ -9,13 +9,13 @@ import {
 } from 'motion/react';
 
 const ENTRY_ANIMATION = {
-  initial: { rotateX: 0 },
-  animate: { rotateX: 90 },
+  initial: {rotateX: 0},
+  animate: {rotateX: 90},
 };
 
 const EXIT_ANIMATION = {
-  initial: { rotateX: 90 },
-  animate: { rotateX: 0 },
+  initial: {rotateX: 90},
+  animate: {rotateX: 0},
 };
 
 const formatCharacter = (char: string) => (char === ' ' ? '\u00A0' : char);
@@ -32,7 +32,7 @@ type RollingTextProps = Omit<React.ComponentProps<'span'>, 'children'> & {
 
 function RollingText({
   ref,
-  transition = { duration: 0.5, delay: 0.1, ease: 'easeOut' },
+  transition = {duration: 0.5, delay: 0.1, ease: 'easeOut'},
   inView = false,
   inViewMargin = '0px',
   inViewOnce = true,
@@ -48,33 +48,33 @@ function RollingText({
     once: inViewOnce,
     margin: inViewMargin,
   });
-  
+
   const [animationCount, setAnimationCount] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
-  
+
   const isInView = !inView || inViewResult;
-  
+
   React.useEffect(() => {
     if (isInView) {
       setIsAnimating(true);
     }
   }, [isInView]);
-  
+
   React.useEffect(() => {
     if (!loop || !isInView) return;
-    
+
     const intervalId = setInterval(() => {
       setIsAnimating(false);
-      
+
       setTimeout(() => {
-        setAnimationCount(prev => prev + 1);
+        setAnimationCount((prev) => prev + 1);
         setIsAnimating(true);
       }, 50);
     }, loopDelay);
-    
+
     return () => clearInterval(intervalId);
   }, [loop, loopDelay, isInView]);
-  
+
   const characters = React.useMemo(() => text.split(''), [text]);
 
   return (
@@ -116,4 +116,4 @@ function RollingText({
   );
 }
 
-export { RollingText, type RollingTextProps };
+export {RollingText, type RollingTextProps};
