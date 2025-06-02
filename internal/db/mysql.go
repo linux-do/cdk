@@ -52,13 +52,13 @@ func init() {
 	)
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
 	if err != nil {
-		log.Fatalf("[MySQL] init connection failed: %v", err)
+		log.Fatalf("[MySQL] init connection failed: %v\n", err)
 	}
 
 	// 获取通用数据库对象
 	sqlDB, err := DB.DB()
 	if err != nil {
-		log.Fatalf("[MySQL] load sql db failed: %v", err)
+		log.Fatalf("[MySQL] load sql db failed: %v\n", err)
 	}
 
 	// 设置连接池参数

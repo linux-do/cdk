@@ -35,6 +35,6 @@ func init() {
 	// 测试连接
 	_, err := Redis.Ping(context.Background()).Result()
 	if err != nil {
-		log.Fatalf("[Redis] failed to connect to redis: %v", err)
+		log.Fatalf("[Redis] failed to connect to redis: %v\n", err)
 	}
 }

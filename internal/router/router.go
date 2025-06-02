@@ -6,9 +6,9 @@ import (
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	_ "github.com/linux-do/cdk/docs"
+	"github.com/linux-do/cdk/internal/apps/health"
+	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/config"
-	"github.com/linux-do/cdk/internal/controller/health"
-	"github.com/linux-do/cdk/internal/controller/oauth"
 	"github.com/linux-do/cdk/internal/logger"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -62,11 +62,12 @@ func Serve() {
 			// OAuth
 			apiV1Router.GET("/oauth/login", oauth.GetLoginURL)
 			apiV1Router.POST("/oauth/callback", oauth.Callback)
+			apiV1Router.GET("/oauth/user-info", oauth.UserInfo, oauth.LoginRequired())
 		}
 	}
 
 	// Serve
 	if err := r.Run(config.Config.App.Addr); err != nil {
-		log.Fatalf("[API] serve api failed: %v", err)
+		log.Fatalf("[API] serve api failed: %v\n", err)
 	}
 }
