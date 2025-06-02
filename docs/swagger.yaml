@@ -5,6 +5,19 @@ definitions:
       error_msg:
         type: string
     type: object
+  oauth.BasicUserInfo:
+    properties:
+      avatar_url:
+        type: string
+      id:
+        type: integer
+      nickname:
+        type: string
+      trust_level:
+        $ref: '#/definitions/oauth.TrustLevel'
+      username:
+        type: string
+    type: object
   oauth.CallbackRequest:
     properties:
       code:
@@ -22,6 +35,27 @@ definitions:
     properties:
       data:
         type: string
+      error_msg:
+        type: string
+    type: object
+  oauth.TrustLevel:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    type: integer
+    x-enum-varnames:
+    - TrustLevelNewUser
+    - TrustLevelBasicUser
+    - TrustLevelUser
+    - TrustLevelActiveUser
+    - TrustLevelLeader
+  oauth.UserInfoResponse:
+    properties:
+      data:
+        $ref: '#/definitions/oauth.BasicUserInfo'
       error_msg:
         type: string
     type: object
@@ -67,6 +101,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/oauth.GetLoginURLResponse'
+      tags:
+      - oauth
+  /api/v1/oauth/user-info:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth.UserInfoResponse'
       tags:
       - oauth
 swagger: "2.0"

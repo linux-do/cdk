@@ -79,6 +79,24 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/oauth/user-info": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/oauth.UserInfoResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -87,6 +105,26 @@ const docTemplate = `{
             "properties": {
                 "data": {},
                 "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "oauth.BasicUserInfo": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "trust_level": {
+                    "$ref": "#/definitions/oauth.TrustLevel"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -116,6 +154,34 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "type": "string"
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "oauth.TrustLevel": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "x-enum-varnames": [
+                "TrustLevelNewUser",
+                "TrustLevelBasicUser",
+                "TrustLevelUser",
+                "TrustLevelActiveUser",
+                "TrustLevelLeader"
+            ]
+        },
+        "oauth.UserInfoResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/oauth.BasicUserInfo"
                 },
                 "error_msg": {
                     "type": "string"

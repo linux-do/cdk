@@ -145,3 +145,47 @@ func Callback(c *gin.Context) {
 	// response
 	c.JSON(http.StatusOK, CallbackResponse{})
 }
+
+type BasicUserInfo struct {
+	ID         uint64     `json:"id"`
+	Username   string     `json:"username"`
+	Nickname   string     `json:"nickname"`
+	TrustLevel TrustLevel `json:"trust_level"`
+	AvatarUrl  string     `json:"avatar_url"`
+}
+
+type UserInfoResponse struct {
+	ErrorMsg string        `json:"error_msg"`
+	Data     BasicUserInfo `json:"data"`
+}
+
+// UserInfo godoc
+// @Tags oauth
+// @Produce json
+// @Success 200 {object} UserInfoResponse
+// @Router /api/v1/oauth/user-info [get]
+func UserInfo(c *gin.Context) {
+	// init
+	session := sessions.Default(c)
+	userID := GetUserIDFromSession(session)
+	// query db
+	var user User
+	tx := db.DB.Where("id = ?", userID).First(&user)
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, UserInfoResponse{ErrorMsg: tx.Error.Error()})
+		return
+	}
+	c.JSON(
+		http.StatusOK,
+		UserInfoResponse{
+			ErrorMsg: "",
+			Data: BasicUserInfo{
+				ID:         user.ID,
+				Username:   user.Username,
+				Nickname:   user.Nickname,
+				TrustLevel: user.TrustLevel,
+				AvatarUrl:  user.AvatarUrl,
+			},
+		},
+	)
+}
