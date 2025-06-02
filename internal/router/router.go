@@ -67,6 +67,6 @@ func Serve() {
 
 	// Serve
 	if err := r.Run(config.Config.App.Addr); err != nil {
-		log.Fatalf("[API] serve api failed: %v", err)
+		log.Fatalf("[API] serve api failed: %v\n", err)
 	}
 }

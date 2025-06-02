@@ -22,13 +22,13 @@ func init() {
 
 	// 读取配置文件
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("[Config] read config failed: %v", err)
+		log.Fatalf("[Config] read config failed: %v\n", err)
 	}
 
 	// 解析配置到结构体
 	var c configModel
 	if err := viper.Unmarshal(&c); err != nil {
-		log.Fatalf("[Config] parse config failed: %v", err)
+		log.Fatalf("[Config] parse config failed: %v\n", err)
 	}
 
 	// 设置全局配置

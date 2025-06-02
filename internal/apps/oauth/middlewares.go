@@ -3,6 +3,7 @@ package oauth
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/linux-do/cdk/internal/db"
 	"net/http"
 )
 
@@ -11,21 +12,18 @@ func LoginRequired() gin.HandlerFunc {
 		// init session
 		session := sessions.Default(c)
 		// load user
-		userId := session.Get(UserIDKey)
-		if userId == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error_msg": "Login Required", "data": nil})
+		userId := GetUserIDFromSession(session)
+		if userId <= 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"error_msg": UnAuthorized, "data": nil})
 			return
 		}
-		// check username
-		userId, ok := userId.(string)
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error_msg": "Login Required", "data": nil})
+		// load user from db to make sure is active
+		tx := db.DB.Where("id = ? AND is_active = ?", userId, true).First(&User{})
+		if tx.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error_msg": tx.Error.Error(), "data": nil})
 			return
 		}
-		// load user from db
-		// TODO
-		// check user active
-		// TODO
+		// next
 		c.Next()
 	}
 }
