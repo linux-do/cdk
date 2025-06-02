@@ -2,7 +2,8 @@
     "swagger": "2.0",
     "info": {
         "title": "Linux Do CDK",
-        "contact": {}
+        "contact": {},
+        "version": "0.1.0"
     },
     "paths": {
         "/api/v1/health": {

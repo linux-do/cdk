@@ -62,6 +62,7 @@ definitions:
 info:
   contact: {}
   title: Linux Do CDK
+  version: 0.1.0
 paths:
   /api/v1/health:
     get:
