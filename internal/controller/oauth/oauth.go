@@ -115,8 +115,8 @@ func Callback(c *gin.Context) {
 	// TODO
 	// bind to session
 	session := sessions.Default(c)
-	session.Set("user_id", userInfo.Id)
-	session.Set("username", userInfo.Username)
+	session.Set(UserIDKey, userInfo.Id)
+	session.Set(UserNameKey, userInfo.Username)
 	session.Save()
 	// response
 	c.JSON(
