@@ -198,15 +198,15 @@ export function useAuth(): UseAuthReturn {
   const logout = useCallback(async (redirectTo: string = '/login') => {
     try {
       setState((prev) => ({...prev, isLoading: true}));
-      
+
       // 清除缓存
       userInfoCache.data = null;
       userInfoCache.timestamp = 0;
       userInfoCache.promise = null;
-      
+
       // 调用AuthService的logout方法（它会处理API调用、Cookie清除和重定向）
       await services.auth.logout(redirectTo);
-      
+
       // 更新状态 - 注意：这里的代码可能不会执行，因为页面会重定向
       setState({
         isAuthenticated: false,

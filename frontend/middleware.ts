@@ -57,11 +57,11 @@ function isStaticResource(pathname: string): boolean {
 /**
  * Next.js中间件
  * 中间件层只检查cookie存在性，详细的用户验证由API层和组件层处理
- * 
+ *
  * 注意：中间件无法执行复杂的cookie有效性验证，因为：
  * 1. 中间件运行在Edge Runtime环境，无法访问完整的Node.js API
  * 2. 中间件无法执行后端API调用以验证会话有效性
- * 
+ *
  * 因此，在登出流程中，前端必须确保：
  * 1. 调用后端登出API清除服务器端会话
  * 2. 删除前端的session cookie
