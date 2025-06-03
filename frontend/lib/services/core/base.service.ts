@@ -1,5 +1,5 @@
 import apiClient from './api-client';
-import { ApiResponse } from './types';
+import {ApiResponse} from './types';
 
 /**
  * 服务基类
@@ -26,7 +26,7 @@ export abstract class BaseService {
    * @returns Promise<T> 响应数据
    */
   protected static async get<T>(path: string, params?: Record<string, unknown>): Promise<T> {
-    const response = await apiClient.get<ApiResponse<T>>(this.getFullPath(path), { params });
+    const response = await apiClient.get<ApiResponse<T>>(this.getFullPath(path), {params});
     return response.data.data;
   }
 
@@ -62,7 +62,7 @@ export abstract class BaseService {
    * @returns Promise<T> 响应数据
    */
   protected static async delete<T>(path: string, params?: Record<string, unknown>): Promise<T> {
-    const response = await apiClient.delete<ApiResponse<T>>(this.getFullPath(path), { params });
+    const response = await apiClient.delete<ApiResponse<T>>(this.getFullPath(path), {params});
     return response.data.data;
   }
-} 
+}

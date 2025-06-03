@@ -28,9 +28,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/use-auth';
-import { TrustLevel } from '@/lib/services/core';
+import {Badge} from '@/components/ui/badge';
+import {useAuth} from '@/hooks/use-auth';
+import {TrustLevel} from '@/lib/services/core';
 
 /**
  * 获取信任等级对应的文本描述
@@ -38,7 +38,7 @@ import { TrustLevel } from '@/lib/services/core';
  * @returns 信任等级文本描述
  */
 function getTrustLevelText(level: number): string {
-  switch(level) {
+  switch (level) {
     case TrustLevel.NEW_USER:
       return '新用户';
     case TrustLevel.BASIC_USER:
@@ -66,12 +66,12 @@ export function NavUser({
   }
 }) {
   const {isMobile} = useSidebar();
-  const { logout } = useAuth();
-  
+  const {logout} = useAuth();
+
   // 获取信任等级文本
-  const trustLevelText = user.trust_level !== undefined 
-    ? getTrustLevelText(user.trust_level)
-    : '未知';
+  const trustLevelText = user.trust_level !== undefined ?
+    getTrustLevelText(user.trust_level) :
+    '未知';
 
   return (
     <SidebarMenu>

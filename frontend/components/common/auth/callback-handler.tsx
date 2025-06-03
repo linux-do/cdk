@@ -53,16 +53,15 @@ export function CallbackHandler({
         const redirectTo = sessionStorage.getItem('oauth_redirect_to');
         const targetPath = redirectTo || '/explore';
         setRedirectPath(targetPath);
-        
+
         // 设置成功状态
         setStatus('success');
-        
+
         // 登录成功，延迟跳转到指定页面
         setTimeout(() => {
           sessionStorage.removeItem('oauth_redirect_to');
           router.push(targetPath);
         }, 1000);
-
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : '登录处理失败';
         setError(errorMessage);
@@ -74,7 +73,7 @@ export function CallbackHandler({
   }, [searchParams, router]);
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-md">
@@ -108,8 +107,8 @@ export function CallbackHandler({
               <p className="text-muted-foreground text-center text-sm">
                 {error}
               </p>
-              <Button 
-                variant="default" 
+              <Button
+                variant="default"
                 className="w-full mt-2"
                 onClick={() => router.push('/login')}
               >
@@ -121,8 +120,8 @@ export function CallbackHandler({
       </div>
       <div className="text-muted-foreground text-center text-xs text-balance">
         <span className="[&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-primary">
-          {status === 'success' ? 
-            '将在几秒后自动跳转，感谢您的等待.' : 
+          {status === 'success' ?
+            '将在几秒后自动跳转，感谢您的等待.' :
             'Linux Do CDK - 让资源共享更简单.'}
         </span>
       </div>

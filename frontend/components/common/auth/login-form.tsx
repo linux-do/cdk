@@ -12,7 +12,7 @@ import {useAuth} from '@/hooks/use-auth';
 /**
  * 登录表单组件属性
  */
-export interface LoginFormProps extends React.ComponentProps<'div'> {}
+export type LoginFormProps = React.ComponentProps<'div'>;
 
 /**
  * 登录表单组件
@@ -33,16 +33,16 @@ export function LoginForm({
   const handleLogin = async () => {
     clearError(); // 清除之前的错误
     setIsButtonLoading(true); // 设置按钮为加载状态
-    
+
     try {
       // 获取重定向路径，直接传递给登录函数
       const redirectPath = searchParams.get('redirect');
-      const validRedirectPath = redirectPath && redirectPath !== '/' && redirectPath !== '/login' 
-        ? redirectPath 
-        : '/explore'; // 默认跳转到explore
-      
+      const validRedirectPath = redirectPath && redirectPath !== '/' && redirectPath !== '/login' ?
+        redirectPath :
+        '/explore'; // 默认跳转到explore
+
       await login(validRedirectPath);
-    } catch (e) {
+    } catch {
       // 发生错误时重置按钮状态
       setIsButtonLoading(false);
     }
@@ -64,18 +64,18 @@ export function LoginForm({
             </a>
             <h1 className="text-xl font-bold">欢迎使用 Linux Do CDK.</h1>
           </div>
-          
+
           {/* 错误信息显示 */}
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md border border-destructive/20">
               {error}
             </div>
           )}
-          
+
           <div className="gap-4 my-4">
-            <Button 
-              variant="outline" 
-              type="button" 
+            <Button
+              variant="outline"
+              type="button"
               className="w-full flex items-center justify-center gap-2"
               onClick={handleLogin}
               disabled={isButtonLoading}

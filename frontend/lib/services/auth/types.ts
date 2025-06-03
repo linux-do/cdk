@@ -1,4 +1,4 @@
-import { ApiResponse, BasicUserInfo } from '../core/types';
+import {ApiResponse, BasicUserInfo} from '../core/types';
 
 /**
  * OAuth登录URL响应
@@ -23,4 +23,4 @@ export type CallbackResponse = ApiResponse<null>;
 /**
  * 用户信息响应
  */
-export type UserInfoResponse = ApiResponse<BasicUserInfo>; 
+export type UserInfoResponse = ApiResponse<BasicUserInfo>;

@@ -1,5 +1,5 @@
-import { BaseService } from '../core/base.service';
-import { CallbackRequest, UserInfoResponse } from './types';
+import {BaseService} from '../core/base.service';
+import {CallbackRequest, UserInfoResponse} from './types';
 
 /**
  * 认证服务
@@ -33,7 +33,6 @@ export class AuthService extends BaseService {
    * @returns Promise<BasicUserInfo> 返回用户信息
    */
   static async getUserInfo(): Promise<UserInfoResponse['data']> {
-    // 确保请求带上Cookie，让后端能够从session中获取UserID
     return this.get<UserInfoResponse['data']>('/user-info');
   }
 
@@ -50,7 +49,7 @@ export class AuthService extends BaseService {
       } else {
         sessionStorage.removeItem('oauth_redirect_to');
       }
-      
+
       const loginURL = await this.getLoginURL();
       // 跳转到OAuth认证页面
       window.location.href = loginURL;
@@ -68,8 +67,8 @@ export class AuthService extends BaseService {
     try {
       await this.getUserInfo();
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
-} 
+}

@@ -29,6 +29,7 @@ export interface ApiError {
 /**
  * 用户信任等级枚举
  */
+/* eslint-disable no-unused-vars */
 export enum TrustLevel {
   /** 新用户 */
   NEW_USER = 0,
@@ -41,6 +42,7 @@ export enum TrustLevel {
   /** 领导者 */
   LEADER = 4,
 }
+/* eslint-enable no-unused-vars */
 
 /**
  * 基础用户信息
@@ -56,4 +58,4 @@ export interface BasicUserInfo {
   trust_level: TrustLevel;
   /** 头像URL */
   avatar_url: string;
-} 
+}

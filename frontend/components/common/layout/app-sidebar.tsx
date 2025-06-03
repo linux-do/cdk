@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/sidebar';
 import {RollingText} from '@/components/animate-ui/text/rolling';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/use-auth';
+import {useAuth} from '@/hooks/use-auth';
 
 /**
  * 主导航栏
@@ -98,7 +98,7 @@ const navDocuments = [
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   // 使用useAuth钩子获取用户信息和状态
-  const { user, isLoading } = useAuth();
+  const {user, isLoading} = useAuth();
 
   return (
     <Sidebar collapsible="offcanvas" className="hide-scrollbar" {...props}>
@@ -132,36 +132,36 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         {isLoading && (
-          <NavUser 
+          <NavUser
             user={{
               id: 0,
               username: 'Loading...',
               nickname: 'Loading...',
               trust_level: 0,
               avatar: 'Loading...',
-            }} 
+            }}
           />
         )}
         {!isLoading && user && (
-          <NavUser 
+          <NavUser
             user={{
               id: user.id,
               username: user.username,
               nickname: user.nickname,
               trust_level: user.trust_level,
               avatar: user.avatar_url,
-            }} 
+            }}
           />
         )}
         {!isLoading && !user && (
-          <NavUser 
+          <NavUser
             user={{
               id: 0,
               username: 'Unknown',
               nickname: 'Unknown',
               trust_level: 0,
               avatar: 'Unknown',
-            }} 
+            }}
           />
         )}
       </SidebarFooter>
