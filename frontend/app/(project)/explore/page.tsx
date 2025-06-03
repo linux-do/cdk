@@ -1,8 +1,7 @@
 'use client';
 
 import {useAuth} from '@/hooks/use-auth';
-import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import {Loader2} from 'lucide-react';
 
 export default function ExplorePage() {
   const {isLoading} = useAuth();

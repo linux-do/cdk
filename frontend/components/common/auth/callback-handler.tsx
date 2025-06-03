@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { GalleryVerticalEnd, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {useRouter, useSearchParams} from 'next/navigation';
+import {GalleryVerticalEnd, Loader2, CheckCircle, XCircle} from 'lucide-react';
 import services from '@/lib/services';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import {cn} from '@/lib/utils';
+import {Button} from '@/components/ui/button';
 
 /**
  * 回调处理组件属性
  */
-export interface CallbackHandlerProps extends React.ComponentProps<'div'> {}
+export type CallbackHandlerProps = React.ComponentProps<'div'>;
 
 /**
  * OAuth回调处理组件
@@ -24,7 +24,7 @@ export function CallbackHandler({
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string>('');
-  const [redirectPath, setRedirectPath] = useState<string>('/explore');
+  const [, setRedirectPath] = useState<string>('/explore');
 
   useEffect(() => {
     /**
@@ -47,7 +47,7 @@ export function CallbackHandler({
         }
 
         // 调用后端回调接口
-        await services.auth.handleCallback({ state, code });
+        await services.auth.handleCallback({state, code});
 
         // 从sessionStorage获取重定向信息
         const redirectTo = sessionStorage.getItem('oauth_redirect_to');
@@ -82,7 +82,6 @@ export function CallbackHandler({
           </div>
           <h1 className="text-xl font-bold">欢迎使用 Linux Do CDK.</h1>
         </div>
-        
         <div className="flex flex-col items-center gap-4 py-2">
           {status === 'loading' && (
             <>
@@ -93,7 +92,6 @@ export function CallbackHandler({
               </p>
             </>
           )}
-          
           {status === 'success' && (
             <>
               <CheckCircle className="h-10 w-10 text-green-500" />
@@ -103,7 +101,6 @@ export function CallbackHandler({
               </p>
             </>
           )}
-          
           {status === 'error' && (
             <>
               <XCircle className="h-10 w-10 text-destructive" />
@@ -122,14 +119,13 @@ export function CallbackHandler({
           )}
         </div>
       </div>
-      
       <div className="text-muted-foreground text-center text-xs text-balance">
         <span className="[&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-primary">
           {status === 'success' ? 
-            `将在几秒后自动跳转，感谢您的等待.` : 
+            '将在几秒后自动跳转，感谢您的等待.' : 
             'Linux Do CDK - 让资源共享更简单.'}
         </span>
       </div>
     </div>
   );
-} 
+}

@@ -1,4 +1,4 @@
-import { CallbackHandler } from '@/components/common/auth/callback-handler';
+import {CallbackHandler} from '@/components/common/auth/callback-handler';
 
 /**
  * OAuth回调页面
@@ -11,4 +11,4 @@ export default function AuthCallbackPage() {
       </div>
     </div>
   );
-} 
+}
