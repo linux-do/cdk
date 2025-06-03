@@ -26,15 +26,17 @@ apiClient.interceptors.request.use(
 );
 
 /**
- * 重定向到登录页
- * @param currentPath - 当前路径
+ * 直接启动OAuth登录流程
+ * @param currentPath - 当前路径，用于登录成功后重定向回来
  */
-function redirectToLogin(currentPath: string): Promise<never> {
+function initiateLogin(currentPath: string): Promise<never> {
   // 防止循环重定向
   if (!currentPath.startsWith('/login') && !currentPath.startsWith('/callback')) {
-    const redirectUrl = new URL('/login', window.location.origin);
-    redirectUrl.searchParams.set('redirect', currentPath);
-    window.location.href = redirectUrl.toString();
+    // 动态导入AuthService避免循环依赖
+    import('../auth/auth.service').then(({AuthService}) => {
+      // 直接调用登录方法，传入当前路径作为重定向目标
+      AuthService.login(currentPath);
+    });
   }
 
   // 返回永不解决的Promise
@@ -50,7 +52,7 @@ apiClient.interceptors.response.use(
     (error: AxiosError<ApiError>) => {
     // 处理401未授权错误
       if (error.response?.status === 401) {
-        return redirectToLogin(window.location.pathname);
+        return initiateLogin(window.location.pathname);
       }
 
       // 处理后端返回的错误信息
