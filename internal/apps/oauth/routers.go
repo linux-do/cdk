@@ -189,3 +189,19 @@ func UserInfo(c *gin.Context) {
 		},
 	)
 }
+
+type LogoutResponse struct {
+	ErrorMsg string      `json:"error_msg"`
+	Data     interface{} `json:"data"`
+}
+
+// Logout godoc
+// @Tags oauth
+// @Produce json
+// @Success 200 {object} LogoutResponse
+// @Router /api/v1/oauth/logout [get]
+func Logout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	c.JSON(http.StatusOK, LogoutResponse{})
+}

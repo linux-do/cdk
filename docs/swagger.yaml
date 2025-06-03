@@ -38,6 +38,12 @@ definitions:
       error_msg:
         type: string
     type: object
+  oauth.LogoutResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
   oauth.TrustLevel:
     enum:
     - 0
@@ -102,6 +108,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/oauth.GetLoginURLResponse'
+      tags:
+      - oauth
+  /api/v1/oauth/logout:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth.LogoutResponse'
       tags:
       - oauth
   /api/v1/oauth/user-info:
