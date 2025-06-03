@@ -13,6 +13,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
+	"strconv"
 )
 
 func Serve() {
@@ -26,12 +27,13 @@ func Serve() {
 	r.Use(gin.Recovery(), gin.LoggerWithWriter(logger.GetLogWriter()))
 
 	// Session
-	sessionStore, err := redis.NewStore(
+	sessionStore, err := redis.NewStoreWithDB(
 		config.Config.Redis.MinIdleConn,
 		"tcp",
 		fmt.Sprintf("%s:%d", config.Config.Redis.Host, config.Config.Redis.Port),
 		config.Config.Redis.Username,
 		config.Config.Redis.Password,
+		strconv.Itoa(config.Config.Redis.DB),
 		[]byte(config.Config.App.SessionSecret),
 	)
 	if err != nil {
