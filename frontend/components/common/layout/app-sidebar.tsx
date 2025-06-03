@@ -9,6 +9,8 @@ import {
   ShoppingBag,
   SettingsIcon,
   FileIcon,
+  MessageCircleIcon,
+  SendIcon,
 } from 'lucide-react';
 
 import {NavDocuments} from '@/components/common/layout/nav-documents';
@@ -63,16 +65,16 @@ const navSecondary = [
     url: '/settings',
     icon: SettingsIcon,
   },
-  // {
-  //   title: "帮助文档",
-  //   url: "/help",
-  //   icon: HelpCircleIcon,
-  // },
-  // {
-  //   title: "功能搜索",
-  //   url: "/search",
-  //   icon: SearchIcon,
-  // },
+  {
+    title: '需求反馈',
+    url: 'https://rcnocajpmmaw.feishu.cn/share/base/form/shrcnQnuZp9op9LhOAMI3kVBe2e',
+    icon: MessageCircleIcon,
+  },
+  {
+    title: '群组交流',
+    url: 'https://t.me/linuxdocdk',
+    icon: SendIcon,
+  },
 ];
 
 /**

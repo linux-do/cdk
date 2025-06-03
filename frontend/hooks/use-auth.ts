@@ -1,7 +1,7 @@
 import {useState, useEffect, useCallback, useRef} from 'react';
 import services from '@/lib/services';
 import {BasicUserInfo} from '@/lib/services/core';
-import {hasSessionCookie, clearSessionCookie} from '@/lib/utils/cookies';
+import {hasSessionCookie} from '@/lib/utils/cookies';
 
 /**
  * 认证状态接口定义
@@ -27,7 +27,7 @@ interface UseAuthReturn extends AuthState {
   /** 执行登录操作 */
   login: (redirectTo?: string) => Promise<void>;
   /** 执行登出操作 */
-  logout: () => void;
+  logout: (redirectTo?: string) => Promise<void>;
   /** 清除错误信息 */
   clearError: () => void;
 }
@@ -193,22 +193,36 @@ export function useAuth(): UseAuthReturn {
 
   /**
    * 执行登出操作
-   * 清除缓存和Cookie，重定向到登录页
+   * @param {string} [redirectTo] - 登出后重定向的URL，默认为登录页
    */
-  const logout = useCallback(() => {
-    // 清除缓存
-    userInfoCache.data = null;
-    userInfoCache.timestamp = 0;
-    userInfoCache.promise = null;
+  const logout = useCallback(async (redirectTo: string = '/login') => {
+    try {
+      setState((prev) => ({...prev, isLoading: true}));
 
-    clearSessionCookie();
-    setState({
-      isAuthenticated: false,
-      user: null,
-      isLoading: false,
-      error: null,
-    });
-    window.location.href = '/login';
+      // 清除缓存
+      userInfoCache.data = null;
+      userInfoCache.timestamp = 0;
+      userInfoCache.promise = null;
+
+      // 调用AuthService的logout方法（它会处理API调用、Cookie清除和重定向）
+      await services.auth.logout(redirectTo);
+
+      // 更新状态 - 注意：这里的代码可能不会执行，因为页面会重定向
+      setState({
+        isAuthenticated: false,
+        user: null,
+        isLoading: false,
+        error: null,
+      });
+    } catch (error) {
+      // 这段代码通常不会执行，因为AuthService.logout会在出错时也执行重定向
+      console.error('登出操作失败:', error);
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : '登出失败',
+      }));
+    }
   }, []);
 
   /**

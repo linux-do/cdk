@@ -73,6 +73,13 @@ export function NavUser({
     getTrustLevelText(user.trust_level) :
     '未知';
 
+  // 处理登出点击事件
+  const handleLogout = () => {
+    logout('/login').catch((error) => {
+      console.error('登出失败:', error);
+    });
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -82,27 +89,17 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-10 w-10 rounded-lg -ml-2">
+              <Avatar className="h-8 w-8 rounded-full shrink-0">
                 <AvatarImage src={user.avatar} alt={user.username} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <div className="truncate font-medium">
+              <div className="flex-1 overflow-hidden text-left">
+                <div className="flex items-center justify-center truncate text-base font-medium">
                   {user.username}
-                  <span className="text-muted-foreground text-xs ml-2">
-                    ({user.nickname})
-                  </span>
+                  <span className="text-muted-foreground text-sm shrink-0 ml-1">({user.nickname})</span>
                 </div>
-                <span className="text-muted-foreground text-xs mt-1">
-                  <Badge variant="default" className="text-[10px]">
-                    {trustLevelText}
-                  </Badge>
-                  <Badge variant="outline" className="text-[10px] ml-2">
-                    ID: {user.id}
-                  </Badge>
-                </span>
               </div>
-              <MoreVerticalIcon className="ml-auto size-4" />
+              <MoreVerticalIcon className="ml-auto size-4 opacity-70" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -112,48 +109,54 @@ export function NavUser({
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-10 w-10 rounded-lg">
+              <div className="flex items-center gap-2 px-2 py-2.5 text-left text-sm">
+                <Avatar className="h-10 w-10 rounded-lg shrink-0">
                   <AvatarImage src={user.avatar} alt={user.username} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <div className="truncate font-medium">
-                    {user.username}
-                    <span className="text-muted-foreground text-xs ml-2">
-                      ({user.nickname})
-                    </span>
+                <div className="flex-1 overflow-hidden">
+                  {/* 用户名和昵称 */}
+                  <div className="font-medium flex items-center gap-1.5 mb-1">
+                    <span className="truncate">{user.username}</span>
+                    <span className="text-muted-foreground text-xs shrink-0">({user.nickname})</span>
                   </div>
-                  <span className="text-muted-foreground text-xs mt-1">
+
+                  {/* 用户标签 */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <Badge variant="default" className="text-[10px]">
                       {trustLevelText}
                     </Badge>
-                    <Badge variant="outline" className="text-[10px] ml-2">
-                      ID: {user.id}
-                    </Badge>
-                  </span>
+                    {user.id && (
+                      <Badge variant="outline" className="text-[10px]">
+                        ID: {user.id}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <UserCircleIcon className="size-4"/>
-                账户
+              <DropdownMenuItem className="py-2 px-2.5 cursor-pointer">
+                <UserCircleIcon className="size-4 mr-2.5"/>
+                <span>账户设置</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon className="size-4"/>
-                账单
+              <DropdownMenuItem className="py-2 px-2.5 cursor-pointer">
+                <CreditCardIcon className="size-4 mr-2.5"/>
+                <span>账单管理</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon className="size-4"/>
-                通知
+              <DropdownMenuItem className="py-2 px-2.5 cursor-pointer">
+                <BellIcon className="size-4 mr-2.5"/>
+                <span>通知中心</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
-              <LogOutIcon className="size-4"/>
-              退出登录
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="py-2 px-2.5 cursor-pointer text-destructive hover:text-destructive focus:text-destructive"
+            >
+              <LogOutIcon className="size-4 mr-2.5"/>
+              <span>退出登录</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
