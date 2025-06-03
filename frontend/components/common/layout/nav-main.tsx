@@ -31,19 +31,18 @@ export function NavMain({
               asChild
             >
               <Link href="/project">
-                <PlusCircle />
+                <PlusCircle/>
                 <span className="font-semibold">快速创建</span>
               </Link>
             </SidebarMenuButton>
             <Button
               size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
+              className="size-8 group-data-[collapsible=icon]:opacity-0 hover:bg-transparent"
               variant="outline"
               asChild
             >
               <Link href="https://github.com/linux-do/cdk" target="_blank">
-                <Github />
-                <span className="sr-only">Github</span>
+                <Github className="size-4"/>
               </Link>
             </Button>
           </SidebarMenuItem>
