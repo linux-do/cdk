@@ -1,5 +1,6 @@
 /**
  * API基础响应格式
+ * @template T - 响应数据类型
  */
 export interface ApiResponse<T = unknown> {
   /** 错误信息，成功时为空字符串 */
@@ -10,6 +11,7 @@ export interface ApiResponse<T = unknown> {
 
 /**
  * 分页数据响应格式
+ * @template T - 列表项类型
  */
 export interface PaginatedResponse<T = unknown> {
   /** 总数量 */
@@ -27,7 +29,7 @@ export interface ApiError {
 }
 
 /**
- * 用户信任等级枚举
+ * 用户信任等级
  */
 /* eslint-disable no-unused-vars */
 export enum TrustLevel {
@@ -42,7 +44,6 @@ export enum TrustLevel {
   /** 领导者 */
   LEADER = 4,
 }
-/* eslint-enable no-unused-vars */
 
 /**
  * 基础用户信息
