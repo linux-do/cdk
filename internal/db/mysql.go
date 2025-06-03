@@ -50,7 +50,7 @@ func init() {
 		config.Config.Database.Port,
 		config.Config.Database.Database,
 	)
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger, DisableForeignKeyConstraintWhenMigrating: true})
 	if err != nil {
 		log.Fatalf("[MySQL] init connection failed: %v\n", err)
 	}
