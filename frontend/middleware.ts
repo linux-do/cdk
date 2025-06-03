@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { SESSION_COOKIE_NAME } from './lib/utils/cookies';
+import {NextResponse} from 'next/server';
+import type {NextRequest} from 'next/server';
+import {SESSION_COOKIE_NAME} from './lib/utils/cookies';
 
 /**
  * 需要登录的路由前缀
@@ -24,7 +24,7 @@ function hasSessionCookie(request: NextRequest): boolean {
  * 检查路径是否需要认证
  */
 function isProtectedRoute(pathname: string): boolean {
-  return PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 /**
@@ -39,14 +39,14 @@ function isPublicRoute(pathname: string): boolean {
  * 检查路径是否是API路由
  */
 function isAPIRoute(pathname: string): boolean {
-  return API_ROUTES.some(route => pathname.startsWith(route));
+  return API_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 /**
  * 检查是否是静态资源
  */
 function isStaticResource(pathname: string): boolean {
-  return pathname.startsWith('/_next/') || 
+  return pathname.startsWith('/_next/') ||
          pathname.startsWith('/favicon.ico') ||
          pathname.startsWith('/images/') ||
          pathname.startsWith('/static/');
@@ -57,7 +57,7 @@ function isStaticResource(pathname: string): boolean {
  * 只检查cookie存在性，具体的用户验证交给组件层处理
  */
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const {pathname} = request.nextUrl;
 
   // 静态资源和API路由直接放行
   if (isStaticResource(pathname) || isAPIRoute(pathname)) {

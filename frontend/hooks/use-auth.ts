@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import {useState, useEffect, useCallback, useRef} from 'react';
 import services from '@/lib/services';
-import { BasicUserInfo } from '@/lib/services/core';
-import { hasSessionCookie, clearSessionCookie } from '@/lib/utils/cookies';
+import {BasicUserInfo} from '@/lib/services/core';
+import {hasSessionCookie, clearSessionCookie} from '@/lib/utils/cookies';
 
 /**
  * 认证状态接口定义
@@ -33,14 +33,14 @@ interface UseAuthReturn extends AuthState {
 }
 
 // 全局请求缓存对象
-let userInfoCache: {
+const userInfoCache: {
   data: BasicUserInfo | null;
   timestamp: number;
   promise: Promise<BasicUserInfo> | null;
 } = {
   data: null,
   timestamp: 0,
-  promise: null
+  promise: null,
 };
 
 // 缓存过期时间（毫秒）
@@ -48,10 +48,10 @@ const CACHE_EXPIRY = 10000; // 10秒
 
 /**
  * 用户认证状态管理Hook
- * 
+ *
  * 提供用户认证状态、用户信息及登录登出等操作
  * 使用请求缓存、防抖和请求合并优化性能
- * 
+ *
  * @returns {UseAuthReturn} 认证状态和操作方法
  */
 export function useAuth(): UseAuthReturn {
@@ -61,7 +61,7 @@ export function useAuth(): UseAuthReturn {
     isLoading: true,
     error: null,
   });
-  
+
   // 防止重复请求的标记
   const requestInProgress = useRef(false);
 
@@ -71,7 +71,7 @@ export function useAuth(): UseAuthReturn {
    */
   const checkAuthStatus = useCallback(async () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({...prev, isLoading: true, error: null}));
 
       // 无Cookie时快速返回未登录状态
       if (!hasSessionCookie()) {
@@ -88,7 +88,7 @@ export function useAuth(): UseAuthReturn {
       if (requestInProgress.current) {
         return;
       }
-      
+
       // 使用缓存数据（如果缓存有效）
       const now = Date.now();
       if (userInfoCache.data && now - userInfoCache.timestamp < CACHE_EXPIRY) {
@@ -100,7 +100,7 @@ export function useAuth(): UseAuthReturn {
         });
         return;
       }
-      
+
       // 使用进行中的请求（请求合并）
       if (userInfoCache.promise) {
         try {
@@ -124,17 +124,17 @@ export function useAuth(): UseAuthReturn {
 
       // 标记请求开始
       requestInProgress.current = true;
-      
+
       // 创建新请求并缓存Promise
       userInfoCache.promise = services.auth.getUserInfo();
-      
+
       try {
         const userInfo = await userInfoCache.promise;
-        
+
         // 更新缓存
         userInfoCache.data = userInfo;
         userInfoCache.timestamp = Date.now();
-        
+
         setState({
           isAuthenticated: true,
           user: userInfo,
@@ -143,11 +143,11 @@ export function useAuth(): UseAuthReturn {
         });
       } catch (error) {
         console.error('获取用户信息失败:', error);
-        
+
         // 清除缓存
         userInfoCache.data = null;
         userInfoCache.timestamp = 0;
-        
+
         setState({
           isAuthenticated: false,
           user: null,
@@ -161,10 +161,10 @@ export function useAuth(): UseAuthReturn {
       }
     } catch (error) {
       console.error('认证状态检查失败:', error);
-      
+
       requestInProgress.current = false;
       userInfoCache.promise = null;
-      
+
       setState({
         isAuthenticated: false,
         user: null,
@@ -180,10 +180,10 @@ export function useAuth(): UseAuthReturn {
    */
   const login = useCallback(async (redirectTo?: string) => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({...prev, isLoading: true, error: null}));
       await services.auth.login(redirectTo);
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         error: error instanceof Error ? error.message : '登录失败',
@@ -200,7 +200,7 @@ export function useAuth(): UseAuthReturn {
     userInfoCache.data = null;
     userInfoCache.timestamp = 0;
     userInfoCache.promise = null;
-    
+
     clearSessionCookie();
     setState({
       isAuthenticated: false,
@@ -215,13 +215,13 @@ export function useAuth(): UseAuthReturn {
    * 清除错误信息
    */
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev) => ({...prev, error: null}));
   }, []);
 
   // 初始化时检查认证状态
   useEffect(() => {
     checkAuthStatus();
-    
+
     // 组件卸载时清理，防止内存泄漏
     return () => {
       requestInProgress.current = false;
@@ -237,4 +237,4 @@ export function useAuth(): UseAuthReturn {
     logout,
     clearError,
   };
-} 
+}
