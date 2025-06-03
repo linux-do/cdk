@@ -203,5 +203,9 @@ type LogoutResponse struct {
 func Logout(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Clear()
+	if err := session.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, LogoutResponse{ErrorMsg: err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, LogoutResponse{})
 }
