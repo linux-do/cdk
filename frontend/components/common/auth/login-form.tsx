@@ -5,7 +5,7 @@ import {useSearchParams} from 'next/navigation';
 import {useState, useEffect} from 'react';
 
 import {cn} from '@/lib/utils';
-import {Button} from '@/components/ui/button';
+import {LiquidButton} from '@/components/animate-ui/buttons/liquid';
 import {LinuxDo} from '@/components/icons/logo';
 import {useAuth} from '@/hooks/use-auth';
 
@@ -64,41 +64,33 @@ export function LoginForm({
       <form onSubmit={(e) => e.preventDefault()}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-              <div className="flex size-8 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-6" />
-              </div>
-              <span className="sr-only">Linux Do CDK</span>
-            </a>
+            <div className="flex size-8 items-center justify-center rounded-md m-4">
+              <GalleryVerticalEnd className="size-6" />
+            </div>
             <h1 className="text-xl font-bold">欢迎使用 Linux Do CDK.</h1>
           </div>
 
           {/* 登出成功提示 */}
           {logoutMessage && (
-            <div className="bg-success/10 text-success text-sm p-3 rounded-md text-center">
+            <div className="text-success text-sm mt-2 rounded-md text-center">
               {logoutMessage}
             </div>
           )}
 
           {/* 错误信息显示 */}
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md text-center">
+            <div className="text-destructive text-sm mt-2 rounded-md text-center">
               {error}
             </div>
           )}
 
-          <div className="gap-4 my-2">
-            <Button
-              variant="outline"
-              type="button"
-              className="w-full flex items-center justify-center gap-2"
+          <div className="gap-4 m-4 flex justify-center">
+            <LiquidButton
+              className="items-center justify-center w-full"
               onClick={handleLogin}
               disabled={isButtonLoading}
             >
-              <div className="flex items-center justify-center gap-2 w-44">
+              <div className="flex items-center justify-center gap-2">
                 <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
                   {isButtonLoading ? (
                     <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
@@ -110,13 +102,13 @@ export function LoginForm({
                   {isButtonLoading ? '正在跳转...' : '使用 Linux Do 登录'}
                 </span>
               </div>
-            </Button>
+            </LiquidButton>
           </div>
         </div>
       </form>
       <div className="text-muted-foreground text-center text-xs text-balance mt-2">
         <span className="[&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-primary">
-          点击登录，即表示您同意我们的 <a href="#">服务条款</a> 和{' '}
+          登录即表示您同意 <a href="#">服务条款</a> 和{' '}
           <a href="#">隐私政策</a>
         </span>
       </div>
