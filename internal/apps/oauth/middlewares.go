@@ -23,6 +23,8 @@ func LoginRequired() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error_msg": tx.Error.Error(), "data": nil})
 			return
 		}
+		// set userID
+		c.Set(UserIDKey, userId)
 		// next
 		c.Next()
 	}

@@ -6,3 +6,7 @@ const (
 	DistributionTypeOneForEach DistributionType = iota
 	DistributionTypeInvite
 )
+
+const (
+	RedisProjectItemsKeyPrefix = "project:%s:items"
+)
