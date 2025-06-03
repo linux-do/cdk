@@ -12,10 +12,11 @@ config.yaml
 # frontend
 frontend/build
 frontend/disk
-frontend/node_modules
-frontend/.next/cache
+frontend/node_modules/*
+frontend/.next/*
 frontend/next-env.d.ts
 frontend/package-lock.json
+frontend/.env
 
 # os
 .DS_Store
