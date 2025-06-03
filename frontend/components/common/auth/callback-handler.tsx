@@ -5,7 +5,7 @@ import {useRouter, useSearchParams} from 'next/navigation';
 import {GalleryVerticalEnd, LoaderCircle, CheckCircle, XCircle} from 'lucide-react';
 import services from '@/lib/services';
 import {cn} from '@/lib/utils';
-import {Button} from '@/components/ui/button';
+import {LiquidButton} from '@/components/animate-ui/buttons/liquid';
 
 /**
  * 回调处理组件属性
@@ -24,7 +24,6 @@ export function CallbackHandler({
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string>('');
-  const [redirectPath, setRedirectPath] = useState<string>('/explore');
 
   useEffect(() => {
     /**
@@ -52,7 +51,6 @@ export function CallbackHandler({
         // 从sessionStorage获取重定向信息
         const redirectTo = sessionStorage.getItem('oauth_redirect_to');
         const targetPath = redirectTo || '/explore';
-        setRedirectPath(targetPath);
 
         // 设置成功状态
         setStatus('success');
@@ -110,10 +108,7 @@ export function CallbackHandler({
           {status === 'success' && (
             <>
               <CheckCircle className="h-10 w-10 text-green-500" />
-              <h2 className="text-lg font-semibold text-green-500">登录成功</h2>
-              <p className="text-muted-foreground text-center text-sm">
-                正在跳转到 {redirectPath}...
-              </p>
+              <h2 className="text-lg font-semibold text-green-500">欢迎回来</h2>
             </>
           )}
           {status === 'error' && (
@@ -123,13 +118,12 @@ export function CallbackHandler({
               <p className="text-muted-foreground text-center text-sm">
                 {error}
               </p>
-              <Button
-                variant="default"
-                className="w-full mt-2"
+              <LiquidButton
+                className="mt-2 w-full"
                 onClick={() => router.push('/login')}
               >
                 重新登录
-              </Button>
+              </LiquidButton>
             </>
           )}
         </div>
