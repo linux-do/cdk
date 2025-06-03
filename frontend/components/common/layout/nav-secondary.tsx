@@ -22,6 +22,11 @@ export function NavSecondary({
     icon: LucideIcon;
   }[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  // 判断链接是否为外部链接
+  const isExternalLink = (url: string): boolean => {
+    return url.startsWith('http://') || url.startsWith('https://');
+  };
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
@@ -29,10 +34,17 @@ export function NavSecondary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
-                <Link href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </Link>
+                {isExternalLink(item.url) ? (
+                  <a href={item.url} target="_blank" rel="noopener noreferrer">
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </a>
+                ) : (
+                  <Link href={item.url}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </Link>
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

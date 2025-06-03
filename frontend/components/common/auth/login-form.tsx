@@ -26,7 +26,7 @@ export function LoginForm({
   const [logoutMessage, setLogoutMessage] = useState('');
   const {login, error, clearError} = useAuth();
   const searchParams = useSearchParams();
-  
+
   // 检测是否是从登出操作重定向过来的
   useEffect(() => {
     const isLoggedOut = searchParams.get('logout') === 'true';

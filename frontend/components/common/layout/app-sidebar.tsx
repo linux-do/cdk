@@ -66,13 +66,13 @@ const navSecondary = [
     icon: SettingsIcon,
   },
   {
-    title: "需求反馈",
-    url: "https://rcnocajpmmaw.feishu.cn/share/base/form/shrcnQnuZp9op9LhOAMI3kVBe2e",
+    title: '需求反馈',
+    url: 'https://rcnocajpmmaw.feishu.cn/share/base/form/shrcnQnuZp9op9LhOAMI3kVBe2e',
     icon: MessageCircleIcon,
   },
   {
-    title: "群组交流",
-    url: "/search",
+    title: '群组交流',
+    url: 'https://t.me/linuxdocdk',
     icon: SendIcon,
   },
 ];

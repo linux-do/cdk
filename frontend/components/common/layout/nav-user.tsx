@@ -96,7 +96,7 @@ export function NavUser({
               <div className="flex-1 overflow-hidden text-left">
                 <div className="flex items-center justify-center truncate text-base font-medium">
                   {user.username}
-                  <span className="text-muted-foreground text-sm shrink-0 ml-1">({user.nickname})</span> 
+                  <span className="text-muted-foreground text-sm shrink-0 ml-1">({user.nickname})</span>
                 </div>
               </div>
               <MoreVerticalIcon className="ml-auto size-4 opacity-70" />
@@ -120,7 +120,7 @@ export function NavUser({
                     <span className="truncate">{user.username}</span>
                     <span className="text-muted-foreground text-xs shrink-0">({user.nickname})</span>
                   </div>
-                  
+
                   {/* 用户标签 */}
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <Badge variant="default" className="text-[10px]">
@@ -151,7 +151,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={handleLogout}
               className="py-2 px-2.5 cursor-pointer text-destructive hover:text-destructive focus:text-destructive"
             >

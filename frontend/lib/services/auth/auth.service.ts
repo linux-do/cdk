@@ -79,35 +79,35 @@ export class AuthService extends BaseService {
     try {
       // 清除可能存在的本地存储的用户信息
       sessionStorage.removeItem('oauth_redirect_to');
-      
+
       // 先尝试调用后端API
       try {
         await this.callLogoutAPI();
       } catch (error) {
         console.warn('后端登出API调用失败，继续前端登出流程', error);
       }
-      
+
       // 无论API调用成功与否，都清除前端Cookie
       clearSessionCookie();
-      
+
       // 如果重定向到登录页面，添加登出标记
       if (redirectTo === '/login') {
         redirectTo = '/login?logout=true';
       }
-      
+
       // 重定向到指定页面或首页
       window.location.href = redirectTo;
     } catch (error) {
       console.error('登出失败:', error);
-      
+
       // 清除Cookie
       clearSessionCookie();
-      
+
       // 如果重定向到登录页面，添加登出标记
       if (redirectTo === '/login') {
         redirectTo = '/login?logout=true';
       }
-      
+
       window.location.href = redirectTo;
     }
   }
