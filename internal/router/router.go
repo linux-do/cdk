@@ -61,8 +61,9 @@ func Serve() {
 
 			// OAuth
 			apiV1Router.GET("/oauth/login", oauth.GetLoginURL)
+			apiV1Router.GET("/oauth/logout", oauth.LoginRequired(), oauth.Logout)
 			apiV1Router.POST("/oauth/callback", oauth.Callback)
-			apiV1Router.GET("/oauth/user-info", oauth.UserInfo, oauth.LoginRequired())
+			apiV1Router.GET("/oauth/user-info", oauth.LoginRequired(), oauth.UserInfo)
 		}
 	}
 

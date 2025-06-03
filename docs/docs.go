@@ -80,6 +80,24 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/oauth/logout": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/oauth.LogoutResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/oauth/user-info": {
             "get": {
                 "produces": [
@@ -155,6 +173,15 @@ const docTemplate = `{
                 "data": {
                     "type": "string"
                 },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "oauth.LogoutResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
                 "error_msg": {
                     "type": "string"
                 }
