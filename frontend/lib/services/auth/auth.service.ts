@@ -1,5 +1,6 @@
 import {BaseService} from '../core/base.service';
 import {CallbackRequest, UserInfoResponse} from './types';
+import {clearSessionCookie} from '@/lib/utils/cookies';
 
 /**
  * 认证服务
@@ -56,6 +57,58 @@ export class AuthService extends BaseService {
     } catch (error) {
       console.error('获取登录URL失败:', error);
       throw error;
+    }
+  }
+
+  /**
+   * API登出请求
+   * 注意：此方法只负责API调用，不处理Cookie或重定向
+   * @returns Promise<void>
+   */
+  static async callLogoutAPI(): Promise<void> {
+    return this.get('/logout');
+  }
+
+  /**
+   * 执行完整的登出流程
+   * 包括调用API、清除Cookie和重定向
+   * @param redirectTo 登出后重定向的页面路径，默认为首页
+   * @returns Promise<void>
+   */
+  static async logout(redirectTo: string = '/'): Promise<void> {
+    try {
+      // 清除可能存在的本地存储的用户信息
+      sessionStorage.removeItem('oauth_redirect_to');
+      
+      // 先尝试调用后端API
+      try {
+        await this.callLogoutAPI();
+      } catch (error) {
+        console.warn('后端登出API调用失败，继续前端登出流程', error);
+      }
+      
+      // 无论API调用成功与否，都清除前端Cookie
+      clearSessionCookie();
+      
+      // 如果重定向到登录页面，添加登出标记
+      if (redirectTo === '/login') {
+        redirectTo = '/login?logout=true';
+      }
+      
+      // 重定向到指定页面或首页
+      window.location.href = redirectTo;
+    } catch (error) {
+      console.error('登出失败:', error);
+      
+      // 清除Cookie
+      clearSessionCookie();
+      
+      // 如果重定向到登录页面，添加登出标记
+      if (redirectTo === '/login') {
+        redirectTo = '/login?logout=true';
+      }
+      
+      window.location.href = redirectTo;
     }
   }
 

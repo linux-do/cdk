@@ -85,19 +85,13 @@ export function CallbackHandler({
           {status === 'loading' && (
             <>
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <h2 className="text-lg font-semibold">正在处理登录</h2>
-              <p className="text-muted-foreground text-center text-sm">
-                请稍候，我们正在验证您的身份...
-              </p>
+              <h2 className="text-lg font-semibold">正在处理验证</h2>
             </>
           )}
           {status === 'success' && (
             <>
               <CheckCircle className="h-10 w-10 text-green-500" />
               <h2 className="text-lg font-semibold text-green-500">登录成功</h2>
-              <p className="text-muted-foreground text-center text-sm">
-                正在前往 Linux Do CDK 平台，请稍候...
-              </p>
             </>
           )}
           {status === 'error' && (
@@ -120,9 +114,7 @@ export function CallbackHandler({
       </div>
       <div className="text-muted-foreground text-center text-xs text-balance">
         <span className="[&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-primary">
-          {status === 'success' ?
-            '将在几秒后自动跳转，感谢您的等待.' :
-            'Linux Do CDK - 让资源共享更简单.'}
+          Linux Do CDK - 让资源共享更简单.
         </span>
       </div>
     </div>
