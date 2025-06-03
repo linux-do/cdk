@@ -9,9 +9,9 @@ export type GetLoginURLResponse = ApiResponse<string>;
  * OAuth回调请求参数
  */
 export interface CallbackRequest {
-  /** OAuth状态码 */
+  /** OAuth状态码，用于验证请求合法性 */
   state: string;
-  /** 授权码 */
+  /** 授权码，用于获取访问令牌 */
   code: string;
 }
 

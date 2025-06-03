@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
-import {GalleryVerticalEnd, Loader2, CheckCircle, XCircle} from 'lucide-react';
+import {GalleryVerticalEnd, LoaderCircle, CheckCircle, XCircle} from 'lucide-react';
 import services from '@/lib/services';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
@@ -24,7 +24,7 @@ export function CallbackHandler({
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string>('');
-  const [, setRedirectPath] = useState<string>('/explore');
+  const [redirectPath, setRedirectPath] = useState<string>('/explore');
 
   useEffect(() => {
     /**
@@ -57,20 +57,39 @@ export function CallbackHandler({
         // 设置成功状态
         setStatus('success');
 
-        // 登录成功，延迟跳转到指定页面
+        // 登录成功，立即跳转到指定页面
+        console.log('登录成功，准备跳转到:', targetPath);
+
+        // 清除存储的重定向路径
+        sessionStorage.removeItem('oauth_redirect_to');
+
+        // 设置一个短暂延迟，确保UI更新
         setTimeout(() => {
-          sessionStorage.removeItem('oauth_redirect_to');
-          router.push(targetPath);
-        }, 1000);
+          // 直接使用location进行导航，绕过Next.js路由系统的潜在问题
+          window.location.href = targetPath;
+        }, 500);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : '登录处理失败';
+        console.error('回调处理错误:', err);
+
+        // 处理特定错误类型
+        let errorMessage = '登录处理失败';
+
+        if (err instanceof Error) {
+          // 特别处理Redis相关错误
+          if (err.message.includes('redis: nil')) {
+            errorMessage = '登录会话已过期，请重新登录';
+          } else {
+            errorMessage = err.message;
+          }
+        }
+
         setError(errorMessage);
         setStatus('error');
       }
     };
 
     handleCallback();
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -84,7 +103,7 @@ export function CallbackHandler({
         <div className="flex flex-col items-center gap-4 py-2">
           {status === 'loading' && (
             <>
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <LoaderCircle className="h-10 w-10 animate-spin" />
               <h2 className="text-lg font-semibold">正在处理验证</h2>
             </>
           )}
@@ -92,6 +111,9 @@ export function CallbackHandler({
             <>
               <CheckCircle className="h-10 w-10 text-green-500" />
               <h2 className="text-lg font-semibold text-green-500">登录成功</h2>
+              <p className="text-muted-foreground text-center text-sm">
+                正在跳转到 {redirectPath}...
+              </p>
             </>
           )}
           {status === 'error' && (

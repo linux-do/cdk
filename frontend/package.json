@@ -37,6 +37,7 @@
     "motion": "^12.15.0",
     "next": "15.3.3",
     "next-themes": "^0.4.6",
+    "prettier-plugin-tailwindcss": "^0.6.12",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^2.15.3",

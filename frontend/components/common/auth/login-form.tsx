@@ -1,6 +1,6 @@
 'use client';
 
-import {GalleryVerticalEnd, Loader2} from 'lucide-react';
+import {GalleryVerticalEnd, LoaderCircle} from 'lucide-react';
 import {useSearchParams} from 'next/navigation';
 import {useState, useEffect} from 'react';
 
@@ -85,12 +85,12 @@ export function LoginForm({
 
           {/* 错误信息显示 */}
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md border border-destructive/20">
+            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md text-center">
               {error}
             </div>
           )}
 
-          <div className="gap-4 my-4">
+          <div className="gap-4 my-2">
             <Button
               variant="outline"
               type="button"
@@ -98,17 +98,23 @@ export function LoginForm({
               onClick={handleLogin}
               disabled={isButtonLoading}
             >
-              {isButtonLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <LinuxDo width={24} height={24} />
-              )}
-              {isButtonLoading ? '正在跳转...' : '使用 Linux Do 登录'}
+              <div className="flex items-center justify-center gap-2 w-44">
+                <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+                  {isButtonLoading ? (
+                    <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
+                  ) : (
+                    <LinuxDo width={24} height={24} />
+                  )}
+                </div>
+                <span>
+                  {isButtonLoading ? '正在跳转...' : '使用 Linux Do 登录'}
+                </span>
+              </div>
             </Button>
           </div>
         </div>
       </form>
-      <div className="text-muted-foreground text-center text-xs text-balance">
+      <div className="text-muted-foreground text-center text-xs text-balance mt-2">
         <span className="[&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-primary">
           点击登录，即表示您同意我们的 <a href="#">服务条款</a> 和{' '}
           <a href="#">隐私政策</a>

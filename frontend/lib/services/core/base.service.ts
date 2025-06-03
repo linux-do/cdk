@@ -9,10 +9,11 @@ export abstract class BaseService {
   /**
    * API基础路径
    */
-  protected static basePath: string = '';
+  protected static basePath = '';
 
   /**
    * 获取完整的API路径
+   * @param path - API路径
    */
   protected static getFullPath(path: string): string {
     return `${this.basePath}${path}`;
@@ -20,10 +21,10 @@ export abstract class BaseService {
 
   /**
    * GET请求
-   * @template T 响应数据类型
-   * @param path API路径
-   * @param params 查询参数
-   * @returns Promise<T> 响应数据
+   * @template T - 响应数据类型
+   * @param path - API路径
+   * @param params - 查询参数
+   * @returns 响应数据
    */
   protected static async get<T>(path: string, params?: Record<string, unknown>): Promise<T> {
     const response = await apiClient.get<ApiResponse<T>>(this.getFullPath(path), {params});
@@ -32,10 +33,10 @@ export abstract class BaseService {
 
   /**
    * POST请求
-   * @template T 响应数据类型
-   * @param path API路径
-   * @param data 请求数据
-   * @returns Promise<T> 响应数据
+   * @template T - 响应数据类型
+   * @param path - API路径
+   * @param data - 请求数据
+   * @returns 响应数据
    */
   protected static async post<T>(path: string, data?: unknown): Promise<T> {
     const response = await apiClient.post<ApiResponse<T>>(this.getFullPath(path), data);
@@ -44,10 +45,10 @@ export abstract class BaseService {
 
   /**
    * PUT请求
-   * @template T 响应数据类型
-   * @param path API路径
-   * @param data 请求数据
-   * @returns Promise<T> 响应数据
+   * @template T - 响应数据类型
+   * @param path - API路径
+   * @param data - 请求数据
+   * @returns 响应数据
    */
   protected static async put<T>(path: string, data?: unknown): Promise<T> {
     const response = await apiClient.put<ApiResponse<T>>(this.getFullPath(path), data);
@@ -56,10 +57,10 @@ export abstract class BaseService {
 
   /**
    * DELETE请求
-   * @template T 响应数据类型
-   * @param path API路径
-   * @param params 查询参数
-   * @returns Promise<T> 响应数据
+   * @template T - 响应数据类型
+   * @param path - API路径
+   * @param params - 查询参数
+   * @returns 响应数据
    */
   protected static async delete<T>(path: string, params?: Record<string, unknown>): Promise<T> {
     const response = await apiClient.delete<ApiResponse<T>>(this.getFullPath(path), {params});

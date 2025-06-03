@@ -1,12 +1,12 @@
 import axios, {AxiosError, AxiosResponse} from 'axios';
 import {ApiError, ApiResponse} from './types';
-import {clearSessionCookie} from '@/lib/utils/cookies';
 
 /**
- * 创建axios实例
+ * API客户端实例
+ * 统一处理请求配置、响应解析和错误处理
  */
 const apiClient = axios.create({
-  timeout: 10000,
+  timeout: 15000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -15,48 +15,40 @@ const apiClient = axios.create({
 
 /**
  * 请求拦截器
+ * 确保所有请求带上凭证
  */
 apiClient.interceptors.request.use(
     (config) => {
       config.withCredentials = true;
       return config;
     },
-    (error) => {
-      return Promise.reject(error);
-    },
+    (error) => Promise.reject(error),
 );
 
 /**
  * 重定向到登录页
- * @param currentPath 当前路径
+ * @param currentPath - 当前路径
  */
-function redirectToLogin(currentPath: string): never {
-  // 防止循环重定向：只有非登录相关路径才重定向
+function redirectToLogin(currentPath: string): Promise<never> {
+  // 防止循环重定向
   if (!currentPath.startsWith('/login') && !currentPath.startsWith('/callback')) {
-    // 清除cookie
-    clearSessionCookie();
-
-    // 保存当前路径用于登录后返回
     const redirectUrl = new URL('/login', window.location.origin);
     redirectUrl.searchParams.set('redirect', currentPath);
-
-    // 重定向到登录页
     window.location.href = redirectUrl.toString();
   }
 
-  // 返回一个永远不会解决的Promise，防止错误继续传播
-  return new Promise<never>(() => {}) as never;
+  // 返回永不解决的Promise
+  return new Promise<never>(() => {});
 }
 
 /**
  * 响应拦截器
+ * 处理API响应和统一错误处理
  */
 apiClient.interceptors.response.use(
-    (response: AxiosResponse<ApiResponse>) => {
-      return response;
-    },
+    (response: AxiosResponse<ApiResponse>) => response,
     (error: AxiosError<ApiError>) => {
-    // 处理401未授权错误 - 必须重定向到登录页面
+    // 处理401未授权错误
       if (error.response?.status === 401) {
         return redirectToLogin(window.location.pathname);
       }
@@ -65,23 +57,25 @@ apiClient.interceptors.response.use(
       if (error.response?.data?.error_msg) {
         const apiError = new Error(error.response.data.error_msg);
         apiError.name = 'ApiError';
-        throw apiError;
+        return Promise.reject(apiError);
       }
 
-      // 处理其他常见错误
+      // 处理网络错误
       if (error.code === 'ECONNABORTED') {
-        throw new Error('请求超时，请检查网络连接');
+        return Promise.reject(new Error('请求超时，请检查网络连接'));
       }
 
+      // 处理权限错误
       if (error.response?.status === 403) {
-        throw new Error('权限不足');
+        return Promise.reject(new Error('权限不足'));
       }
 
+      // 处理服务器错误
       if (error.response && error.response.status >= 500) {
-        throw new Error('服务器内部错误，请稍后重试');
+        return Promise.reject(new Error('服务器内部错误，请稍后重试'));
       }
 
-      throw new Error(error.message || '网络请求失败');
+      return Promise.reject(new Error(error.message || '网络请求失败'));
     },
 );
 
