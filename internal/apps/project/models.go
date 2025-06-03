@@ -16,6 +16,8 @@ type Project struct {
 	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level"`
 	AllowSameIP       bool             `json:"allow_same_ip"`
 	RiskLevel         uint8            `json:"risk_level"`
+	CreatorID         uint64           `json:"creator_id" gorm:"index"`
+	Creator           oauth.User       `json:"-" gorm:"foreignKey:CreatorID"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt         time.Time        `json:"updated_at" gorm:"autoUpdateTime"`
 }
