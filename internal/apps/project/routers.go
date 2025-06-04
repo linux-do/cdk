@@ -111,9 +111,9 @@ func CreateProject(c *gin.Context) {
 	ctx := context.Background()
 	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, projectID)
 
-	items := make([]interface{}, len(req.ProjectItemsContent))
-	for i, content := range req.ProjectItemsContent {
-		items[i] = content
+	items := make([]interface{}, len(projectItems))
+	for i, item := range projectItems {
+		items[i] = item.ID
 	}
 	if err := db.Redis.RPush(ctx, redisKey, items...).Err(); err != nil {
 		tx.Rollback()
@@ -198,6 +198,7 @@ func UpdateProject(c *gin.Context) {
 	}
 
 	tx := db.DB.Begin()
+
 	projectTagsCount := len(req.ProjectTags)
 	if projectTagsCount > 0 {
 		if err := tx.Where("project_id = ?", projectID).Delete(&ProjectTag{}).Error; err != nil {
@@ -221,28 +222,47 @@ func UpdateProject(c *gin.Context) {
 	}
 
 	if UpdateProjectItemCount > 0 {
+		// 收集项目项ID
+		var projectItemIDs []uint64
+		for _, item := range req.UpdateProjectItems {
+			projectItemIDs = append(projectItemIDs, item.ID)
+		}
+
+		var count int64
+		if err := tx.Model(&ProjectItem{}).Where("id IN ? AND project_id = ?", projectItemIDs, projectID).Count(&count).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
+			return
+		}
+
+		if count != UpdateProjectItemCount {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, projectResponse{"更新项目失败", nil})
+			return
+		}
+
 		var (
-			ids      []uint64
 			caseStmt strings.Builder
 			params   []interface{}
 		)
 		caseStmt.WriteString("CASE id ")
 		for _, item := range req.UpdateProjectItems {
-			ids = append(ids, item.ID)
 			caseStmt.WriteString("WHEN ? THEN ? ")
 			params = append(params, item.ID, item.Content)
 		}
 		caseStmt.WriteString("ELSE content END")
-		params = append([]interface{}{}, params...)
-		params = append(params, ids)
 
-		sql := fmt.Sprintf("UPDATE project_items SET content = %s WHERE id IN ?", caseStmt.String())
-		if err := tx.Exec(sql, params...).Error; err != nil {
+		// 执行批量更新，包含项目ID检查和更新时间
+		sql := fmt.Sprintf("UPDATE project_items SET content = %s, updated_at = ? WHERE id IN ? AND project_id = ?", caseStmt.String())
+		if err := tx.Exec(sql, append(params, time.Now(), projectItemIDs, projectID)...).Error; err != nil {
 			tx.Rollback()
 			c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
 			return
 		}
 	}
+
+	ctx := context.Background()
+	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, projectID)
 
 	AddProjectItemsContent := len(req.AddProjectItemsContent)
 	if AddProjectItemsContent > 0 {
@@ -259,19 +279,24 @@ func UpdateProject(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
 			return
 		}
+
+		// 更新Redis数据
+		items := make([]interface{}, AddProjectItemsContent)
+		for i, item := range newProjectItems {
+			items[i] = item.ID
+		}
+		if err := db.Redis.RPush(ctx, redisKey, items...).Err(); err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
+			return
+		}
 	}
 
-	var totalItems int64
-	if err := tx.Model(&ProjectItem{}).Where("project_id = ?", projectID).Count(&totalItems).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
-		return
-	}
 	// 更新项目信息
 	project.Name = req.Name
 	project.Description = req.Description
 	project.DistributionType = req.DistributionType
-	project.TotalItems = totalItems
+	project.TotalItems = project.TotalItems + int64(AddProjectItemsContent)
 	project.MinimumTrustLevel = req.MinimumTrustLevel
 	project.AllowSameIP = req.AllowSameIP
 	project.RiskLevel = req.RiskLevel
@@ -283,37 +308,12 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
-	// 更新Redis数据
-	ctx := context.Background()
-	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, projectID)
-	// 删除旧的Redis数据
-	if err := db.Redis.Del(ctx, redisKey).Err(); err != nil {
+	if err := db.Redis.Expire(ctx, redisKey, time.Until(req.EndTime)).Err(); err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
 		return
 	}
-	// 查询未领取的项目项内容
-	var contentList []string
-	if err := tx.Model(&ProjectItem{}).
-		Select("content").
-		Where("project_id = ? AND receiver_id IS NULL", projectID).
-		Pluck("content", &contentList).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
-		return
-	}
-	items := make([]interface{}, len(contentList))
-	for i, content := range contentList {
-		items[i] = content
-	}
-	if err := db.Redis.RPush(ctx, redisKey, items...).Err(); err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
-		return
-	}
-	db.Redis.Expire(ctx, redisKey, time.Until(req.EndTime))
 
-	// 提交事务
 	if err := tx.Commit().Error; err != nil {
 		c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
 		return
