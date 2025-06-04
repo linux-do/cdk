@@ -33,7 +33,7 @@ type ProjectItem struct {
 	ID         uint64      `json:"id" gorm:"primaryKey,autoIncrement"`
 	ProjectID  string      `json:"project_id" gorm:"size:64;index;uniqueIndex:idx_project_receiver"`
 	Project    Project     `json:"-" gorm:"foreignKey:ProjectID"`
-	ReceiverID uint64      `json:"receiver_id" gorm:"index;uniqueIndex:idx_project_receiver"`
+	ReceiverID *uint64     `json:"receiver_id" gorm:"index;uniqueIndex:idx_project_receiver"`
 	Receiver   *oauth.User `json:"-" gorm:"foreignKey:ReceiverID"`
 	Content    string      `json:"content" gorm:"size:1024"`
 	CreatedAt  time.Time   `json:"created_at" gorm:"autoCreateTime"`

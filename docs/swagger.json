@@ -106,6 +106,111 @@
                     }
                 }
             }
+        },
+        "/api/v1/project": {
+            "post": {
+                "description": "创建新项目，并将项目子项(待分发的Key)存入Redis List",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "项目管理"
+                ],
+                "summary": "创建项目",
+                "parameters": [
+                    {
+                        "description": "项目信息",
+                        "name": "project",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/project.CreateProjectRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.projectResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/project/{id}": {
+            "put": {
+                "description": "编辑现有项目信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "项目管理"
+                ],
+                "summary": "编辑项目",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "项目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "项目信息",
+                        "name": "project",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/project.UpdateProjectRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.projectResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除项目(已领取的发放不允许删除)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "项目管理"
+                ],
+                "summary": "删除项目",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "项目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.projectResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -201,6 +306,186 @@
                 "data": {
                     "$ref": "#/definitions/oauth.BasicUserInfo"
                 },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.CreateProjectRequestBody": {
+            "type": "object",
+            "required": [
+                "description",
+                "end_time",
+                "name",
+                "project_items_content",
+                "project_tags",
+                "start_time"
+            ],
+            "properties": {
+                "allow_same_ip": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1024
+                },
+                "distribution_type": {
+                    "enum": [
+                        0,
+                        1
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/project.DistributionType"
+                        }
+                    ]
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "minimum_trust_level": {
+                    "enum": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/oauth.TrustLevel"
+                        }
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 32
+                },
+                "project_items_content": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "project_tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "risk_level": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.DistributionType": {
+            "type": "integer",
+            "enum": [
+                0,
+                1
+            ],
+            "x-enum-varnames": [
+                "DistributionTypeOneForEach",
+                "DistributionTypeInvite"
+            ]
+        },
+        "project.UpdateProjectRequestBody": {
+            "type": "object",
+            "required": [
+                "description",
+                "end_time",
+                "name",
+                "project_tags",
+                "start_time"
+            ],
+            "properties": {
+                "add_project_items_content": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "allow_same_ip": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1024
+                },
+                "distribution_type": {
+                    "enum": [
+                        0,
+                        1
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/project.DistributionType"
+                        }
+                    ]
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "minimum_trust_level": {
+                    "enum": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/oauth.TrustLevel"
+                        }
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 32
+                },
+                "project_items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "maxLength": 1024
+                            },
+                            "id": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        }
+                    }
+                },
+                "project_tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "risk_level": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.projectResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
                 "error_msg": {
                     "type": "string"
                 }
