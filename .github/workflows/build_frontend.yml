@@ -1,4 +1,4 @@
-name: ESLint
+name: NextJS Build
 
 on:
   pull_request:
@@ -9,17 +9,18 @@ on:
       - "main"
 
 jobs:
-  lint:
+  nextjs_build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.18.1'
+          node-version: "20"
       - name: Install dependencies
         working-directory: frontend
-        run: npm install
-      - name: Run ESLint
+        run: npm i
+      - name: Build
         working-directory: frontend
-        run: npx eslint . --max-warnings 0
+        run: npm run build
