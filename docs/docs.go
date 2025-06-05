@@ -459,7 +459,21 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 32
                 },
-                "project_items": {
+                "project_tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "risk_level": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "update_project_items": {
                     "type": "array",
                     "items": {
                         "type": "object",
@@ -474,20 +488,6 @@ const docTemplate = `{
                             }
                         }
                     }
-                },
-                "project_tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "risk_level": {
-                    "type": "integer",
-                    "maximum": 100,
-                    "minimum": 0
-                },
-                "start_time": {
-                    "type": "string"
                 }
             }
         },

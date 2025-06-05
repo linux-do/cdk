@@ -154,17 +154,6 @@ definitions:
       name:
         maxLength: 32
         type: string
-      project_items:
-        items:
-          properties:
-            content:
-              maxLength: 1024
-              type: string
-            id:
-              minimum: 0
-              type: integer
-          type: object
-        type: array
       project_tags:
         items:
           type: string
@@ -175,6 +164,17 @@ definitions:
         type: integer
       start_time:
         type: string
+      update_project_items:
+        items:
+          properties:
+            content:
+              maxLength: 1024
+              type: string
+            id:
+              minimum: 0
+              type: integer
+          type: object
+        type: array
     required:
     - description
     - end_time

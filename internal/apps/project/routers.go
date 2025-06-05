@@ -49,7 +49,7 @@ func CreateProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, projectResponse{err.Error(), nil})
 		return
 	}
-	if !req.EndTime.After(time.Now()) {
+	if req.EndTime.Before(time.Now()) {
 		c.JSON(http.StatusBadRequest, projectResponse{"结束时间必须在当前时间之后", nil})
 		return
 	}
@@ -109,7 +109,7 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 	ctx := context.Background()
-	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, projectID)
+	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, userID, projectID)
 
 	items := make([]interface{}, len(projectItems))
 	for i, item := range projectItems {
@@ -120,7 +120,12 @@ func CreateProject(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, projectResponse{"创建项目失败: " + err.Error(), nil})
 		return
 	}
-	db.Redis.Expire(ctx, redisKey, time.Until(req.EndTime))
+	// 设置Redis过期时间
+	if err := db.Redis.Expire(ctx, redisKey, time.Until(req.EndTime)).Err(); err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
+		return
+	}
 
 	if err := tx.Commit().Error; err != nil {
 		c.JSON(http.StatusInternalServerError, projectResponse{"创建项目失败: " + err.Error(), nil})
@@ -162,12 +167,6 @@ func UpdateProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, projectResponse{err.Error(), nil})
 		return
 	}
-
-	if !req.EndTime.After(time.Now()) {
-		c.JSON(http.StatusBadRequest, projectResponse{"结束时间必须在当前时间之后", nil})
-		return
-	}
-
 	// 获取当前用户ID
 	userID := c.GetUint64(oauth.UserIDKey)
 
@@ -198,7 +197,7 @@ func UpdateProject(c *gin.Context) {
 	}
 
 	tx := db.DB.Begin()
-
+	// 修改标签
 	projectTagsCount := len(req.ProjectTags)
 	if projectTagsCount > 0 {
 		if err := tx.Where("project_id = ?", projectID).Delete(&ProjectTag{}).Error; err != nil {
@@ -221,6 +220,7 @@ func UpdateProject(c *gin.Context) {
 		}
 	}
 
+	// 修改项目项
 	if UpdateProjectItemCount > 0 {
 		// 收集项目项ID
 		var projectItemIDs []uint64
@@ -262,12 +262,35 @@ func UpdateProject(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, projectID)
+	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, userID, projectID)
+	var rPushItems []interface{}
+	if req.EndTime.After(time.Now()) {
+		// 检查Redis中是否存在该项目的数据
+		exists, redisErr := db.Redis.Exists(ctx, redisKey).Result()
+		if redisErr != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + redisErr.Error(), nil})
+			return
+		}
 
-	AddProjectItemsContent := len(req.AddProjectItemsContent)
-	if AddProjectItemsContent > 0 {
-		// 添加新的项目项
-		newProjectItems := make([]ProjectItem, 0, AddProjectItemsContent)
+		// 如果Redis中数据不存在，需要从数据库重新加载
+		if exists == 0 {
+			var itemIDs []uint64
+			if err := tx.Model(&ProjectItem{}).Where("project_id = ? AND receiver_id IS NULL", projectID).Pluck("id", &itemIDs).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
+				return
+			}
+
+			for _, id := range itemIDs {
+				rPushItems = append(rPushItems, id)
+			}
+		}
+	}
+	// 添加新的项目项
+	AddProjectItemsCount := int64(len(req.AddProjectItemsContent))
+	if AddProjectItemsCount > 0 {
+		newProjectItems := make([]ProjectItem, 0, AddProjectItemsCount)
 		for _, content := range req.AddProjectItemsContent {
 			newProjectItems = append(newProjectItems, ProjectItem{
 				ProjectID: projectID,
@@ -280,12 +303,23 @@ func UpdateProject(c *gin.Context) {
 			return
 		}
 
-		// 更新Redis数据
-		items := make([]interface{}, AddProjectItemsContent)
-		for i, item := range newProjectItems {
-			items[i] = item.ID
+		for _, item := range newProjectItems {
+			rPushItems = append(rPushItems, item.ID)
 		}
-		if err := db.Redis.RPush(ctx, redisKey, items...).Err(); err != nil {
+	}
+
+	// 如果有时间更新或添加的项目项，则将其存入Redis
+	if len(rPushItems) > 0 {
+		if err := db.Redis.RPush(ctx, redisKey, rPushItems...).Err(); err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
+			return
+		}
+	}
+	// 如果当前传递的结束时间与项目的结束时间不同，则需要更新Redis的过期时间
+	if req.EndTime != project.EndTime {
+		// 设置Redis过期时间
+		if err := db.Redis.Expire(ctx, redisKey, time.Until(req.EndTime)).Err(); err != nil {
 			tx.Rollback()
 			c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
 			return
@@ -296,19 +330,13 @@ func UpdateProject(c *gin.Context) {
 	project.Name = req.Name
 	project.Description = req.Description
 	project.DistributionType = req.DistributionType
-	project.TotalItems = project.TotalItems + int64(AddProjectItemsContent)
+	project.TotalItems = project.TotalItems + AddProjectItemsCount
 	project.MinimumTrustLevel = req.MinimumTrustLevel
 	project.AllowSameIP = req.AllowSameIP
 	project.RiskLevel = req.RiskLevel
 	project.StartTime = req.StartTime
 	project.EndTime = req.EndTime
 	if err := tx.Save(&project).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
-		return
-	}
-
-	if err := db.Redis.Expire(ctx, redisKey, time.Until(req.EndTime)).Err(); err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, projectResponse{"更新项目失败: " + err.Error(), nil})
 		return
@@ -338,7 +366,6 @@ func DeleteProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, projectResponse{"参数无效", nil})
 		return
 	}
-
 	// 获取当前用户ID
 	userID := c.GetUint64(oauth.UserIDKey)
 
@@ -382,7 +409,7 @@ func DeleteProject(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, projectID)
+	redisKey := fmt.Sprintf(RedisProjectItemsKeyPrefix, userID, projectID)
 	if err := db.Redis.Del(ctx, redisKey).Err(); err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, projectResponse{"删除项目失败: " + err.Error(), nil})

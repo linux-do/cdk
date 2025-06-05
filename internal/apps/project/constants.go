@@ -8,5 +8,5 @@ const (
 )
 
 const (
-	RedisProjectItemsKeyPrefix = "project:%s:items"
+	RedisProjectItemsKeyPrefix = "project:%d:%s:items"
 )
