@@ -10,6 +10,7 @@ type configModel struct {
 
 // appConfig 应用基本配置
 type appConfig struct {
+	AppName           string `mapstructure:"app_name"`
 	Env               string `mapstructure:"env"`
 	Addr              string `mapstructure:"addr"`
 	APIPrefix         string `mapstructure:"api_prefix"`

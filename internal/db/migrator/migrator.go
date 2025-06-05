@@ -1,6 +1,7 @@
 package migrator
 
 import (
+	"context"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/db"
@@ -8,7 +9,7 @@ import (
 )
 
 func Migrate() {
-	if err := db.DB.AutoMigrate(
+	if err := db.DB(context.Background()).AutoMigrate(
 		&oauth.User{},
 		&project.Project{},
 		&project.ProjectItem{},

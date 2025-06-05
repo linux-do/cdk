@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
+	"github.com/linux-do/cdk/internal/logger"
 	"gorm.io/gorm"
 	"io"
 	"net/http"
@@ -29,7 +30,7 @@ type GetLoginURLResponse struct {
 func GetLoginURL(c *gin.Context) {
 	// 存储 State 到缓存
 	state := uuid.NewString()
-	cmd := db.Redis.Set(context.Background(), fmt.Sprintf(OAuthStateCacheKeyFormat, state), state, OAuthStateCacheKeyExpiration)
+	cmd := db.Redis.Set(c.Request.Context(), fmt.Sprintf(OAuthStateCacheKeyFormat, state), state, OAuthStateCacheKeyExpiration)
 	if cmd.Err() != nil {
 		c.JSON(http.StatusInternalServerError, GetLoginURLResponse{ErrorMsg: cmd.Err().Error()})
 		return
@@ -62,7 +63,7 @@ func Callback(c *gin.Context) {
 		return
 	}
 	// check state
-	cmd := db.Redis.Get(context.Background(), fmt.Sprintf(OAuthStateCacheKeyFormat, req.State))
+	cmd := db.Redis.Get(c.Request.Context(), fmt.Sprintf(OAuthStateCacheKeyFormat, req.State))
 	if cmd.Err() != nil {
 		c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: cmd.Err().Error()})
 		return
@@ -70,9 +71,9 @@ func Callback(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, CallbackResponse{ErrorMsg: InvalidState})
 		return
 	}
-	db.Redis.Del(context.Background(), fmt.Sprintf(OAuthStateCacheKeyFormat, req.State))
+	db.Redis.Del(c.Request.Context(), fmt.Sprintf(OAuthStateCacheKeyFormat, req.State))
 	// get token
-	token, err := oauthConf.Exchange(context.Background(), req.Code)
+	token, err := oauthConf.Exchange(c.Request.Context(), req.Code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: err.Error()})
 		return
@@ -98,7 +99,7 @@ func Callback(c *gin.Context) {
 	}
 	// save to db
 	var user User
-	tx := db.DB.Where("id = ?", userInfo.Id).First(&user)
+	tx := db.DB(c.Request.Context()).Where("id = ?", userInfo.Id).First(&user)
 	if tx.Error != nil {
 		// create user
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
@@ -111,7 +112,7 @@ func Callback(c *gin.Context) {
 				TrustLevel:  userInfo.TrustLevel,
 				LastLoginAt: time.Now().UTC(),
 			}
-			tx = db.DB.Create(&user)
+			tx = db.DB(c.Request.Context()).Create(&user)
 			if tx.Error != nil {
 				c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: tx.Error.Error()})
 				return
@@ -129,7 +130,7 @@ func Callback(c *gin.Context) {
 		user.IsActive = userInfo.Active
 		user.TrustLevel = userInfo.TrustLevel
 		user.LastLoginAt = time.Now().UTC()
-		tx = db.DB.Save(&user)
+		tx = db.DB(c.Request.Context()).Save(&user)
 		if tx.Error != nil {
 			c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: tx.Error.Error()})
 			return
@@ -144,6 +145,7 @@ func Callback(c *gin.Context) {
 	}
 	// response
 	c.JSON(http.StatusOK, CallbackResponse{})
+	logger.Logger(c.Request.Context()).Info(fmt.Sprintf("[OAuthCallback] %d %s", user.ID, user.Username))
 }
 
 type BasicUserInfo struct {
@@ -170,7 +172,7 @@ func UserInfo(c *gin.Context) {
 	userID := GetUserIDFromSession(session)
 	// query db
 	var user User
-	tx := db.DB.Where("id = ?", userID).First(&user)
+	tx := db.DB(c.Request.Context()).Where("id = ?", userID).First(&user)
 	if tx.Error != nil {
 		c.JSON(http.StatusInternalServerError, UserInfoResponse{ErrorMsg: tx.Error.Error()})
 		return
