@@ -8,7 +8,7 @@ import (
 )
 
 var Tracer trace.Tracer
-var ShutdownFuncs []func(context.Context) error
+var shutdownFuncs []func(context.Context) error
 
 func init() {
 	// 初始化 Propagator
@@ -20,7 +20,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("[Trace] init trace provider failed: %v", err)
 	}
-	ShutdownFuncs = append(ShutdownFuncs, tracerProvider.Shutdown)
+	shutdownFuncs = append(shutdownFuncs, tracerProvider.Shutdown)
 	otel.SetTracerProvider(tracerProvider)
 
 	// 初始化 Tracer
@@ -28,10 +28,10 @@ func init() {
 }
 
 func Shutdown(ctx context.Context) {
-	for _, fn := range ShutdownFuncs {
+	for _, fn := range shutdownFuncs {
 		_ = fn(ctx)
 	}
-	ShutdownFuncs = nil
+	shutdownFuncs = nil
 }
 
 func Start(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {

@@ -1,20 +1,13 @@
 package oauth
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/logger"
-	"gorm.io/gorm"
-	"io"
 	"net/http"
-	"time"
 )
 
 type GetLoginURLResponse struct {
@@ -64,84 +57,24 @@ func Callback(c *gin.Context) {
 	}
 	// check state
 	cmd := db.Redis.Get(c.Request.Context(), fmt.Sprintf(OAuthStateCacheKeyFormat, req.State))
-	if cmd.Err() != nil {
-		c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: cmd.Err().Error()})
-		return
-	} else if cmd.Val() != req.State {
+	if cmd.Val() != req.State {
 		c.JSON(http.StatusBadRequest, CallbackResponse{ErrorMsg: InvalidState})
 		return
 	}
 	db.Redis.Del(c.Request.Context(), fmt.Sprintf(OAuthStateCacheKeyFormat, req.State))
-	// get token
-	token, err := oauthConf.Exchange(c.Request.Context(), req.Code)
+	// do oauth
+	user, err := doOAuth(c.Request.Context(), req.Code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: err.Error()})
 		return
-	}
-	// get user info
-	client := oauthConf.Client(context.Background(), token)
-	resp, err := client.Get(config.Config.OAuth2.UserEndpoint)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: err.Error()})
-		return
-	}
-	defer func(body io.ReadCloser) { _ = resp.Body.Close() }(resp.Body)
-	// load user info
-	responseData, err := io.ReadAll(resp.Body)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: err.Error()})
-		return
-	}
-	var userInfo OAuthUserInfo
-	if err := json.Unmarshal(responseData, &userInfo); err != nil {
-		c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: err.Error()})
-		return
-	}
-	// save to db
-	var user User
-	tx := db.DB(c.Request.Context()).Where("id = ?", userInfo.Id).First(&user)
-	if tx.Error != nil {
-		// create user
-		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			user = User{
-				ID:          userInfo.Id,
-				Username:    userInfo.Username,
-				Nickname:    userInfo.Name,
-				AvatarUrl:   userInfo.AvatarUrl,
-				IsActive:    userInfo.Active,
-				TrustLevel:  userInfo.TrustLevel,
-				LastLoginAt: time.Now().UTC(),
-			}
-			tx = db.DB(c.Request.Context()).Create(&user)
-			if tx.Error != nil {
-				c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: tx.Error.Error()})
-				return
-			}
-		} else {
-			// response failed
-			c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: tx.Error.Error()})
-			return
-		}
-	} else {
-		// update user
-		user.Username = userInfo.Username
-		user.Nickname = userInfo.Name
-		user.AvatarUrl = userInfo.AvatarUrl
-		user.IsActive = userInfo.Active
-		user.TrustLevel = userInfo.TrustLevel
-		user.LastLoginAt = time.Now().UTC()
-		tx = db.DB(c.Request.Context()).Save(&user)
-		if tx.Error != nil {
-			c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: tx.Error.Error()})
-			return
-		}
 	}
 	// bind to session
 	session := sessions.Default(c)
-	session.Set(UserIDKey, userInfo.Id)
-	session.Set(UserNameKey, userInfo.Username)
+	session.Set(UserIDKey, user.ID)
+	session.Set(UserNameKey, user.Username)
 	if err := session.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, CallbackResponse{ErrorMsg: err.Error()})
+		return
 	}
 	// response
 	c.JSON(http.StatusOK, CallbackResponse{})
