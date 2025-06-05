@@ -1,7 +1,6 @@
 package oauth
 
 import (
-	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/db"
@@ -35,7 +34,7 @@ func LoginRequired() gin.HandlerFunc {
 		}
 
 		// log
-		logger.Logger(ctx).Info(fmt.Sprintf("[LoginRequired] %d %s", user.ID, user.Username))
+		logger.InfoF(ctx, "[LoginRequired] %d %s", user.ID, user.Username)
 
 		// next
 		c.Next()

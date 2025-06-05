@@ -78,7 +78,7 @@ func Callback(c *gin.Context) {
 	}
 	// response
 	c.JSON(http.StatusOK, CallbackResponse{})
-	logger.Logger(c.Request.Context()).Info(fmt.Sprintf("[OAuthCallback] %d %s", user.ID, user.Username))
+	logger.InfoF(c.Request.Context(), "[OAuthCallback] %d %s", user.ID, user.Username)
 }
 
 type BasicUserInfo struct {

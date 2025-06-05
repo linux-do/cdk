@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/logger"
 	"github.com/linux-do/cdk/internal/otel_trace"
@@ -35,18 +34,17 @@ func loggerMiddleware() gin.HandlerFunc {
 		latency := end.Sub(start)
 
 		// 打印日志
-		logger.Logger(ctx).Info(
-			fmt.Sprintf(
-				"[LoggerMiddleware] %s %s\nStartTime: %s\nEndTime: %s\nLatency: %d\nClientIP: %s\nResponse: %d %d",
-				c.Request.Method,
-				path,
-				start.Format(time.RFC3339),
-				end.Format(time.RFC3339),
-				latency.Milliseconds(),
-				c.ClientIP(),
-				c.Writer.Status(),
-				c.Writer.Size(),
-			),
+		logger.InfoF(
+			ctx,
+			"[LoggerMiddleware] %s %s\nStartTime: %s\nEndTime: %s\nLatency: %d\nClientIP: %s\nResponse: %d %d",
+			c.Request.Method,
+			path,
+			start.Format(time.RFC3339),
+			end.Format(time.RFC3339),
+			latency.Milliseconds(),
+			c.ClientIP(),
+			c.Writer.Status(),
+			c.Writer.Size(),
 		)
 
 		// 设置 Span 状态

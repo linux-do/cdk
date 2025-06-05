@@ -1,7 +1,10 @@
 package logger
 
 import (
+	"context"
 	"github.com/linux-do/cdk/internal/config"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
@@ -79,5 +82,14 @@ func getLogLevel() zapcore.Level {
 	default:
 		log.Fatalf("[Logger] invalid log level: %s\n", level)
 		return zapcore.InfoLevel
+	}
+}
+
+func getTraceIDFields(ctx context.Context) []zap.Field {
+	span := trace.SpanFromContext(ctx)
+	spanContext := span.SpanContext()
+	return []zap.Field{
+		zap.String("traceID", spanContext.TraceID().String()),
+		zap.String("spanID", spanContext.SpanID().String()),
 	}
 }
