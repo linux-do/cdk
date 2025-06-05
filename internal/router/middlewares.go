@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/logger"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+	"strconv"
 	"time"
 )
 
@@ -40,5 +43,11 @@ func LoggerMiddleware() gin.HandlerFunc {
 				c.Writer.Size(),
 			),
 		)
+
+		// 设置 Span 状态
+		if c.Writer.Status() >= 400 {
+			span := trace.SpanFromContext(c.Request.Context())
+			span.SetStatus(codes.Error, strconv.Itoa(c.Writer.Status()))
+		}
 	}
 }
