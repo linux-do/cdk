@@ -118,7 +118,6 @@ const docTemplate = `{
         },
         "/api/v1/project": {
             "post": {
-                "description": "创建新项目，并将项目子项(待分发的Key)存入Redis List",
                 "consumes": [
                     "application/json"
                 ],
@@ -126,9 +125,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "项目管理"
+                    "project"
                 ],
-                "summary": "创建项目",
                 "parameters": [
                     {
                         "description": "项目信息",
@@ -144,7 +142,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/project.projectResponse"
+                            "$ref": "#/definitions/project.ProjectResponse"
                         }
                     }
                 }
@@ -152,7 +150,6 @@ const docTemplate = `{
         },
         "/api/v1/project/{id}": {
             "put": {
-                "description": "编辑现有项目信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -160,9 +157,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "项目管理"
+                    "project"
                 ],
-                "summary": "编辑项目",
                 "parameters": [
                     {
                         "type": "string",
@@ -185,13 +181,12 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/project.projectResponse"
+                            "$ref": "#/definitions/project.ProjectResponse"
                         }
                     }
                 }
             },
             "delete": {
-                "description": "删除项目(已领取的发放不允许删除)",
                 "consumes": [
                     "application/json"
                 ],
@@ -199,9 +194,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "项目管理"
+                    "project"
                 ],
-                "summary": "删除项目",
                 "parameters": [
                     {
                         "type": "string",
@@ -215,7 +209,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/project.projectResponse"
+                            "$ref": "#/definitions/project.ProjectResponse"
                         }
                     }
                 }
@@ -323,11 +317,9 @@ const docTemplate = `{
         "project.CreateProjectRequestBody": {
             "type": "object",
             "required": [
-                "description",
                 "end_time",
                 "name",
-                "project_items_content",
-                "project_tags",
+                "project_items",
                 "start_time"
             ],
             "properties": {
@@ -368,9 +360,10 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 32
+                    "maxLength": 32,
+                    "minLength": 1
                 },
-                "project_items_content": {
+                "project_items": {
                     "type": "array",
                     "minItems": 1,
                     "items": {
@@ -404,39 +397,29 @@ const docTemplate = `{
                 "DistributionTypeInvite"
             ]
         },
+        "project.ProjectResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
         "project.UpdateProjectRequestBody": {
             "type": "object",
             "required": [
-                "description",
                 "end_time",
                 "name",
-                "project_tags",
                 "start_time"
             ],
             "properties": {
-                "add_project_items_content": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "allow_same_ip": {
                     "type": "boolean"
                 },
                 "description": {
                     "type": "string",
                     "maxLength": 1024
-                },
-                "distribution_type": {
-                    "enum": [
-                        0,
-                        1
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/project.DistributionType"
-                        }
-                    ]
                 },
                 "end_time": {
                     "type": "string"
@@ -457,7 +440,14 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 32
+                    "maxLength": 32,
+                    "minLength": 1
+                },
+                "project_items": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "project_tags": {
                     "type": "array",
@@ -471,31 +461,6 @@ const docTemplate = `{
                     "minimum": 0
                 },
                 "start_time": {
-                    "type": "string"
-                },
-                "update_project_items": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "content": {
-                                "type": "string",
-                                "maxLength": 1024
-                            },
-                            "id": {
-                                "type": "integer",
-                                "minimum": 0
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "project.projectResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "error_msg": {
                     "type": "string"
                 }
             }

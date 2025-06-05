@@ -80,8 +80,8 @@ func Serve() {
 			projectRouter.Use(oauth.LoginRequired())
 			{
 				projectRouter.POST("", project.CreateProject)
-				projectRouter.PUT("/:id", project.UpdateProject)
-				projectRouter.DELETE("/:id", project.DeleteProject)
+				projectRouter.PUT("/:id", project.ProjectCreatorPermMiddleware(), project.UpdateProject)
+				projectRouter.DELETE("/:id", project.ProjectCreatorPermMiddleware(), project.DeleteProject)
 			}
 		}
 	}
