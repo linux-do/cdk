@@ -3,6 +3,7 @@
 
 # App
 app:
+  app_name: "linux-do-cdk"
   env: "development" # development, testing, production
   addr: ":8000"
   session_cookie_name: "linux_do_cdk_session_id" # change this in local dev env

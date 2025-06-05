@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
@@ -10,14 +11,17 @@ import (
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/config"
-	"github.com/linux-do/cdk/internal/logger"
+	"github.com/linux-do/cdk/internal/otel_trace"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"log"
 	"strconv"
 )
 
 func Serve() {
+	defer otel_trace.Shutdown(context.Background())
+
 	// 运行模式
 	if config.Config.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -25,7 +29,7 @@ func Serve() {
 
 	// 初始化路由
 	r := gin.New()
-	r.Use(gin.Recovery(), gin.LoggerWithWriter(logger.GetLogWriter()))
+	r.Use(gin.Recovery())
 
 	// Session
 	sessionStore, err := redis.NewStoreWithDB(
@@ -50,6 +54,9 @@ func Serve() {
 		},
 	)
 	r.Use(sessions.Sessions(config.Config.App.SessionCookieName, sessionStore))
+
+	// 补充中间件
+	r.Use(otelgin.Middleware(config.Config.App.AppName), loggerMiddleware())
 
 	apiGroup := r.Group(config.Config.App.APIPrefix)
 	{
