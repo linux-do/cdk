@@ -12,12 +12,12 @@ func ProjectCreatorPermMiddleware() gin.HandlerFunc {
 		// load project
 		project := &Project{}
 		if err := project.Exact(db.DB(c.Request.Context()), c.Param("id")); err != nil {
-			c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
+			c.AbortWithStatusJSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
 			return
 		}
 		// check creator
 		if project.CreatorID != oauth.GetUserIDFromContext(c) {
-			c.JSON(http.StatusForbidden, ProjectResponse{ErrorMsg: NoPermission})
+			c.AbortWithStatusJSON(http.StatusForbidden, ProjectResponse{ErrorMsg: NoPermission})
 			return
 		}
 		// do next

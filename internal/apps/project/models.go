@@ -48,8 +48,8 @@ func (p *Project) RefreshTags(tx *gorm.DB, tags []string) error {
 	}
 	// create tags
 	projectTags := make([]ProjectTag, len(tags))
-	for _, tag := range tags {
-		projectTags = append(projectTags, ProjectTag{ProjectID: p.ID, Tag: tag})
+	for i, tag := range tags {
+		projectTags[i] = ProjectTag{ProjectID: p.ID, Tag: tag}
 	}
 	if err := tx.Create(&projectTags).Error; err != nil {
 		return err
@@ -64,8 +64,8 @@ func (p *Project) CreateItems(ctx context.Context, tx *gorm.DB, items []string) 
 	}
 	// create items
 	projectItems := make([]ProjectItem, len(items))
-	for _, content := range items {
-		projectItems = append(projectItems, ProjectItem{ProjectID: p.ID, Content: content})
+	for i, content := range items {
+		projectItems[i] = ProjectItem{ProjectID: p.ID, Content: content}
 	}
 	if err := tx.Create(&projectItems).Error; err != nil {
 		return err
