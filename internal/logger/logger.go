@@ -23,13 +23,11 @@ func init() {
 	logger.Level()
 }
 
-func Logger(ctx context.Context) otelzap.LoggerWithCtx {
+func Logger(ctx context.Context) *zap.Logger {
 	span := trace.SpanFromContext(ctx)
 	spanContext := span.SpanContext()
-	return logger.Ctx(ctx).WithOptions(
-		zap.Fields(
-			zap.String("traceID", spanContext.TraceID().String()),
-			zap.String("spanID", spanContext.SpanID().String()),
-		),
+	return logger.With(
+		zap.String("traceID", spanContext.TraceID().String()),
+		zap.String("spanID", spanContext.SpanID().String()),
 	)
 }
