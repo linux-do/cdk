@@ -55,7 +55,7 @@ func Serve() {
 	r.Use(sessions.Sessions(config.Config.App.SessionCookieName, sessionStore))
 
 	// 补充中间件
-	r.Use(otelgin.Middleware(config.Config.App.AppName), LoggerMiddleware())
+	r.Use(otelgin.Middleware(config.Config.App.AppName), loggerMiddleware())
 
 	apiGroup := r.Group(config.Config.App.APIPrefix)
 	{

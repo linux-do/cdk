@@ -4,14 +4,19 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/logger"
+	"github.com/linux-do/cdk/internal/otel_trace"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"strconv"
 	"time"
 )
 
-func LoggerMiddleware() gin.HandlerFunc {
+func loggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// 初始化 Trace
+		ctx, span := otel_trace.Start(c.Request.Context(), "LoggerMiddleware")
+		defer span.End()
+
 		// 开始计时
 		start := time.Now()
 
@@ -30,7 +35,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 		latency := end.Sub(start)
 
 		// 打印日志
-		logger.Logger(c.Request.Context()).Info(
+		logger.Logger(ctx).Info(
 			fmt.Sprintf(
 				"[LoggerMiddleware] %s %s\nStartTime: %s\nEndTime: %s\nLatency: %d\nClientIP: %s\nResponse: %d %d",
 				c.Request.Method,
@@ -46,7 +51,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 
 		// 设置 Span 状态
 		if c.Writer.Status() >= 400 {
-			span := trace.SpanFromContext(c.Request.Context())
+			span := trace.SpanFromContext(ctx)
 			span.SetStatus(codes.Error, strconv.Itoa(c.Writer.Status()))
 		}
 	}
