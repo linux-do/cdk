@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/otel_trace"
@@ -14,20 +15,17 @@ import (
 	"time"
 )
 
-func GetUsernameFromSession(s sessions.Session) string {
-	username, ok := s.Get(UserNameKey).(string)
-	if !ok {
-		return ""
-	}
-	return username
-}
-
 func GetUserIDFromSession(s sessions.Session) uint64 {
 	userID, ok := s.Get(UserIDKey).(uint64)
 	if !ok {
 		return 0
 	}
 	return userID
+}
+
+func GetUserIDFromContext(c *gin.Context) uint64 {
+	session := sessions.Default(c)
+	return GetUserIDFromSession(session)
 }
 
 func doOAuth(ctx context.Context, code string) (*User, error) {
@@ -43,7 +41,7 @@ func doOAuth(ctx context.Context, code string) (*User, error) {
 	}
 
 	// get user info
-	client := oauthConf.Client(context.Background(), token)
+	client := oauthConf.Client(ctx, token)
 	resp, err := client.Get(config.Config.OAuth2.UserEndpoint)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())

@@ -9,6 +9,7 @@ import (
 	_ "github.com/linux-do/cdk/docs"
 	"github.com/linux-do/cdk/internal/apps/health"
 	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/otel_trace"
 	swaggerFiles "github.com/swaggo/files"
@@ -73,6 +74,15 @@ func Serve() {
 			apiV1Router.GET("/oauth/logout", oauth.LoginRequired(), oauth.Logout)
 			apiV1Router.POST("/oauth/callback", oauth.Callback)
 			apiV1Router.GET("/oauth/user-info", oauth.LoginRequired(), oauth.UserInfo)
+
+			// Project
+			projectRouter := apiV1Router.Group("/project")
+			projectRouter.Use(oauth.LoginRequired())
+			{
+				projectRouter.POST("", project.CreateProject)
+				projectRouter.PUT("/:id", project.ProjectCreatorPermMiddleware(), project.UpdateProject)
+				projectRouter.DELETE("/:id", project.ProjectCreatorPermMiddleware(), project.DeleteProject)
+			}
 		}
 	}
 

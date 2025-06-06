@@ -101,8 +101,7 @@ type UserInfoResponse struct {
 // @Router /api/v1/oauth/user-info [get]
 func UserInfo(c *gin.Context) {
 	// init
-	session := sessions.Default(c)
-	userID := GetUserIDFromSession(session)
+	userID := GetUserIDFromContext(c)
 	// query db
 	var user User
 	tx := db.DB(c.Request.Context()).Where("id = ?", userID).First(&user)

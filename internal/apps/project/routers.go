@@ -1,0 +1,214 @@
+package project
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/db"
+	"gorm.io/gorm"
+	"net/http"
+	"time"
+)
+
+type ProjectResponse struct {
+	ErrorMsg string      `json:"error_msg"`
+	Data     interface{} `json:"data"`
+}
+
+type ProjectRequest struct {
+	Name              string           `json:"name" binding:"required,min=1,max=32"`
+	Description       string           `json:"description" binding:"max=1024"`
+	ProjectTags       []string         `json:"project_tags" binding:"dive,min=1,max=16"`
+	StartTime         time.Time        `json:"start_time" binding:"required"`
+	EndTime           time.Time        `json:"end_time" binding:"required,gtfield=StartTime"`
+	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level" binding:"oneof=0 1 2 3 4"`
+	AllowSameIP       bool             `json:"allow_same_ip"`
+	RiskLevel         uint8            `json:"risk_level" binding:"min=0,max=100"`
+}
+
+type CreateProjectRequestBody struct {
+	ProjectRequest
+	DistributionType DistributionType `json:"distribution_type" binding:"oneof=0 1"`
+	ProjectItems     []string         `json:"project_items" binding:"required,min=1,dive,min=1,max=1024"`
+}
+
+// CreateProject
+// @Tags project
+// @Accept json
+// @Produce json
+// @Param project body CreateProjectRequestBody true "项目信息"
+// @Success 200 {object} ProjectResponse
+// @Router /api/v1/project [post]
+func CreateProject(c *gin.Context) {
+	// init req
+	var req CreateProjectRequestBody
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// init session
+	userID := oauth.GetUserIDFromContext(c)
+
+	// init project
+	project := Project{
+		ID:                uuid.NewString(),
+		Name:              req.Name,
+		Description:       req.Description,
+		DistributionType:  req.DistributionType,
+		TotalItems:        int64(len(req.ProjectItems)),
+		StartTime:         req.StartTime,
+		EndTime:           req.EndTime,
+		MinimumTrustLevel: req.MinimumTrustLevel,
+		AllowSameIP:       req.AllowSameIP,
+		RiskLevel:         req.RiskLevel,
+		CreatorID:         userID,
+	}
+
+	// create project
+	if err := db.DB(c.Request.Context()).Transaction(
+		func(tx *gorm.DB) error {
+			// create project
+			if err := tx.Create(&project).Error; err != nil {
+				return err
+			}
+			// create tags
+			if err := project.RefreshTags(tx, req.ProjectTags); err != nil {
+				return err
+			}
+			// create content
+			if err := project.CreateItems(c.Request.Context(), tx, req.ProjectItems); err != nil {
+				return err
+			}
+			return nil
+		},
+	); err != nil {
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// response
+	c.JSON(http.StatusOK, ProjectResponse{})
+}
+
+type UpdateProjectRequestBody struct {
+	ProjectRequest
+	ProjectItems []string `json:"project_items" binding:"dive,min=1,max=1024"`
+}
+
+// UpdateProject
+// @Tags project
+// @Accept json
+// @Produce json
+// @Param id path string true "项目ID"
+// @Param project body UpdateProjectRequestBody true "项目信息"
+// @Success 200 {object} ProjectResponse
+// @Router /api/v1/project/{id} [put]
+func UpdateProject(c *gin.Context) {
+	// validate req
+	var req UpdateProjectRequestBody
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ProjectResponse{err.Error(), nil})
+		return
+	}
+
+	// load project
+	project := &Project{}
+	if err := project.Exact(db.DB(c.Request.Context()), c.Param("id")); err != nil {
+		c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// init project
+	project.Name = req.Name
+	project.Description = req.Description
+	project.TotalItems += int64(len(req.ProjectItems))
+	project.StartTime = req.StartTime
+	project.EndTime = req.EndTime
+	project.MinimumTrustLevel = req.MinimumTrustLevel
+	project.AllowSameIP = req.AllowSameIP
+	project.RiskLevel = req.RiskLevel
+
+	// save to db
+	if err := db.DB(c.Request.Context()).Transaction(
+		func(tx *gorm.DB) error {
+			// save project
+			if err := tx.Save(project).Error; err != nil {
+				return err
+			}
+			// save tags
+			if err := project.RefreshTags(tx, req.ProjectTags); err != nil {
+				return err
+			}
+			// add items
+			if err := project.CreateItems(c.Request.Context(), tx, req.ProjectItems); err != nil {
+				return err
+			}
+			return nil
+		},
+	); err != nil {
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// response
+	c.JSON(http.StatusOK, ProjectResponse{})
+}
+
+// DeleteProject
+// @Tags project
+// @Accept json
+// @Produce json
+// @Param id path string true "项目ID"
+// @Success 200 {object} ProjectResponse
+// @Router /api/v1/project/{id} [delete]
+func DeleteProject(c *gin.Context) {
+	// load project
+	project := &Project{}
+	if err := project.Exact(db.DB(c.Request.Context()), c.Param("id")); err != nil {
+		c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// check for received
+	var count int64
+	if err := db.DB(c.Request.Context()).
+		Model(&ProjectItem{}).
+		Where("project_id = ? AND receiver_id IS NOT NULL", project.ID).
+		Count(&count).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	} else if count > 0 {
+		c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: AlreadyReceived})
+		return
+	}
+
+	// do delete
+	if err := db.DB(c.Request.Context()).Transaction(
+		func(tx *gorm.DB) error {
+			// delete project tag
+			if err := tx.Where("project_id = ?", project.ID).Delete(&ProjectTag{}).Error; err != nil {
+				return err
+			}
+			// delete project items
+			if err := tx.Where("project_id = ?", project.ID).Delete(&ProjectItem{}).Error; err != nil {
+				return err
+			}
+			// delete project
+			if err := tx.Where("id = ?", project.ID).Delete(&Project{}).Error; err != nil {
+				return err
+			}
+			// delete items cache
+			if err := db.Redis.Del(c.Request.Context(), project.ItemsKey()).Err(); err != nil {
+				return err
+			}
+			return nil
+		},
+	); err != nil {
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// response
+	c.JSON(http.StatusOK, ProjectResponse{})
+}

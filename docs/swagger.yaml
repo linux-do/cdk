@@ -65,6 +65,110 @@ definitions:
       error_msg:
         type: string
     type: object
+  project.CreateProjectRequestBody:
+    properties:
+      allow_same_ip:
+        type: boolean
+      description:
+        maxLength: 1024
+        type: string
+      distribution_type:
+        allOf:
+        - $ref: '#/definitions/project.DistributionType'
+        enum:
+        - 0
+        - 1
+      end_time:
+        type: string
+      minimum_trust_level:
+        allOf:
+        - $ref: '#/definitions/oauth.TrustLevel'
+        enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      name:
+        maxLength: 32
+        minLength: 1
+        type: string
+      project_items:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      project_tags:
+        items:
+          type: string
+        type: array
+      risk_level:
+        maximum: 100
+        minimum: 0
+        type: integer
+      start_time:
+        type: string
+    required:
+    - end_time
+    - name
+    - project_items
+    - start_time
+    type: object
+  project.DistributionType:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - DistributionTypeOneForEach
+    - DistributionTypeInvite
+  project.ProjectResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
+  project.UpdateProjectRequestBody:
+    properties:
+      allow_same_ip:
+        type: boolean
+      description:
+        maxLength: 1024
+        type: string
+      end_time:
+        type: string
+      minimum_trust_level:
+        allOf:
+        - $ref: '#/definitions/oauth.TrustLevel'
+        enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      name:
+        maxLength: 32
+        minLength: 1
+        type: string
+      project_items:
+        items:
+          type: string
+        type: array
+      project_tags:
+        items:
+          type: string
+        type: array
+      risk_level:
+        maximum: 100
+        minimum: 0
+        type: integer
+      start_time:
+        type: string
+    required:
+    - end_time
+    - name
+    - start_time
+    type: object
 info:
   contact: {}
   title: Linux Do CDK
@@ -132,4 +236,67 @@ paths:
             $ref: '#/definitions/oauth.UserInfoResponse'
       tags:
       - oauth
+  /api/v1/project:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 项目信息
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/project.CreateProjectRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/project/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 项目ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 项目ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 项目信息
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/project.UpdateProjectRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
 swagger: "2.0"
