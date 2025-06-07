@@ -1,1 +1,1 @@
-export { PageLoading, type PageLoadingProps } from './PageLoading'; 
+export {PageLoading, type PageLoadingProps} from './PageLoading';

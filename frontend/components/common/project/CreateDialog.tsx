@@ -44,7 +44,7 @@ interface ProjectInfo {
 /**
  * 创建项目对话框组件
  * 提供创建新项目的表单界面，包含基本设置和分发内容两个标签页
- * 
+ *
  * @returns 创建项目的对话框组件
  */
 export function CreateDialog() {
@@ -52,7 +52,7 @@ export function CreateDialog() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   /** 创建成功状态 */
   const [createSuccess, setCreateSuccess] = useState(false);
   const [createdProject, setCreatedProject] = useState<ProjectInfo | null>(null);
@@ -62,7 +62,7 @@ export function CreateDialog() {
     name: '',
     description: '',
     startTime: new Date(),
-    endTime: new Date(Date.now() + DEFAULT_FORM_VALUES.TIME_OFFSET_24H), 
+    endTime: new Date(Date.now() + DEFAULT_FORM_VALUES.TIME_OFFSET_24H),
     minimumTrustLevel: TrustLevel.NEW_USER,
     allowSameIP: false,
     riskLevel: DEFAULT_FORM_VALUES.RISK_LEVEL,
@@ -72,11 +72,11 @@ export function CreateDialog() {
   /** 标签相关状态 */
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
-  
+
   /** 分发内容相关状态 */
   const [items, setItems] = useState<string[]>([]);
   const [bulkContent, setBulkContent] = useState('');
-  
+
   /** 界面状态 */
   const [activeTab, setActiveTab] = useState('basic');
 
@@ -109,7 +109,7 @@ export function CreateDialog() {
   const addTag = useCallback(() => {
     const trimmedTag = newTag.trim();
     if (trimmedTag && !tags.includes(trimmedTag) && tags.length < FORM_LIMITS.MAX_TAGS) {
-      setTags(prev => [...prev, trimmedTag]);
+      setTags((prev) => [...prev, trimmedTag]);
       setNewTag('');
     }
   }, [newTag, tags]);
@@ -118,7 +118,7 @@ export function CreateDialog() {
    * 删除指定标签
    */
   const removeTag = useCallback((tagToRemove: string) => {
-    setTags(prev => prev.filter(tag => tag !== tagToRemove));
+    setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
   }, []);
 
   /**
@@ -134,26 +134,26 @@ export function CreateDialog() {
    * @returns 解析后的内容数组
    */
   const parseImportContent = useCallback((content: string): string[] => {
-    let parsed = content.split('\n').filter(item => item.trim());
+    let parsed = content.split('\n').filter((item) => item.trim());
     if (parsed.length === 1) {
-      parsed = content.replace(/，/g, ',').split(',').filter(item => item.trim());
+      parsed = content.replace(/，/g, ',').split(',').filter((item) => item.trim());
     }
     return parsed
-      .map(item => item.trim().substring(0, FORM_LIMITS.CONTENT_ITEM_MAX_LENGTH))
-      .filter(item => item);
+        .map((item) => item.trim().substring(0, FORM_LIMITS.CONTENT_ITEM_MAX_LENGTH))
+        .filter((item) => item);
   }, []);
 
   /**
    * 构建导入成功消息
    */
   const buildImportMessage = useCallback((
-    finalCount: number, 
-    selfDuplicates: number, 
-    existingDuplicates: number
+      finalCount: number,
+      selfDuplicates: number,
+      existingDuplicates: number,
   ): string => {
     let message = `成功导入 ${finalCount} 个内容`;
     const totalSkipped = selfDuplicates + existingDuplicates;
-    
+
     if (totalSkipped > 0) {
       const details = [];
       if (selfDuplicates > 0) details.push(`${selfDuplicates} 个内容重复`);
@@ -184,7 +184,7 @@ export function CreateDialog() {
     const selfDuplicateCount = rawItems.length - uniqueNewItems.length;
 
     const existingSet = new Set(items);
-    const finalItems = uniqueNewItems.filter(item => !existingSet.has(item));
+    const finalItems = uniqueNewItems.filter((item) => !existingSet.has(item));
     const existingDuplicateCount = uniqueNewItems.length - finalItems.length;
 
     if (finalItems.length === 0) {
@@ -193,9 +193,9 @@ export function CreateDialog() {
       return;
     }
 
-    setItems(prev => [...prev, ...finalItems]);
+    setItems((prev) => [...prev, ...finalItems]);
     setBulkContent('');
-    
+
     const message = buildImportMessage(finalItems.length, selfDuplicateCount, existingDuplicateCount);
     toast.success(message);
   }, [bulkContent, items, parseImportContent, buildImportMessage]);
@@ -209,7 +209,7 @@ export function CreateDialog() {
       toast.error('项目名称不能为空');
       return false;
     }
-    
+
     if (!formData.startTime || !formData.endTime) {
       toast.error('请选择开始和结束时间');
       return false;
@@ -237,9 +237,9 @@ export function CreateDialog() {
     allow_same_ip: formData.allowSameIP,
     risk_level: formData.riskLevel,
     distribution_type: formData.distributionType,
-    project_items: formData.distributionType === DistributionType.ONE_FOR_EACH 
-      ? items 
-      : ['手动邀请模式'],
+    project_items: formData.distributionType === DistributionType.ONE_FOR_EACH ?
+      items :
+      ['手动邀请模式'],
   }), [formData, tags, items]);
 
   /**
@@ -331,9 +331,9 @@ export function CreateDialog() {
         <DialogHeader>
           <DialogTitle>{createSuccess ? '项目创建成功' : '创建新项目'}</DialogTitle>
           <DialogDescription>
-            {createSuccess 
-              ? '您的项目已创建成功，可以开始分发内容了'
-              : '创建一个新的项目来管理和分发您的内容'
+            {createSuccess ?
+              '您的项目已创建成功，可以开始分发内容了' :
+              '创建一个新的项目来管理和分发您的内容'
             }
           </DialogDescription>
         </DialogHeader>
@@ -357,7 +357,7 @@ export function CreateDialog() {
                   用户可以通过此链接领取您分发的内容
                 </p>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="space-y-3">
                   <div className="p-3 bg-muted/50 rounded-lg border">
@@ -394,7 +394,7 @@ export function CreateDialog() {
                     id="name"
                     placeholder={`请填写此项目的名称（${FORM_LIMITS.PROJECT_NAME_MAX_LENGTH}字符以内）`}
                     value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
                     maxLength={FORM_LIMITS.PROJECT_NAME_MAX_LENGTH}
                   />
                 </div>
@@ -406,8 +406,8 @@ export function CreateDialog() {
                     <Input
                       placeholder={`请选择或添加关联标签（${FORM_LIMITS.TAG_MAX_LENGTH}字符以内，最多${FORM_LIMITS.MAX_TAGS}个标签）`}
                       value={newTag}
-                      onChange={e => setNewTag(e.target.value)}
-                      onKeyPress={e => e.key === 'Enter' && addTag()}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addTag()}
                       maxLength={FORM_LIMITS.TAG_MAX_LENGTH}
                     />
                     <Button type="button" variant="outline" onClick={addTag} className={isMobile ? 'w-full' : ''}>
@@ -416,7 +416,7 @@ export function CreateDialog() {
                   </div>
                   {tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {tags.map(tag => (
+                      {tags.map((tag) => (
                         <Badge key={tag} variant="secondary" className="flex items-center gap-1 pr-1">
                           {tag}
                           <Button
@@ -441,7 +441,7 @@ export function CreateDialog() {
                     id="description"
                     placeholder={`请输入项目描述，支持Markdown格式（${FORM_LIMITS.DESCRIPTION_MAX_LENGTH}字符以内）`}
                     value={formData.description}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                     className="resize-none h-48"
                     maxLength={FORM_LIMITS.DESCRIPTION_MAX_LENGTH}
                     rows={4}
@@ -472,7 +472,7 @@ export function CreateDialog() {
                     <Label>最低信任等级</Label>
                     <Select
                       value={formData.minimumTrustLevel.toString()}
-                      onValueChange={value =>
+                      onValueChange={(value) =>
                         setFormData({
                           ...formData,
                           minimumTrustLevel: parseInt(value) as TrustLevel,
@@ -483,7 +483,7 @@ export function CreateDialog() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {trustLevelOptions.map(option => (
+                        {trustLevelOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value.toString()}>
                             {option.label}
                           </SelectItem>
@@ -500,8 +500,8 @@ export function CreateDialog() {
                         setNumber={(value) => setFormData({...formData, riskLevel: Math.max(0, Math.min(100, value))})}
                         className="flex w-full justify-between items-center"
                         buttonProps={{
-                          variant: "outline",
-                          size: "sm"
+                          variant: 'outline',
+                          size: 'sm',
                         }}
                       />
                     </div>
@@ -536,17 +536,17 @@ export function CreateDialog() {
                     {/* 一码一用 */}
                     <div
                       className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                        formData.distributionType === DistributionType.ONE_FOR_EACH
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
+                        formData.distributionType === DistributionType.ONE_FOR_EACH ?
+                          'border-primary bg-primary/5' :
+                          'border-border hover:border-primary/50'
                       }`}
                       onClick={() => setFormData({...formData, distributionType: DistributionType.ONE_FOR_EACH})}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`rounded-full p-2 ${
-                          formData.distributionType === DistributionType.ONE_FOR_EACH
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
+                          formData.distributionType === DistributionType.ONE_FOR_EACH ?
+                            'bg-primary text-primary-foreground' :
+                            'bg-muted text-muted-foreground'
                         }`}>
                           <User className="h-4 w-4" />
                         </div>
@@ -565,17 +565,17 @@ export function CreateDialog() {
                     {/* 手动邀请 */}
                     <div
                       className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                        formData.distributionType === DistributionType.INVITE
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
+                        formData.distributionType === DistributionType.INVITE ?
+                          'border-primary bg-primary/5' :
+                          'border-border hover:border-primary/50'
                       }`}
                       onClick={() => setFormData({...formData, distributionType: DistributionType.INVITE})}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`rounded-full p-2 ${
-                          formData.distributionType === DistributionType.INVITE
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
+                          formData.distributionType === DistributionType.INVITE ?
+                            'bg-primary text-primary-foreground' :
+                            'bg-muted text-muted-foreground'
                         }`}>
                           <Lock className="h-4 w-4" />
                         </div>
@@ -611,7 +611,7 @@ export function CreateDialog() {
                       <Textarea
                         placeholder="请输入分发内容，支持以 逗号分隔（中英文逗号均可）或 每行一个内容 的格式批量导入"
                         value={bulkContent}
-                        onChange={e => setBulkContent(e.target.value)}
+                        onChange={(e) => setBulkContent(e.target.value)}
                         className="h-[100px]"
                       />
                       <div className="flex items-center gap-2">
@@ -651,7 +651,7 @@ export function CreateDialog() {
                           </Button>
                         )}
                       </div>
-                      
+
                       {items.length > 0 ? (
                         <div className="space-y-2 h-[150px] overflow-y-auto border rounded-md p-2">
                           {items.map((item, index) => (
@@ -698,7 +698,9 @@ export function CreateDialog() {
 
         <DialogFooter className="flex-col gap-2">
           {createSuccess ? (
-            <Button onClick={() => { setOpen(false); resetForm(); }} className="w-full">
+            <Button onClick={() => {
+              setOpen(false); resetForm();
+            }} className="w-full">
               关闭
             </Button>
           ) : (
@@ -715,4 +717,4 @@ export function CreateDialog() {
       </DialogContent>
     </Dialog>
   );
-} 
+}

@@ -3,6 +3,7 @@ import {ApiResponse, TrustLevel} from '../core/types';
 /**
  * 项目分发类型
  */
+/* eslint-disable no-unused-vars */
 export enum DistributionType {
   /** 一码一用 */
   ONE_FOR_EACH = 0,
@@ -105,4 +106,4 @@ export type ProjectListResponse = ApiResponse<Project[]>;
 /**
  * 项目详情响应类型 (预留，后续可能需要)
  */
-export type ProjectDetailResponse = ApiResponse<Project>; 
+export type ProjectDetailResponse = ApiResponse<Project>;

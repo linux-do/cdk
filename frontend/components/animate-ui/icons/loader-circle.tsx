@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, type Variants } from 'motion/react';
+import {motion, type Variants} from 'motion/react';
 
 import {
   getVariants,
@@ -15,7 +15,7 @@ type LoaderCircleProps = IconProps<keyof typeof animations>;
 const animations = {
   default: {
     group: {
-      initial: { rotate: 0 },
+      initial: {rotate: 0},
       animate: {
         rotate: 360,
         transition: {
@@ -30,8 +30,8 @@ const animations = {
   } satisfies Record<string, Variants>,
 } as const;
 
-function IconComponent({ size, ...props }: LoaderCircleProps) {
-  const { controls } = useAnimateIconContext();
+function IconComponent({size, ...props}: LoaderCircleProps) {
+  const {controls} = useAnimateIconContext();
   const variants = getVariants(animations);
 
   return (

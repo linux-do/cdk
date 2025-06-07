@@ -12,7 +12,7 @@ import {
 } from 'motion/react';
 import useMeasure from 'react-use-measure';
 
-import { cn } from '@/lib/utils';
+import {cn} from '@/lib/utils';
 
 type SlidingNumberRollerProps = {
   prevValue: number;
@@ -35,7 +35,7 @@ function SlidingNumberRoller({
     animatedValue.set(targetNumber);
   }, [targetNumber, animatedValue]);
 
-  const [measureRef, { height }] = useMeasure();
+  const [measureRef, {height}] = useMeasure();
 
   return (
     <span
@@ -44,7 +44,7 @@ function SlidingNumberRoller({
       className="relative inline-block w-[1ch] overflow-x-visible overflow-y-clip leading-none tabular-nums"
     >
       <span className="invisible">0</span>
-      {Array.from({ length: 10 }, (_, i) => (
+      {Array.from({length: 10}, (_, i) => (
         <SlidingNumberDisplay
           key={i}
           motionValue={animatedValue}
@@ -86,9 +86,9 @@ function SlidingNumberDisplay({
   return (
     <motion.span
       data-slot="sliding-number-display"
-      style={{ y }}
+      style={{y}}
       className="absolute inset-0 flex items-center justify-center"
-      transition={{ ...transition, type: 'spring' }}
+      transition={{...transition, type: 'spring'}}
     >
       {number}
     </motion.span>
@@ -135,14 +135,14 @@ function SlidingNumber({
   const prevNumberRef = React.useRef<number>(0);
 
   const effectiveNumber = React.useMemo(
-    () => (!isInView ? 0 : Math.abs(Number(number))),
-    [number, isInView],
+      () => (!isInView ? 0 : Math.abs(Number(number))),
+      [number, isInView],
   );
 
   const formatNumber = React.useCallback(
-    (num: number) =>
+      (num: number) =>
       decimalPlaces != null ? num.toFixed(decimalPlaces) : num.toString(),
-    [decimalPlaces],
+      [decimalPlaces],
   );
 
   const numberStr = formatNumber(effectiveNumber);
@@ -153,21 +153,21 @@ function SlidingNumber({
   const prevFormatted = formatNumber(prevNumberRef.current);
   const [prevIntStrRaw = '', prevDecStrRaw = ''] = prevFormatted.split('.');
   const prevIntStr =
-    padStart && prevIntStrRaw.length === 1
-      ? '0' + prevIntStrRaw
-      : prevIntStrRaw;
+    padStart && prevIntStrRaw.length === 1 ?
+      '0' + prevIntStrRaw :
+      prevIntStrRaw;
 
   const adjustedPrevInt = React.useMemo(() => {
-    return prevIntStr.length > (newIntStr?.length ?? 0)
-      ? prevIntStr.slice(-(newIntStr?.length ?? 0))
-      : prevIntStr.padStart(newIntStr?.length ?? 0, '0');
+    return prevIntStr.length > (newIntStr?.length ?? 0) ?
+      prevIntStr.slice(-(newIntStr?.length ?? 0)) :
+      prevIntStr.padStart(newIntStr?.length ?? 0, '0');
   }, [prevIntStr, newIntStr]);
 
   const adjustedPrevDec = React.useMemo(() => {
     if (!newDecStrRaw) return '';
-    return prevDecStrRaw.length > newDecStrRaw.length
-      ? prevDecStrRaw.slice(0, newDecStrRaw.length)
-      : prevDecStrRaw.padEnd(newDecStrRaw.length, '0');
+    return prevDecStrRaw.length > newDecStrRaw.length ?
+      prevDecStrRaw.slice(0, newDecStrRaw.length) :
+      prevDecStrRaw.padEnd(newDecStrRaw.length, '0');
   }, [prevDecStrRaw, newDecStrRaw]);
 
   React.useEffect(() => {
@@ -176,20 +176,20 @@ function SlidingNumber({
 
   const intDigitCount = newIntStr?.length ?? 0;
   const intPlaces = React.useMemo(
-    () =>
-      Array.from({ length: intDigitCount }, (_, i) =>
-        Math.pow(10, intDigitCount - i - 1),
-      ),
-    [intDigitCount],
+      () =>
+        Array.from({length: intDigitCount}, (_, i) =>
+          Math.pow(10, intDigitCount - i - 1),
+        ),
+      [intDigitCount],
   );
   const decPlaces = React.useMemo(
-    () =>
-      newDecStrRaw
-        ? Array.from({ length: newDecStrRaw.length }, (_, i) =>
-            Math.pow(10, newDecStrRaw.length - i - 1),
-          )
-        : [],
-    [newDecStrRaw],
+      () =>
+      newDecStrRaw ?
+        Array.from({length: newDecStrRaw.length}, (_, i) =>
+          Math.pow(10, newDecStrRaw.length - i - 1),
+        ) :
+        [],
+      [newDecStrRaw],
   );
 
   const newDecValue = newDecStrRaw ? parseInt(newDecStrRaw, 10) : 0;
@@ -232,4 +232,4 @@ function SlidingNumber({
   );
 }
 
-export { SlidingNumber, type SlidingNumberProps };
+export {SlidingNumber, type SlidingNumberProps};

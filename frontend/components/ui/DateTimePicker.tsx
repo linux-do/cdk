@@ -55,9 +55,9 @@ export function DateTimePicker({
 
     const newDateTime = new Date(date);
     newDateTime.setHours(
-      parseInt(timeValue.hours),
-      parseInt(timeValue.minutes),
-      parseInt(timeValue.seconds)
+        parseInt(timeValue.hours),
+        parseInt(timeValue.minutes),
+        parseInt(timeValue.seconds),
     );
 
     setSelectedDate(newDateTime);
@@ -71,9 +71,9 @@ export function DateTimePicker({
     if (selectedDate) {
       const newDateTime = new Date(selectedDate);
       newDateTime.setHours(
-        parseInt(newTimeValue.hours),
-        parseInt(newTimeValue.minutes),
-        parseInt(newTimeValue.seconds)
+          parseInt(newTimeValue.hours),
+          parseInt(newTimeValue.minutes),
+          parseInt(newTimeValue.seconds),
       );
       setSelectedDate(newDateTime);
       onChange?.(newDateTime);
@@ -81,8 +81,8 @@ export function DateTimePicker({
   };
 
   const generateOptions = (max: number) => {
-    return Array.from({length: max}, (_, i) => 
-      i.toString().padStart(2, '0')
+    return Array.from({length: max}, (_, i) =>
+      i.toString().padStart(2, '0'),
     );
   };
 
@@ -110,8 +110,8 @@ export function DateTimePicker({
           <Button
             variant="outline"
             className={cn(
-              'w-full justify-start text-left font-normal',
-              !selectedDate && 'text-muted-foreground'
+                'w-full justify-start text-left font-normal',
+                !selectedDate && 'text-muted-foreground',
             )}
             disabled={disabled}
           >
@@ -142,7 +142,7 @@ export function DateTimePicker({
               className="rounded-none border-r"
               locale={zhCN}
             />
-            
+
             <Separator className="my-2" />
 
             <div className="flex flex-col p-3 gap-3 ">
@@ -177,7 +177,7 @@ export function DateTimePicker({
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-1">
                   <Select value={timeValue.minutes} onValueChange={(value) => handleTimeChange('minutes', value)}>
                     <SelectTrigger className="w-full h-8 text-xs">
@@ -192,7 +192,7 @@ export function DateTimePicker({
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-1">
                   <Select value={timeValue.seconds} onValueChange={(value) => handleTimeChange('seconds', value)}>
                     <SelectTrigger className="w-full h-8 text-xs">
@@ -214,4 +214,4 @@ export function DateTimePicker({
       </Popover>
     </div>
   );
-} 
+}

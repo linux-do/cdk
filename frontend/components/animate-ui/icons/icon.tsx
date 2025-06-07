@@ -8,30 +8,30 @@ import {
   type Variants,
 } from 'motion/react';
 
-import { cn } from '@/lib/utils';
+import {cn} from '@/lib/utils';
 
 const staticAnimations = {
-  path: {
-    initial: { pathLength: 1, opacity: 1 },
+  'path': {
+    initial: {pathLength: 1, opacity: 1},
     animate: {
       pathLength: [0.05, 1],
       opacity: [0, 1],
       transition: {
         duration: 0.8,
         ease: 'easeInOut',
-        opacity: { duration: 0.01 },
+        opacity: {duration: 0.01},
       },
     },
   } as Variants,
   'path-loop': {
-    initial: { pathLength: 1, opacity: 1 },
+    initial: {pathLength: 1, opacity: 1},
     animate: {
       pathLength: [1, 0.05, 1],
       opacity: [1, 0, 1],
       transition: {
         duration: 1.6,
         ease: 'easeInOut',
-        opacity: { duration: 0.01 },
+        opacity: {duration: 0.01},
       },
     },
   } as Variants,
@@ -81,18 +81,19 @@ interface IconWrapperProps<T> extends IconProps<T> {
 }
 
 const AnimateIconContext = React.createContext<AnimateIconContextValue | null>(
-  null,
+    null,
 );
 
 function useAnimateIconContext() {
   const context = React.useContext(AnimateIconContext);
-  if (!context)
+  if (!context) {
     return {
       controls: undefined,
       animation: 'default',
       loop: false,
       loopDelay: 0,
     };
+  }
   return context;
 }
 
@@ -113,12 +114,12 @@ function AnimateIcon({
   const currentAnimation = React.useRef(animation);
 
   const startAnimation = React.useCallback(
-    (trigger: TriggerProp) => {
-      currentAnimation.current =
+      (trigger: TriggerProp) => {
+        currentAnimation.current =
         typeof trigger === 'string' ? trigger : animation;
-      setLocalAnimate(true);
-    },
-    [animation],
+        setLocalAnimate(true);
+      },
+      [animation],
   );
 
   const stopAnimation = React.useCallback(() => {
@@ -133,8 +134,8 @@ function AnimateIcon({
   }, [animate]);
 
   React.useEffect(
-    () => onAnimateChange?.(localAnimate, currentAnimation.current),
-    [localAnimate, onAnimateChange],
+      () => onAnimateChange?.(localAnimate, currentAnimation.current),
+      [localAnimate, onAnimateChange],
   );
 
   React.useEffect(() => {
@@ -183,8 +184,8 @@ function AnimateIcon({
   );
 }
 
-const pathClassName =
-  "[&_[stroke-dasharray='1px_1px']]:![stroke-dasharray:1px_0px]";
+// eslint-disable-next-line quotes
+const pathClassName = "[&_[stroke-dasharray='1px_1px']]:![stroke-dasharray:1px_0px]";
 
 function IconWrapper<T extends string>({
   size = 28,
@@ -226,8 +227,8 @@ function IconWrapper<T extends string>({
         <IconComponent
           size={size}
           className={cn(
-            className,
-            (animationToUse === 'path' || animationToUse === 'path-loop') &&
+              className,
+              (animationToUse === 'path' || animationToUse === 'path-loop') &&
               pathClassName,
           )}
           {...props}
@@ -258,8 +259,8 @@ function IconWrapper<T extends string>({
         <IconComponent
           size={size}
           className={cn(
-            className,
-            (animationProp === 'path' || animationProp === 'path-loop') &&
+              className,
+              (animationProp === 'path' || animationProp === 'path-loop') &&
               pathClassName,
           )}
           {...props}
@@ -272,8 +273,8 @@ function IconWrapper<T extends string>({
     <IconComponent
       size={size}
       className={cn(
-        className,
-        (animationProp === 'path' || animationProp === 'path-loop') &&
+          className,
+          (animationProp === 'path' || animationProp === 'path-loop') &&
           pathClassName,
       )}
       {...props}
@@ -286,7 +287,7 @@ function getVariants<
   T extends Record<string, Variants>,
 >(animations: V): T {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { animation: animationType, loop, loopDelay } = useAnimateIconContext();
+  const {animation: animationType, loop, loopDelay} = useAnimateIconContext();
 
   let result: T;
 
@@ -294,12 +295,15 @@ function getVariants<
     const variant = staticAnimations[animationType as StaticAnimations];
     result = {} as T;
     for (const key in animations.default) {
-      if (
-        (animationType === 'path' || animationType === 'path-loop') &&
-        key.includes('group')
-      )
-        continue;
-      result[key] = variant as T[Extract<keyof T, string>];
+      if (Object.prototype.hasOwnProperty.call(animations.default, key)) {
+        if (
+          (animationType === 'path' || animationType === 'path-loop') &&
+          key.includes('group')
+        ) {
+          continue;
+        }
+        result[key] = variant as T[Extract<keyof T, string>];
+      }
     }
   } else {
     result = (animations[animationType as keyof V] as T) ?? animations.default;
@@ -307,37 +311,41 @@ function getVariants<
 
   if (loop) {
     for (const key in result) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const state = result[key] as any;
-      const transition = state.animate?.transition;
-      if (!transition) continue;
+      if (Object.prototype.hasOwnProperty.call(result, key)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const state = result[key] as any;
+        const transition = state.animate?.transition;
+        if (!transition) continue;
 
-      const hasNestedKeys = Object.values(transition).some(
-        (v) =>
-          typeof v === 'object' &&
-          v !== null &&
-          ('ease' in v || 'duration' in v || 'times' in v),
-      );
+        const hasNestedKeys = Object.values(transition).some(
+            (v) =>
+              typeof v === 'object' &&
+            v !== null &&
+            ('ease' in v || 'duration' in v || 'times' in v),
+        );
 
-      if (hasNestedKeys) {
-        for (const prop in transition) {
-          const subTrans = transition[prop];
-          if (typeof subTrans === 'object' && subTrans !== null) {
-            transition[prop] = {
-              ...subTrans,
-              repeat: Infinity,
-              repeatType: 'loop',
-              repeatDelay: loopDelay,
-            };
+        if (hasNestedKeys) {
+          for (const prop in transition) {
+            if (Object.prototype.hasOwnProperty.call(transition, prop)) {
+              const subTrans = transition[prop];
+              if (typeof subTrans === 'object' && subTrans !== null) {
+                transition[prop] = {
+                  ...subTrans,
+                  repeat: Infinity,
+                  repeatType: 'loop',
+                  repeatDelay: loopDelay,
+                };
+              }
+            }
           }
+        } else {
+          state.animate.transition = {
+            ...transition,
+            repeat: Infinity,
+            repeatType: 'loop',
+            repeatDelay: loopDelay,
+          };
         }
-      } else {
-        state.animate.transition = {
-          ...transition,
-          repeat: Infinity,
-          repeatType: 'loop',
-          repeatDelay: loopDelay,
-        };
       }
     }
   }

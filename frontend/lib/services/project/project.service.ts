@@ -1,9 +1,5 @@
 import {BaseService} from '../core/base.service';
-import {
-  CreateProjectRequest,
-  UpdateProjectRequest,
-  ProjectResponse,
-} from './types';
+import {CreateProjectRequest, UpdateProjectRequest} from './types';
 
 /**
  * 项目服务
@@ -31,8 +27,8 @@ export class ProjectService extends BaseService {
    * @returns 更新结果
    */
   static async updateProject(
-    projectId: string,
-    projectData: UpdateProjectRequest,
+      projectId: string,
+      projectData: UpdateProjectRequest,
   ): Promise<void> {
     await this.put<null>(`/${projectId}`, projectData);
   }
@@ -75,8 +71,8 @@ export class ProjectService extends BaseService {
    * @returns 更新结果，包含成功状态和错误信息
    */
   static async updateProjectSafe(
-    projectId: string,
-    projectData: UpdateProjectRequest,
+      projectId: string,
+      projectData: UpdateProjectRequest,
   ): Promise<{
     success: boolean;
     error?: string;
@@ -115,4 +111,4 @@ export class ProjectService extends BaseService {
       };
     }
   }
-} 
+}
