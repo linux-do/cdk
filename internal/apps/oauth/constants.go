@@ -1,6 +1,8 @@
 package oauth
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	UserNameKey = "username"
@@ -20,4 +22,10 @@ const (
 const (
 	OAuthStateCacheKeyFormat     = "oauth:state:%s"
 	OAuthStateCacheKeyExpiration = 10 * time.Minute
+)
+
+const (
+	BaseUserScore = 100
+	MaxUserScore  = 100
+	MinUserScore  = -100
 )

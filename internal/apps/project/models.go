@@ -2,10 +2,13 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 )
 
@@ -19,7 +22,7 @@ type Project struct {
 	EndTime           time.Time        `json:"end_time"`
 	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level"`
 	AllowSameIP       bool             `json:"allow_same_ip"`
-	RiskLevel         uint8            `json:"risk_level"`
+	RiskLevel         int8             `json:"risk_level"`
 	CreatorID         uint64           `json:"creator_id" gorm:"index"`
 	Creator           oauth.User       `json:"-" gorm:"foreignKey:CreatorID"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"autoCreateTime"`
@@ -82,6 +85,74 @@ func (p *Project) CreateItems(ctx context.Context, tx *gorm.DB, items []string) 
 	return nil
 }
 
+func (p *Project) PrepareReceive(ctx context.Context) (uint64, error) {
+	val, err := db.Redis.LPop(ctx, p.ItemsKey()).Result()
+	if errors.Is(err, redis.Nil) {
+		return 0, errors.New(NoStock)
+	} else if err != nil {
+		return 0, err
+	}
+	return strconv.ParseUint(val, 10, 64)
+}
+
+func (p *Project) SameIPCacheKey(ip string) string {
+	return fmt.Sprintf("project:%s:receive:ip:%s", p.ID, ip)
+}
+
+func (p *Project) CheckSameIPReceived(ctx context.Context, ip string) (bool, error) {
+	if p.AllowSameIP {
+		return false, nil
+	}
+	if count, err := db.Redis.Exists(ctx, p.SameIPCacheKey(ip)).Result(); err != nil {
+		return false, err
+	} else {
+		return count > 0, nil
+	}
+}
+
+func (p *Project) Stock(ctx context.Context) (int64, error) {
+	return db.Redis.LLen(ctx, p.ItemsKey()).Result()
+}
+
+func (p *Project) HasStock(ctx context.Context) (bool, error) {
+	stock, err := p.Stock(ctx)
+	if err != nil {
+		return false, err
+	}
+	return stock > 0, nil
+}
+
+func (p *Project) IsReceivable(ctx context.Context, user *oauth.User, ip string) error {
+	// check time
+	now := time.Now()
+	if now.Before(p.StartTime) {
+		return errors.New(TimeTooEarly)
+	} else if p.EndTime.Before(now) {
+		return errors.New(TimeTooLate)
+	}
+	// check trust level
+	if user.TrustLevel < p.MinimumTrustLevel {
+		return fmt.Errorf(TrustLevelNotMatch, p.MinimumTrustLevel)
+	}
+	// check risk level
+	if user.RiskLevel() > p.RiskLevel {
+		return errors.New(UnknownError)
+	}
+	// check same ip
+	if sameIPReceived, err := p.CheckSameIPReceived(ctx, ip); err != nil {
+		return err
+	} else if sameIPReceived {
+		return errors.New(SameIPReceived)
+	}
+	// check stock
+	if hasStock, err := p.HasStock(ctx); err != nil {
+		return err
+	} else if !hasStock {
+		return errors.New(NoStock)
+	}
+	return nil
+}
+
 type ProjectTag struct {
 	ID        uint64  `json:"id" gorm:"primaryKey,autoIncrement"`
 	ProjectID string  `json:"project_id" gorm:"size:64;index;uniqueIndex:idx_project_tag"`
@@ -98,4 +169,11 @@ type ProjectItem struct {
 	Content    string      `json:"content" gorm:"size:1024"`
 	CreatedAt  time.Time   `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt  time.Time   `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
+func (p *ProjectItem) Exact(tx *gorm.DB, id uint64) error {
+	if err := tx.Where("id = ?", id).First(p).Error; err != nil {
+		return err
+	}
+	return nil
 }
