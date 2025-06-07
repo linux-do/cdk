@@ -38,7 +38,7 @@ type CreateProjectRequestBody struct {
 // @Produce json
 // @Param project body CreateProjectRequestBody true "项目信息"
 // @Success 200 {object} ProjectResponse
-// @Router /api/v1/project [post]
+// @Router /api/v1/projects [post]
 func CreateProject(c *gin.Context) {
 	// init req
 	var req CreateProjectRequestBody
@@ -103,7 +103,7 @@ type UpdateProjectRequestBody struct {
 // @Param id path string true "项目ID"
 // @Param project body UpdateProjectRequestBody true "项目信息"
 // @Success 200 {object} ProjectResponse
-// @Router /api/v1/project/{id} [put]
+// @Router /api/v1/projects/{id} [put]
 func UpdateProject(c *gin.Context) {
 	// validate req
 	var req UpdateProjectRequestBody
@@ -161,7 +161,7 @@ func UpdateProject(c *gin.Context) {
 // @Produce json
 // @Param id path string true "项目ID"
 // @Success 200 {object} ProjectResponse
-// @Router /api/v1/project/{id} [delete]
+// @Router /api/v1/projects/{id} [delete]
 func DeleteProject(c *gin.Context) {
 	// load project
 	project := &Project{}
@@ -211,4 +211,24 @@ func DeleteProject(c *gin.Context) {
 
 	// response
 	c.JSON(http.StatusOK, ProjectResponse{})
+}
+
+type ListTagsResponse struct {
+	ErrorMsg string   `json:"error_msg"`
+	Data     []string `json:"data"`
+}
+
+// ListTags
+// @Tags project
+// @Accept json
+// @Produce json
+// @Success 200 {object} ListTagsResponse
+// @Router /api/v1/tags [get]
+func ListTags(c *gin.Context) {
+	var tags []string
+	if err := db.DB(c.Request.Context()).Model(&ProjectTag{}).Distinct("tag").Pluck("tag", &tags).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ListTagsResponse{ErrorMsg: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, ListTagsResponse{Data: tags})
 }

@@ -76,12 +76,19 @@ func Serve() {
 			apiV1Router.GET("/oauth/user-info", oauth.LoginRequired(), oauth.UserInfo)
 
 			// Project
-			projectRouter := apiV1Router.Group("/project")
+			projectRouter := apiV1Router.Group("/projects")
 			projectRouter.Use(oauth.LoginRequired())
 			{
 				projectRouter.POST("", project.CreateProject)
 				projectRouter.PUT("/:id", project.ProjectCreatorPermMiddleware(), project.UpdateProject)
 				projectRouter.DELETE("/:id", project.ProjectCreatorPermMiddleware(), project.DeleteProject)
+			}
+
+			// Tag
+			tagRouter := apiV1Router.Group("/tags")
+			tagRouter.Use(oauth.LoginRequired())
+			{
+				tagRouter.GET("", project.ListTags)
 			}
 		}
 	}
