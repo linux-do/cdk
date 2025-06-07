@@ -299,4 +299,23 @@ paths:
             $ref: '#/definitions/project.ProjectResponse'
       tags:
       - project
+  /api/v1/project/{id}/receive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: project id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
 swagger: "2.0"
