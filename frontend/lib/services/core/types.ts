@@ -35,9 +35,9 @@ export interface ApiError {
 export enum TrustLevel {
   /** 新用户 */
   NEW_USER = 0,
-  /** 基础用户 */
+  /** 基本用户 */
   BASIC_USER = 1,
-  /** 普通用户 */
+  /** 成员 */
   USER = 2,
   /** 活跃用户 */
   ACTIVE_USER = 3,
