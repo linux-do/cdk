@@ -1,5 +1,6 @@
 import {BaseService} from '../core/base.service';
 import {CreateProjectRequest, UpdateProjectRequest} from './types';
+import apiClient from '../core/api-client';
 
 /**
  * 项目服务
@@ -9,7 +10,7 @@ export class ProjectService extends BaseService {
   /**
    * API基础路径
    */
-  protected static readonly basePath = '/api/v1/project';
+  protected static readonly basePath = '/api/v1/projects';
 
   /**
    * 创建项目
@@ -40,6 +41,23 @@ export class ProjectService extends BaseService {
    */
   static async deleteProject(projectId: string): Promise<void> {
     await this.delete<null>(`/${projectId}`);
+  }
+
+  /**
+   * 获取标签列表
+   * @returns 所有可用标签
+   */
+  static async getTags(): Promise<string[]> {
+    try {
+      // 标签接口单独处理
+      const fullPath = '/api/v1/tags';
+      const response = await apiClient.get<{error_msg: string; data: string[]}>(fullPath);
+      return response.data.data || [];
+    } catch (error) {
+      console.warn('获取标签列表失败:', error);
+      // 在API失败时返回空数组而不是抛出错误
+      return [];
+    }
   }
 
   /**
@@ -107,6 +125,32 @@ export class ProjectService extends BaseService {
       console.error('删除项目失败:', errorMessage);
       return {
         success: false,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 获取标签列表（带错误处理）
+   * @returns 获取结果，包含标签数组和错误信息
+   */
+  static async getTagsSafe(): Promise<{
+    success: boolean;
+    tags: string[];
+    error?: string;
+  }> {
+    try {
+      const tags = await this.getTags();
+      return {
+        success: true,
+        tags,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '获取标签失败';
+      console.error('获取标签失败:', errorMessage);
+      return {
+        success: false,
+        tags: [],
         error: errorMessage,
       };
     }
