@@ -379,3 +379,83 @@ func ListTags(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, ListTagsResponse{Data: tags})
 }
+
+type ListProjectsRequest struct {
+	Current int `json:"current" form:"current" binding:"min=1"`
+	Size    int `json:"size" form:"size" binding:"min=1,max=100"`
+}
+
+type ListProjectsResponseDataResult struct {
+	ID                string           `json:"id"`
+	Name              string           `json:"name"`
+	Description       string           `json:"description"`
+	DistributionType  DistributionType `json:"distribution_type"`
+	TotalItems        int64            `json:"total_items"`
+	StartTime         time.Time        `json:"start_time"`
+	EndTime           time.Time        `json:"end_time"`
+	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level"`
+	AllowSameIP       bool             `json:"allow_same_ip"`
+	RiskLevel         int8             `json:"risk_level"`
+	Tags              []string         `json:"tags"`
+	CreatedAt         time.Time        `json:"created_at"`
+}
+
+type ListProjectsResponseData struct {
+	Total   int64                            `json:"total"`
+	Results []ListProjectsResponseDataResult `json:"results"`
+}
+
+type ListProjectsResponse struct {
+	ErrorMsg string                   `json:"error_msg"`
+	Data     ListProjectsResponseData `json:"data"`
+}
+
+// ListProjects
+// @Tags project
+// @Params request query ListProjectsRequest true "request query"
+// @Produce json
+// @Success 200 {object} ListProjectsResponse
+// @Router /api/v1/projects [get]
+func ListProjects(c *gin.Context) {
+	req := &ListProjectsRequest{Current: 1, Size: 10}
+	if err := c.ShouldBindQuery(req); err != nil {
+		c.JSON(http.StatusBadRequest, ListProjectsResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	page, err := (&Project{}).ListProjectsWithTags(c.Request.Context(), req.Current, req.Size)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, ListProjectsResponse{
+		Data: BuildListProjectsResponse(page),
+	})
+}
+
+// ListMyProjects
+// @Tags project
+// @Params request query ListProjectsRequest true "request query"
+// @Produce json
+// @Success 200 {object} ListProjectsResponse
+// @Router /api/v1/projects/mine [get]
+func ListMyProjects(c *gin.Context) {
+	userID := oauth.GetUserIDFromContext(c)
+
+	req := &ListProjectsRequest{Current: 1, Size: 10}
+	if err := c.ShouldBindQuery(req); err != nil {
+		c.JSON(http.StatusBadRequest, ListProjectsResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	page, err := (&Project{}).ListMyProjectsWithTags(c.Request.Context(), userID, req.Current, req.Size)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, ListProjectsResponse{
+		Data: BuildListProjectsResponse(page),
+	})
+}

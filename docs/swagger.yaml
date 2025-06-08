@@ -122,6 +122,61 @@ definitions:
     x-enum-varnames:
     - DistributionTypeOneForEach
     - DistributionTypeInvite
+  project.ListProjectsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/project.ListProjectsResponseData'
+      error_msg:
+        type: string
+    type: object
+  project.ListProjectsResponseData:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/project.ListProjectsResponseDataResult'
+        type: array
+      total:
+        type: integer
+    type: object
+  project.ListProjectsResponseDataResult:
+    properties:
+      allow_same_ip:
+        type: boolean
+      created_at:
+        type: string
+      creator_id:
+        type: integer
+      creator_name:
+        type: string
+      creator_nickname:
+        type: string
+      description:
+        type: string
+      distribution_type:
+        $ref: '#/definitions/project.DistributionType'
+      end_time:
+        type: string
+      id:
+        type: string
+      minimum_trust_level:
+        $ref: '#/definitions/oauth.TrustLevel'
+      name:
+        type: string
+      risk_level:
+        type: integer
+      start_time:
+        type: string
+      stock:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      total_items:
+        type: integer
+      updated_at:
+        type: string
+    type: object
   project.ListReceiveHistoryResponse:
     properties:
       data:
@@ -141,6 +196,10 @@ definitions:
   project.ListReceiveHistoryResponseDataResult:
     properties:
       content:
+        type: string
+      project_creator:
+        type: string
+      project_creator_nickname:
         type: string
       project_id:
         type: string
@@ -273,6 +332,16 @@ paths:
       tags:
       - oauth
   /api/v1/projects:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListProjectsResponse'
+      tags:
+      - project
     post:
       consumes:
       - application/json
@@ -352,6 +421,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/projects/mine:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListProjectsResponse'
       tags:
       - project
   /api/v1/projects/received:

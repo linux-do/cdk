@@ -117,6 +117,22 @@ const docTemplate = `{
             }
         },
         "/api/v1/projects": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.ListProjectsResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -143,6 +159,24 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/project.ProjectResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/mine": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.ListProjectsResponse"
                         }
                     }
                 }
@@ -466,6 +500,90 @@ const docTemplate = `{
                 "DistributionTypeInvite"
             ]
         },
+        "project.ListProjectsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/project.ListProjectsResponseData"
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.ListProjectsResponseData": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/project.ListProjectsResponseDataResult"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "project.ListProjectsResponseDataResult": {
+            "type": "object",
+            "properties": {
+                "allow_same_ip": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "creator_id": {
+                    "type": "integer"
+                },
+                "creator_name": {
+                    "type": "string"
+                },
+                "creator_nickname": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "distribution_type": {
+                    "$ref": "#/definitions/project.DistributionType"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "minimum_trust_level": {
+                    "$ref": "#/definitions/oauth.TrustLevel"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "risk_level": {
+                    "type": "integer"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "stock": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "project.ListReceiveHistoryResponse": {
             "type": "object",
             "properties": {
@@ -495,6 +613,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "content": {
+                    "type": "string"
+                },
+                "project_creator": {
+                    "type": "string"
+                },
+                "project_creator_nickname": {
                     "type": "string"
                 },
                 "project_id": {
