@@ -14,7 +14,6 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Badge} from '@/components/ui/badge';
 import {X, Plus, User, Lock, Copy, ExternalLink, CheckCircle} from 'lucide-react';
 import {toast} from 'sonner';
-import {useAuth} from '@/hooks/use-auth';
 import services from '@/lib/services';
 import {TrustLevel} from '@/lib/services/core/types';
 import {DistributionType} from '@/lib/services/project/types';
@@ -46,10 +45,10 @@ interface ProjectInfo {
  * 创建项目对话框组件
  * 提供创建新项目的表单界面，包含基本设置和分发内容两个标签页
  *
+ * @param children - 自定义触发器按钮
  * @returns 创建项目的对话框组件
  */
-export function CreateDialog() {
-  const {user} = useAuth();
+export function CreateDialog({children}: { children?: React.ReactNode }) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -320,20 +319,18 @@ export function CreateDialog() {
     window.open(link, '_blank', 'noopener,noreferrer');
   }, []);
 
-  if (!user) {
-    return null;
-  }
-
   /**
    * 渲染项目创建对话框
    */
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          创建项目
-        </Button>
+        {children || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            创建项目
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className={`${isMobile ? 'max-w-[95vw] max-h-[90vh]' : 'max-w-3xl max-h-[90vh]'} overflow-hidden`}>
         <DialogHeader>
