@@ -24,3 +24,30 @@ func ProjectCreatorPermMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func ReceiveProjectMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// init
+		ctx := c.Request.Context()
+		// load user
+		user := &oauth.User{}
+		if err := user.Exact(db.DB(ctx), oauth.GetUserIDFromContext(c)); err != nil {
+			c.AbortWithStatusJSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
+			return
+		}
+		// load project
+		projectID := c.Param("id")
+		project := &Project{}
+		if err := project.Exact(db.DB(ctx), projectID); err != nil {
+			c.AbortWithStatusJSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
+			return
+		}
+		// check receivable
+		if err := project.IsReceivable(ctx, user, c.ClientIP()); err != nil {
+			c.AbortWithStatusJSON(http.StatusForbidden, ProjectResponse{ErrorMsg: err.Error()})
+			return
+		}
+		// do next
+		c.Next()
+	}
+}

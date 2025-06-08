@@ -1,4 +1,5 @@
 import {AuthService} from './auth/index';
+import {ProjectService} from './project/index';
 
 /**
  * 服务层架构说明：
@@ -19,6 +20,10 @@ import {AuthService} from './auth/index';
  *     - auth.service.ts - 认证服务实现
  *     - types.ts - 认证相关类型
  *     - index.ts - 导出服务
+ *   /project - 项目相关服务
+ *     - project.service.ts - 项目服务实现
+ *     - types.ts - 项目相关类型
+ *     - index.ts - 导出服务
  *   /[domain] - 其他业务领域服务
  *
  * 使用示例：
@@ -29,6 +34,16 @@ import {AuthService} from './auth/index';
  *
  * // 获取用户信息
  * const userInfo = await services.auth.getUserInfo();
+ *
+ * // 创建项目
+ * const result = await services.project.createProjectSafe({
+ *   name: '测试项目',
+ *   start_time: '2024-01-01T00:00:00Z',
+ *   end_time: '2024-12-31T23:59:59Z',
+ *   minimum_trust_level: TrustLevel.NEW_USER,
+ *   distribution_type: DistributionType.ONE_FOR_EACH,
+ *   project_items: ['item1', 'item2', 'item3']
+ * });
  *
  * 扩展指南：
  *
@@ -61,10 +76,16 @@ const services = {
   auth: AuthService,
 
   /**
+   * 项目服务
+   * 处理项目的创建、更新、删除等功能
+   * @see ProjectService
+   */
+  project: ProjectService,
+
+  /**
    * 在此添加更多服务...
    *
    * 示例：
-   * project: ProjectService,
    * user: UserService,
    */
 };

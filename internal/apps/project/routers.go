@@ -23,7 +23,7 @@ type ProjectRequest struct {
 	EndTime           time.Time        `json:"end_time" binding:"required,gtfield=StartTime"`
 	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level" binding:"oneof=0 1 2 3 4"`
 	AllowSameIP       bool             `json:"allow_same_ip"`
-	RiskLevel         uint8            `json:"risk_level" binding:"min=0,max=100"`
+	RiskLevel         int8             `json:"risk_level" binding:"min=0,max=100"`
 }
 
 type CreateProjectRequestBody struct {
@@ -210,6 +210,71 @@ func DeleteProject(c *gin.Context) {
 	}
 
 	// response
+	c.JSON(http.StatusOK, ProjectResponse{})
+}
+
+// ReceiveProject
+// @Tags project
+// @Accept json
+// @Produce json
+// @Param id path string true "project id"
+// @Success 200 {object} ProjectResponse
+// @Router /api/v1/project/{id}/receive [post]
+func ReceiveProject(c *gin.Context) {
+	// init
+	userID := oauth.GetUserIDFromContext(c)
+
+	// load project
+	project := &Project{}
+	if err := project.Exact(db.DB(c.Request.Context()), c.Param("id")); err != nil {
+		c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// prepare item
+	itemID, err := project.PrepareReceive(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// load item
+	item := &ProjectItem{}
+	if err := item.Exact(db.DB(c.Request.Context()), itemID); err != nil {
+		c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// do receive
+	if err := db.DB(c.Request.Context()).Transaction(
+		func(tx *gorm.DB) error {
+			// save to db
+			item.ReceiverID = &userID
+			if err := tx.Save(item).Error; err != nil {
+				return err
+			}
+			// check for ip
+			if !project.AllowSameIP {
+				if err := db.Redis.SetNX(
+					c.Request.Context(),
+					project.SameIPCacheKey(c.ClientIP()),
+					c.ClientIP(),
+					project.EndTime.Sub(time.Now()),
+				).Err(); err != nil {
+					return err
+				}
+
+			}
+			return nil
+		},
+	); err != nil {
+		// push items to redis
+		db.Redis.RPush(c.Request.Context(), project.ItemsKey(), itemID)
+		// response
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, ProjectResponse{})
 }
 
