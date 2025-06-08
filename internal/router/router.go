@@ -83,6 +83,7 @@ func Serve() {
 				projectRouter.PUT("/:id", project.ProjectCreatorPermMiddleware(), project.UpdateProject)
 				projectRouter.DELETE("/:id", project.ProjectCreatorPermMiddleware(), project.DeleteProject)
 				projectRouter.POST("/:id/receive", project.ReceiveProjectMiddleware(), project.ReceiveProject)
+				projectRouter.GET("/received", project.ListReceiveHistory)
 			}
 
 			// Tag

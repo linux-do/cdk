@@ -148,6 +148,24 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/received": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.ListReceiveHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{id}": {
             "put": {
                 "consumes": [
@@ -447,6 +465,48 @@ const docTemplate = `{
                 "DistributionTypeOneForEach",
                 "DistributionTypeInvite"
             ]
+        },
+        "project.ListReceiveHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/project.ListReceiveHistoryResponseData"
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.ListReceiveHistoryResponseData": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/project.ListReceiveHistoryResponseDataResult"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "project.ListReceiveHistoryResponseDataResult": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "string"
+                },
+                "project_name": {
+                    "type": "string"
+                },
+                "received_at": {
+                    "type": "string"
+                }
+            }
         },
         "project.ListTagsResponse": {
             "type": "object",

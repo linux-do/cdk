@@ -248,8 +248,10 @@ func ReceiveProject(c *gin.Context) {
 	// do receive
 	if err := db.DB(c.Request.Context()).Transaction(
 		func(tx *gorm.DB) error {
+			now := time.Now()
 			// save to db
 			item.ReceiverID = &userID
+			item.ReceivedAt = &now
 			if err := tx.Save(item).Error; err != nil {
 				return err
 			}
@@ -276,6 +278,86 @@ func ReceiveProject(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, ProjectResponse{})
+}
+
+type ListReceiveHistoryRequest struct {
+	Current int `json:"current" form:"current" binding:"min=1"`
+	Size    int `json:"size" form:"size" binding:"min=1,max=100"`
+}
+
+type ListReceiveHistoryResponseDataResult struct {
+	ProjectID              string     `json:"project_id"`
+	ProjectName            string     `json:"project_name"`
+	ProjectCreator         string     `json:"project_creator"`
+	ProjectCreatorNickname string     `json:"project_creator_nickname"`
+	Content                string     `json:"content"`
+	ReceivedAt             *time.Time `json:"received_at"`
+}
+
+type ListReceiveHistoryResponseData struct {
+	Total   int64                                  `json:"total"`
+	Results []ListReceiveHistoryResponseDataResult `json:"results"`
+}
+
+type ListReceiveHistoryResponse struct {
+	ErrorMsg string                         `json:"error_msg"`
+	Data     ListReceiveHistoryResponseData `json:"data"`
+}
+
+// ListReceiveHistory
+// @Tags project
+// @Params request query ListReceiveHistoryRequest true "request query"
+// @Produce json
+// @Success 200 {object} ListReceiveHistoryResponse
+// @Router /api/v1/projects/received [get]
+func ListReceiveHistory(c *gin.Context) {
+	// init
+	userID := oauth.GetUserIDFromContext(c)
+
+	// validate req
+	req := &ListReceiveHistoryRequest{}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ListReceiveHistoryResponse{ErrorMsg: err.Error()})
+		return
+	}
+	offset := (req.Current - 1) * req.Size
+
+	// query db
+	var total int64
+	if err := db.DB(c.Request.Context()).Model(&ProjectItem{}).Where("receiver_id = ?", userID).Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ListReceiveHistoryResponse{ErrorMsg: err.Error()})
+		return
+	}
+	var items []*ProjectItem
+	if err := db.DB(c.Request.Context()).
+		Model(&ProjectItem{}).
+		Where("receiver_id = ?", userID).
+		Offset(offset).
+		Limit(req.Size).
+		Preload("Project.Creator").
+		Find(&items).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ListReceiveHistoryResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// response
+	results := make([]ListReceiveHistoryResponseDataResult, len(items))
+	for i, item := range items {
+		results[i] = ListReceiveHistoryResponseDataResult{
+			ProjectID:              item.ProjectID,
+			ProjectName:            item.Project.Name,
+			ProjectCreator:         item.Project.Creator.Username,
+			ProjectCreatorNickname: item.Project.Creator.Nickname,
+			Content:                item.Content,
+			ReceivedAt:             item.ReceivedAt,
+		}
+	}
+	c.JSON(
+		http.StatusOK,
+		ListReceiveHistoryResponse{
+			Data: ListReceiveHistoryResponseData{Total: total, Results: results},
+		},
+	)
 }
 
 type ListTagsResponse struct {

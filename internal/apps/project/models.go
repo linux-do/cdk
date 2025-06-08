@@ -169,6 +169,7 @@ type ProjectItem struct {
 	Content    string      `json:"content" gorm:"size:1024"`
 	CreatedAt  time.Time   `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt  time.Time   `json:"updated_at" gorm:"autoUpdateTime"`
+	ReceivedAt *time.Time  `json:"received_at"`
 }
 
 func (p *ProjectItem) Exact(tx *gorm.DB, id uint64) error {
