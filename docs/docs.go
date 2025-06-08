@@ -148,6 +148,24 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/received": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.ListReceiveHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{id}": {
             "put": {
                 "consumes": [
@@ -448,6 +466,31 @@ const docTemplate = `{
                 "DistributionTypeInvite"
             ]
         },
+        "project.ListReceiveHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/project.ListReceiveHistoryResponseData"
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.ListReceiveHistoryResponseData": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/project.ProjectItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "project.ListTagsResponse": {
             "type": "object",
             "properties": {
@@ -458,6 +501,29 @@ const docTemplate = `{
                     }
                 },
                 "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.ProjectItem": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "project_id": {
+                    "type": "string"
+                },
+                "receiver_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

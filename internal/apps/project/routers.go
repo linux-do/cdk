@@ -278,6 +278,65 @@ func ReceiveProject(c *gin.Context) {
 	c.JSON(http.StatusOK, ProjectResponse{})
 }
 
+type ListReceiveHistoryRequest struct {
+	Current int `json:"current" form:"current" binding:"min=1"`
+	Size    int `json:"size" form:"size" binding:"min=1,max=100"`
+}
+
+type ListReceiveHistoryResponseData struct {
+	Total   int64          `json:"total"`
+	Results []*ProjectItem `json:"results"`
+}
+
+type ListReceiveHistoryResponse struct {
+	ErrorMsg string                         `json:"error_msg"`
+	Data     ListReceiveHistoryResponseData `json:"data"`
+}
+
+// ListReceiveHistory
+// @Tags project
+// @Params request query ListReceiveHistoryRequest true "request query"
+// @Produce json
+// @Success 200 {object} ListReceiveHistoryResponse
+// @Router /api/v1/projects/received [get]
+func ListReceiveHistory(c *gin.Context) {
+	// init
+	userID := oauth.GetUserIDFromContext(c)
+	ctx := c.Request.Context()
+
+	// validate req
+	req := &ListReceiveHistoryRequest{}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ListReceiveHistoryResponse{ErrorMsg: err.Error()})
+		return
+	}
+	offset := (req.Current - 1) * req.Size
+
+	// query db
+	var total int64
+	var items []*ProjectItem
+	query := db.DB(ctx).Model(&ProjectItem{}).Where("receiver_id = ?", userID).Offset(offset).Limit(req.Size)
+	if err := query.Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ListReceiveHistoryResponse{ErrorMsg: err.Error()})
+		return
+	}
+	if err := query.Find(&items).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ListReceiveHistoryResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	// response
+	c.JSON(
+		http.StatusOK,
+		ListReceiveHistoryResponse{
+			Data: ListReceiveHistoryResponseData{
+				Total:   total,
+				Results: items,
+			},
+		},
+	)
+}
+
 type ListTagsResponse struct {
 	ErrorMsg string   `json:"error_msg"`
 	Data     []string `json:"data"`

@@ -122,6 +122,22 @@ definitions:
     x-enum-varnames:
     - DistributionTypeOneForEach
     - DistributionTypeInvite
+  project.ListReceiveHistoryResponse:
+    properties:
+      data:
+        $ref: '#/definitions/project.ListReceiveHistoryResponseData'
+      error_msg:
+        type: string
+    type: object
+  project.ListReceiveHistoryResponseData:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/project.ProjectItem'
+        type: array
+      total:
+        type: integer
+    type: object
   project.ListTagsResponse:
     properties:
       data:
@@ -129,6 +145,21 @@ definitions:
           type: string
         type: array
       error_msg:
+        type: string
+    type: object
+  project.ProjectItem:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      project_id:
+        type: string
+      receiver_id:
+        type: integer
+      updated_at:
         type: string
     type: object
   project.ProjectResponse:
@@ -325,6 +356,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/projects/received:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListReceiveHistoryResponse'
       tags:
       - project
   /api/v1/tags:
