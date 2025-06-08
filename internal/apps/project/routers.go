@@ -219,7 +219,7 @@ func DeleteProject(c *gin.Context) {
 // @Produce json
 // @Param id path string true "project id"
 // @Success 200 {object} ProjectResponse
-// @Router /api/v1/project/{id}/receive [post]
+// @Router /api/v1/projects/{id}/receive [post]
 func ReceiveProject(c *gin.Context) {
 	// init
 	userID := oauth.GetUserIDFromContext(c)
