@@ -122,6 +122,15 @@ definitions:
     x-enum-varnames:
     - DistributionTypeOneForEach
     - DistributionTypeInvite
+  project.ListTagsResponse:
+    properties:
+      data:
+        items:
+          type: string
+        type: array
+      error_msg:
+        type: string
+    type: object
   project.ProjectResponse:
     properties:
       data: {}
@@ -236,7 +245,7 @@ paths:
             $ref: '#/definitions/oauth.UserInfoResponse'
       tags:
       - oauth
-  /api/v1/project:
+  /api/v1/projects:
     post:
       consumes:
       - application/json
@@ -256,7 +265,7 @@ paths:
             $ref: '#/definitions/project.ProjectResponse'
       tags:
       - project
-  /api/v1/project/{id}:
+  /api/v1/projects/{id}:
     delete:
       consumes:
       - application/json
@@ -299,7 +308,7 @@ paths:
             $ref: '#/definitions/project.ProjectResponse'
       tags:
       - project
-  /api/v1/project/{id}/receive:
+  /api/v1/projects/{id}/receive:
     post:
       consumes:
       - application/json
@@ -316,6 +325,19 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/tags:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListTagsResponse'
       tags:
       - project
 swagger: "2.0"

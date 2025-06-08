@@ -116,7 +116,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project": {
+        "/api/v1/projects": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -148,7 +148,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{id}": {
+        "/api/v1/projects/{id}": {
             "put": {
                 "consumes": [
                     "application/json"
@@ -215,7 +215,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{id}/receive": {
+        "/api/v1/projects/{id}/receive": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -240,6 +240,27 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/project.ProjectResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/tags": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.ListTagsResponse"
                         }
                     }
                 }
@@ -426,6 +447,20 @@ const docTemplate = `{
                 "DistributionTypeOneForEach",
                 "DistributionTypeInvite"
             ]
+        },
+        "project.ListTagsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
         },
         "project.ProjectResponse": {
             "type": "object",
