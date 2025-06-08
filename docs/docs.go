@@ -116,6 +116,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/project/{id}/receive": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "project id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.ProjectResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects": {
             "post": {
                 "consumes": [
@@ -200,36 +230,6 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "项目ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/project.ProjectResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/project/{id}/receive": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "project"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "project id",
                         "name": "id",
                         "in": "path",
                         "required": true
