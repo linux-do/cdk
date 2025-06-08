@@ -483,11 +483,28 @@ const docTemplate = `{
                 "results": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/project.ProjectItem"
+                        "$ref": "#/definitions/project.ListReceiveHistoryResponseDataResult"
                     }
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "project.ListReceiveHistoryResponseDataResult": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "string"
+                },
+                "project_name": {
+                    "type": "string"
+                },
+                "received_at": {
+                    "type": "string"
                 }
             }
         },
@@ -501,32 +518,6 @@ const docTemplate = `{
                     }
                 },
                 "error_msg": {
-                    "type": "string"
-                }
-            }
-        },
-        "project.ProjectItem": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "project_id": {
-                    "type": "string"
-                },
-                "received_at": {
-                    "type": "string"
-                },
-                "receiver_id": {
-                    "type": "integer"
-                },
-                "updated_at": {
                     "type": "string"
                 }
             }

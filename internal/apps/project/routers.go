@@ -285,9 +285,18 @@ type ListReceiveHistoryRequest struct {
 	Size    int `json:"size" form:"size" binding:"min=1,max=100"`
 }
 
+type ListReceiveHistoryResponseDataResult struct {
+	ProjectID              string     `json:"project_id"`
+	ProjectName            string     `json:"project_name"`
+	ProjectCreator         string     `json:"project_creator"`
+	ProjectCreatorNickname string     `json:"project_creator_nickname"`
+	Content                string     `json:"content"`
+	ReceivedAt             *time.Time `json:"received_at"`
+}
+
 type ListReceiveHistoryResponseData struct {
-	Total   int64          `json:"total"`
-	Results []*ProjectItem `json:"results"`
+	Total   int64                                  `json:"total"`
+	Results []ListReceiveHistoryResponseDataResult `json:"results"`
 }
 
 type ListReceiveHistoryResponse struct {
@@ -304,7 +313,6 @@ type ListReceiveHistoryResponse struct {
 func ListReceiveHistory(c *gin.Context) {
 	// init
 	userID := oauth.GetUserIDFromContext(c)
-	ctx := c.Request.Context()
 
 	// validate req
 	req := &ListReceiveHistoryRequest{}
@@ -316,25 +324,38 @@ func ListReceiveHistory(c *gin.Context) {
 
 	// query db
 	var total int64
-	var items []*ProjectItem
-	query := db.DB(ctx).Model(&ProjectItem{}).Where("receiver_id = ?", userID).Offset(offset).Limit(req.Size)
-	if err := query.Count(&total).Error; err != nil {
+	if err := db.DB(c.Request.Context()).Model(&ProjectItem{}).Where("receiver_id = ?", userID).Count(&total).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, ListReceiveHistoryResponse{ErrorMsg: err.Error()})
 		return
 	}
-	if err := query.Find(&items).Error; err != nil {
+	var items []*ProjectItem
+	if err := db.DB(c.Request.Context()).
+		Model(&ProjectItem{}).
+		Where("receiver_id = ?", userID).
+		Offset(offset).
+		Limit(req.Size).
+		Preload("Project.Creator").
+		Find(&items).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, ListReceiveHistoryResponse{ErrorMsg: err.Error()})
 		return
 	}
 
 	// response
+	results := make([]ListReceiveHistoryResponseDataResult, len(items))
+	for i, item := range items {
+		results[i] = ListReceiveHistoryResponseDataResult{
+			ProjectID:              item.ProjectID,
+			ProjectName:            item.Project.Name,
+			ProjectCreator:         item.Project.Creator.Username,
+			ProjectCreatorNickname: item.Project.Creator.Nickname,
+			Content:                item.Content,
+			ReceivedAt:             item.ReceivedAt,
+		}
+	}
 	c.JSON(
 		http.StatusOK,
 		ListReceiveHistoryResponse{
-			Data: ListReceiveHistoryResponseData{
-				Total:   total,
-				Results: items,
-			},
+			Data: ListReceiveHistoryResponseData{Total: total, Results: results},
 		},
 	)
 }
