@@ -107,3 +107,8 @@ export type ProjectListResponse = ApiResponse<Project[]>;
  * 项目详情响应类型 (预留，后续可能需要)
  */
 export type ProjectDetailResponse = ApiResponse<Project>;
+
+/**
+ * 标签列表响应类型
+ */
+export type TagsListResponse = ApiResponse<string[]>;

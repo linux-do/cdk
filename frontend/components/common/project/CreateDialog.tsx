@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useCallback} from 'react';
+import {useState, useCallback, useEffect} from 'react';
 import {useIsMobile} from '@/hooks/use-mobile';
 import {Button} from '@/components/ui/button';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
@@ -19,6 +19,7 @@ import services from '@/lib/services';
 import {TrustLevel} from '@/lib/services/core/types';
 import {DistributionType} from '@/lib/services/project/types';
 import {Counter} from '@/components/animate-ui/components/counter';
+import {TagSelector} from '@/components/ui/tag-selector';
 
 /** 表单验证常量 */
 const FORM_LIMITS = {
@@ -71,7 +72,7 @@ export function CreateDialog() {
 
   /** 标签相关状态 */
   const [tags, setTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState('');
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   /** 分发内容相关状态 */
   const [items, setItems] = useState<string[]>([]);
@@ -79,6 +80,32 @@ export function CreateDialog() {
 
   /** 界面状态 */
   const [activeTab, setActiveTab] = useState('basic');
+
+  /**
+   * 获取可用标签列表
+   */
+  const fetchTags = useCallback(async () => {
+    try {
+      const result = await services.project.getTagsSafe();
+      if (result.success) {
+        setAvailableTags(result.tags);
+      } else {
+        // 标签获取失败，使用空数组
+        setAvailableTags([]);
+        console.warn('获取标签列表失败:', result.error);
+      }
+    } catch (error) {
+      console.error('获取标签失败:', error);
+      setAvailableTags([]);
+    }
+  }, []);
+
+  // 组件加载时获取标签列表
+  useEffect(() => {
+    if (open) {
+      fetchTags();
+    }
+  }, [fetchTags, open]);
 
   /**
    * 重置表单为初始状态
@@ -95,30 +122,11 @@ export function CreateDialog() {
       distributionType: DistributionType.ONE_FOR_EACH,
     });
     setTags([]);
-    setNewTag('');
     setItems([]);
     setActiveTab('basic');
     setBulkContent('');
     setCreateSuccess(false);
     setCreatedProject(null);
-  }, []);
-
-  /**
-   * 添加项目标签
-   */
-  const addTag = useCallback(() => {
-    const trimmedTag = newTag.trim();
-    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < FORM_LIMITS.MAX_TAGS) {
-      setTags((prev) => [...prev, trimmedTag]);
-      setNewTag('');
-    }
-  }, [newTag, tags]);
-
-  /**
-   * 删除指定标签
-   */
-  const removeTag = useCallback((tagToRemove: string) => {
-    setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
   }, []);
 
   /**
@@ -351,29 +359,23 @@ export function CreateDialog() {
             </div>
 
             <div className="space-y-4">
-              <div className="text-center">
+              <div className="flex flex-col">
                 <Label className="text-sm font-medium">项目领取链接</Label>
                 <p className="text-xs text-muted-foreground mt-1">
                   用户可以通过此链接领取您分发的内容
                 </p>
               </div>
 
-              <div className="space-y-3">
-                <div className="space-y-3">
-                  <div className="p-3 bg-muted/50 rounded-lg border">
-                    <Input value={getReceiveLink(createdProject.id)} readOnly className="bg-transparent border-none text-sm" />
-                  </div>
-                  <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
-                    <Button size="sm" variant="outline" onClick={() => copyLink(getReceiveLink(createdProject.id))} className={isMobile ? 'w-full' : ''}>
-                      <Copy className="h-4 w-4 mr-1" />
-                      复制链接
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => openLink(getReceiveLink(createdProject.id))} className={isMobile ? 'w-full' : ''}>
-                      <ExternalLink className="h-4 w-4 mr-1" />
-                      前往查看
-                    </Button>
-                  </div>
-                </div>
+              <div className="flex gap-2">
+                <Input value={getReceiveLink(createdProject.id)} readOnly className="bg-gray-100 border-none text-sm h-8" />
+                <Button size="sm" variant="secondary" onClick={() => copyLink(getReceiveLink(createdProject.id))} className={isMobile ? 'w-full' : ''}>
+                  <Copy className="h-4 w-4 mr-1" />
+                  复制
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => openLink(getReceiveLink(createdProject.id))} className={isMobile ? 'w-full' : ''}>
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  查看
+                </Button>
               </div>
             </div>
           </div>
@@ -402,36 +404,15 @@ export function CreateDialog() {
                 {/* 项目标签 */}
                 <div className="space-y-2">
                   <Label>项目标签</Label>
-                  <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
-                    <Input
-                      placeholder={`请选择或添加关联标签（${FORM_LIMITS.TAG_MAX_LENGTH}字符以内，最多${FORM_LIMITS.MAX_TAGS}个标签）`}
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addTag()}
-                      maxLength={FORM_LIMITS.TAG_MAX_LENGTH}
-                    />
-                    <Button type="button" variant="outline" onClick={addTag} className={isMobile ? 'w-full' : ''}>
-                      添加
-                    </Button>
-                  </div>
-                  {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="flex items-center gap-1 pr-1">
-                          {tag}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 hover:bg-transparent hover:text-destructive"
-                            onClick={() => removeTag(tag)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                  <TagSelector
+                    selectedTags={tags}
+                    availableTags={availableTags}
+                    maxTagLength={FORM_LIMITS.TAG_MAX_LENGTH}
+                    maxTags={FORM_LIMITS.MAX_TAGS}
+                    onTagsChange={setTags}
+                    placeholder="请选择或添加关联标签"
+                    isMobile={isMobile}
+                  />
                 </div>
 
                 {/* 项目描述 */}
