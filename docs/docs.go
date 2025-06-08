@@ -520,6 +520,9 @@ const docTemplate = `{
                 "project_id": {
                     "type": "string"
                 },
+                "received_at": {
+                    "type": "string"
+                },
                 "receiver_id": {
                     "type": "integer"
                 },

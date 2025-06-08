@@ -248,8 +248,10 @@ func ReceiveProject(c *gin.Context) {
 	// do receive
 	if err := db.DB(c.Request.Context()).Transaction(
 		func(tx *gorm.DB) error {
+			now := time.Now()
 			// save to db
 			item.ReceiverID = &userID
+			item.ReceivedAt = &now
 			if err := tx.Save(item).Error; err != nil {
 				return err
 			}
