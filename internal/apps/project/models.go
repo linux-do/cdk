@@ -19,11 +19,12 @@ type Project struct {
 	DistributionType  DistributionType `json:"distribution_type"`
 	TotalItems        int64            `json:"total_items"`
 	StartTime         time.Time        `json:"start_time"`
-	EndTime           time.Time        `json:"end_time"`
+	EndTime           time.Time        `json:"end_time" gorm:"index;index:idx_end_completed"`
 	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level"`
 	AllowSameIP       bool             `json:"allow_same_ip"`
 	RiskLevel         int8             `json:"risk_level"`
 	CreatorID         uint64           `json:"creator_id" gorm:"index"`
+	IsCompleted       bool             `json:"is_completed" gorm:"index;index:idx_end_completed"`
 	Creator           oauth.User       `json:"-" gorm:"foreignKey:CreatorID"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt         time.Time        `json:"updated_at" gorm:"autoUpdateTime"`
