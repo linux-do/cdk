@@ -1,5 +1,15 @@
 import {BaseService} from '../core/base.service';
-import {CreateProjectRequest, UpdateProjectRequest} from './types';
+import {
+  CreateProjectRequest,
+  UpdateProjectRequest,
+  ReceiveHistoryRequest,
+  ReceiveHistoryData,
+  ProjectResponse,
+  ReceiveHistoryResponse,
+  TagsResponse,
+  ReceiveProjectResponse,
+} from './types';
+import apiClient from '../core/api-client';
 
 /**
  * 项目服务
@@ -9,7 +19,7 @@ export class ProjectService extends BaseService {
   /**
    * API基础路径
    */
-  protected static readonly basePath = '/api/v1/project';
+  protected static readonly basePath = '/api/v1/projects';
 
   /**
    * 创建项目
@@ -17,7 +27,10 @@ export class ProjectService extends BaseService {
    * @returns 创建结果
    */
   static async createProject(projectData: CreateProjectRequest): Promise<void> {
-    await this.post<null>('', projectData);
+    const response = await apiClient.post<ProjectResponse>(`${this.basePath}`, projectData);
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
   }
 
   /**
@@ -30,7 +43,10 @@ export class ProjectService extends BaseService {
       projectId: string,
       projectData: UpdateProjectRequest,
   ): Promise<void> {
-    await this.put<null>(`/${projectId}`, projectData);
+    const response = await apiClient.put<ProjectResponse>(`${this.basePath}/${projectId}`, projectData);
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
   }
 
   /**
@@ -39,7 +55,62 @@ export class ProjectService extends BaseService {
    * @returns 删除结果
    */
   static async deleteProject(projectId: string): Promise<void> {
-    await this.delete<null>(`/${projectId}`);
+    const response = await apiClient.delete<ProjectResponse>(`${this.basePath}/${projectId}`);
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
+  }
+
+  /**
+   * 领取项目内容
+   * @param projectId - 项目ID
+   * @returns 领取结果
+   */
+  static async receiveProject(projectId: string): Promise<void> {
+    const response = await apiClient.post<ReceiveProjectResponse>(`${this.basePath}/${projectId}/receive`);
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
+  }
+
+  /**
+   * 获取领取历史
+   * @param params - 分页参数
+   * @returns 领取历史数据
+   */
+  static async getReceiveHistory(params: ReceiveHistoryRequest): Promise<ReceiveHistoryData> {
+    const response = await apiClient.get<ReceiveHistoryResponse>(`${this.basePath}/received`, {
+      params: {
+        current: params.current,
+        size: params.size,
+      },
+    });
+
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
+
+    return response.data.data as ReceiveHistoryData;
+  }
+
+  /**
+   * 获取标签列表
+   * @returns 所有可用标签
+   */
+  static async getTags(): Promise<string[]> {
+    try {
+      const response = await apiClient.get<TagsResponse>('/api/v1/tags');
+
+      if (response.data.error_msg) {
+        throw new Error(response.data.error_msg);
+      }
+
+      return (response.data.data as string[]) || [];
+    } catch (error) {
+      console.warn('获取标签列表失败:', error);
+      // 在API失败时返回空数组而不是抛出错误
+      return [];
+    }
   }
 
   /**
@@ -107,6 +178,81 @@ export class ProjectService extends BaseService {
       console.error('删除项目失败:', errorMessage);
       return {
         success: false,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 领取项目内容（带错误处理）
+   * @param projectId - 项目ID
+   * @returns 领取结果，包含成功状态和错误信息
+   */
+  static async receiveProjectSafe(projectId: string): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      await this.receiveProject(projectId);
+      return {success: true};
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '领取项目内容失败';
+      console.error('领取项目内容失败:', errorMessage);
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 获取领取历史（带错误处理）
+   * @param params - 分页参数
+   * @returns 领取历史结果，包含成功状态、数据和错误信息
+   */
+  static async getReceiveHistorySafe(params: ReceiveHistoryRequest): Promise<{
+    success: boolean;
+    data?: ReceiveHistoryData;
+    error?: string;
+  }> {
+    try {
+      const data = await this.getReceiveHistory(params);
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '获取领取历史失败';
+      console.error('获取领取历史失败:', errorMessage);
+      return {
+        success: false,
+        data: {total: 0, results: []},
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 获取标签列表（带错误处理）
+   * @returns 获取结果，包含标签数组和错误信息
+   */
+  static async getTagsSafe(): Promise<{
+    success: boolean;
+    tags: string[];
+    error?: string;
+  }> {
+    try {
+      const tags = await this.getTags();
+      return {
+        success: true,
+        tags,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '获取标签失败';
+      console.error('获取标签失败:', errorMessage);
+      return {
+        success: false,
+        tags: [],
         error: errorMessage,
       };
     }

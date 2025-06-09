@@ -11,6 +11,7 @@ import {
   FileIcon,
   MessageCircleIcon,
   SendIcon,
+  TestTube,
 } from 'lucide-react';
 
 import {NavDocuments} from '@/components/common/layout/nav-documents';
@@ -51,8 +52,13 @@ const navMain = [
   },
   {
     title: '我的领取',
-    url: '/my-claims',
+    url: '/received',
     icon: ShoppingBag,
+  },
+  {
+    title: '测试页面',
+    url: '/test',
+    icon: TestTube,
   },
 ];
 
@@ -99,7 +105,6 @@ const navDocuments = [
 ];
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
-  // 使用useAuth钩子获取用户信息和状态
   const {user, isLoading} = useAuth();
 
   return (

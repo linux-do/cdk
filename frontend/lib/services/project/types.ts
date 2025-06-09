@@ -1,4 +1,4 @@
-import {ApiResponse, TrustLevel} from '../core/types';
+import {TrustLevel} from '../core/types';
 
 /**
  * 项目分发类型
@@ -94,16 +94,79 @@ export interface UpdateProjectRequest {
 }
 
 /**
+ * 后端标准响应结构
+ */
+export interface BackendResponse<T = unknown> {
+  /** 错误信息，空字符串表示无错误 */
+  error_msg: string;
+  /** 响应数据 */
+  data: T;
+}
+
+/**
+ * 项目操作成功时的响应数据类型 (通常为null)
+ */
+export type ProjectOperationData = null;
+
+/**
  * 项目API响应类型
  */
-export type ProjectResponse = ApiResponse<null>;
+export type ProjectResponse = BackendResponse<ProjectOperationData>;
 
 /**
- * 项目列表响应类型 (预留，后续可能需要)
+ * 标签列表响应类型
  */
-export type ProjectListResponse = ApiResponse<Project[]>;
+export type TagsResponse = BackendResponse<string[]>;
 
 /**
- * 项目详情响应类型 (预留，后续可能需要)
+ * 领取历史记录项
  */
-export type ProjectDetailResponse = ApiResponse<Project>;
+export interface ReceiveHistoryItem {
+  /** 项目ID */
+  project_id: string;
+  /** 项目名称 */
+  project_name: string;
+  /** 项目创建者用户名 */
+  project_creator: string;
+  /** 项目创建者昵称 */
+  project_creator_nickname: string;
+  /** 领取的内容 */
+  content: string;
+  /** 领取时间 */
+  received_at: string | null;
+}
+
+/**
+ * 领取历史数据
+ */
+export interface ReceiveHistoryData {
+  /** 总数量 */
+  total: number;
+  /** 结果列表 */
+  results: ReceiveHistoryItem[];
+}
+
+/**
+ * 领取历史请求参数
+ */
+export interface ReceiveHistoryRequest {
+  /** 当前页码 */
+  current: number;
+  /** 每页数量 */
+  size: number;
+}
+
+/**
+ * 领取历史响应类型
+ */
+export type ReceiveHistoryResponse = BackendResponse<ReceiveHistoryData>;
+
+/**
+ * 领取项目成功时的响应数据类型 (通常为null)
+ */
+export type ReceiveProjectData = null;
+
+/**
+ * 领取项目响应类型
+ */
+export type ReceiveProjectResponse = BackendResponse<ReceiveProjectData>;
