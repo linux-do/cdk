@@ -26,6 +26,25 @@ type ProjectRequest struct {
 	RiskLevel         int8             `json:"risk_level" binding:"min=0,max=100"`
 }
 
+type GetProjectResponseData struct {
+	ID                string           `json:"id"`
+	Name              string           `json:"name"`
+	Description       string           `json:"description"`
+	DistributionType  DistributionType `json:"distribution_type"`
+	StartTime         time.Time        `json:"start_time"`
+	EndTime           time.Time        `json:"end_time"`
+	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level"`
+	AllowSameIP       bool             `json:"allow_same_ip"`
+	RiskLevel         int8             `json:"risk_level"`
+	CreatorID         uint64           `json:"creator_id"`
+	Creator           oauth.User       `json:"creator"` // Assuming we want to embed Creator info
+	CreatedAt         time.Time        `json:"created_at"`
+	UpdatedAt         time.Time        `json:"updated_at"`
+	ProjectTags       []string         `json:"project_tags"`
+	TotalProjectItems int64            `json:"total_project_items"` // Renamed from TotalItems to avoid conflict if Project model is embedded
+	ClaimedItems      int64            `json:"claimed_items"`
+}
+
 type CreateProjectRequestBody struct {
 	ProjectRequest
 	DistributionType DistributionType `json:"distribution_type" binding:"oneof=0 1"`
@@ -89,6 +108,78 @@ func CreateProject(c *gin.Context) {
 
 	// response
 	c.JSON(http.StatusOK, ProjectResponse{})
+}
+
+// GetProject
+// @Tags project
+// @Summary 获取指定项目信息 (Get specific project information)
+// @Description 获取指定项目所有信息以及领取情况 (Get all information and claim status for a specific project)
+// @Produce json
+// @Param id path string true "项目ID (Project ID)"
+// @Success 200 {object} ProjectResponse{data=GetProjectResponseData}
+// @Failure 400 {object} ProjectResponse "Invalid request"
+// @Failure 404 {object} ProjectResponse "Project not found"
+// @Failure 500 {object} ProjectResponse "Internal server error"
+// @Router /api/v1/projects/{id} [get]
+func GetProject(c *gin.Context) {
+	projectID := c.Param("id")
+
+	var projectDetails Project // Project struct is in the same package
+	if err := db.DB(c.Request.Context()).Preload("Creator").Where("id = ?", projectID).First(&projectDetails).Error; err != nil {
+		if err == gorm.ErrRecordNotFound { // Make sure gorm is imported
+			c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: "Project not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: "Error fetching project: " + err.Error()})
+		return
+	}
+
+	var dbProjectTags []ProjectTag // ProjectTag model is in the same package
+	if err := db.DB(c.Request.Context()).Where("project_id = ?", projectID).Find(&dbProjectTags).Error; err != nil {
+		// For now, we'll log this error if one occurs but proceed.
+		// In a production system, you might want to return an error.
+		// log.Printf("Error fetching project tags for project %s: %v", projectID, err)
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: "Error fetching project tags: " + err.Error()})
+		return
+	}
+
+	tags := make([]string, len(dbProjectTags))
+	for i, pt := range dbProjectTags {
+		tags[i] = pt.Tag
+	}
+
+	var totalProjectItemsCount int64 // Renamed to avoid confusion with projectDetails.TotalItems
+	if err := db.DB(c.Request.Context()).Model(&ProjectItem{}).Where("project_id = ?", projectID).Count(&totalProjectItemsCount).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: "Error fetching total project items count: " + err.Error()})
+		return
+	}
+
+	var claimedItemsCount int64 // Renamed for clarity
+	if err := db.DB(c.Request.Context()).Model(&ProjectItem{}).Where("project_id = ? AND receiver_id IS NOT NULL", projectID).Count(&claimedItemsCount).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: "Error fetching claimed items count: " + err.Error()})
+		return
+	}
+
+	responseData := GetProjectResponseData{
+		ID:                projectDetails.ID,
+		Name:              projectDetails.Name,
+		Description:       projectDetails.Description,
+		DistributionType:  projectDetails.DistributionType,
+		StartTime:         projectDetails.StartTime,
+		EndTime:           projectDetails.EndTime,
+		MinimumTrustLevel: projectDetails.MinimumTrustLevel,
+		AllowSameIP:       projectDetails.AllowSameIP,
+		RiskLevel:         projectDetails.RiskLevel,
+		CreatorID:         projectDetails.CreatorID,
+		Creator:           projectDetails.Creator, // Assumes Creator is correctly preloaded and serializable
+		CreatedAt:         projectDetails.CreatedAt,
+		UpdatedAt:         projectDetails.UpdatedAt,
+		ProjectTags:       tags,
+		TotalProjectItems: totalProjectItemsCount, // Using the count from ProjectItem query
+		ClaimedItems:      claimedItemsCount,
+	}
+
+	c.JSON(http.StatusOK, ProjectResponse{Data: responseData})
 }
 
 type UpdateProjectRequestBody struct {
