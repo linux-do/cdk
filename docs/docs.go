@@ -167,6 +167,45 @@ const docTemplate = `{
             }
         },
         "/api/v1/projects/{id}": {
+            "get": {
+                "description": "获取指定项目所有信息以及领取情况 (Get all information and claim status for a specific project)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "summary": "获取指定项目信息 (Get specific project information)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "项目ID (Project ID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/project.ProjectResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/project.GetProjectResponseData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "put": {
                 "consumes": [
                     "application/json"
@@ -465,6 +504,65 @@ const docTemplate = `{
                 "DistributionTypeOneForEach",
                 "DistributionTypeInvite"
             ]
+        },
+        "project.GetProjectResponseData": {
+            "type": "object",
+            "properties": {
+                "allow_same_ip": {
+                    "type": "boolean"
+                },
+                "available_items_count": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "creator_id": {
+                    "type": "integer"
+                },
+                "creator_nickname": {
+                    "type": "string"
+                },
+                "creator_username": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "distribution_type": {
+                    "$ref": "#/definitions/project.DistributionType"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "minimum_trust_level": {
+                    "$ref": "#/definitions/oauth.TrustLevel"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "risk_level": {
+                    "type": "integer"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
         },
         "project.ListReceiveHistoryResponse": {
             "type": "object",
