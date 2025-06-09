@@ -21,16 +21,33 @@ type ProjectsPage struct {
 }
 
 // ListProjectsWithTags 查询未结束的项目列表及其标签
-func ListProjectsWithTags(ctx context.Context, offset, limit int) (*ProjectsPage, error) {
+func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string) (*ProjectsPage, error) {
 	now := time.Now()
 
+	selectTotalCountSql := `SELECT COUNT(DISTINCT p.id) as total
+			FROM projects p
+			LEFT JOIN project_tags pt ON p.id = pt.project_id
+			WHERE p.end_time > ? AND p.is_completed = false`
+
+	selectProjectWithTagsSql := `SELECT 
+    			p.id,p.name,p.description,p.distribution_type,p.total_items,
+       			p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.created_at,
+				GROUP_CONCAT(DISTINCT pt.tag SEPARATOR ',') AS tags
+			FROM projects p
+			LEFT JOIN project_tags pt ON p.id = pt.project_id
+			WHERE p.end_time > ? AND p.is_completed = false`
+
+	var parameters = []interface{}{now}
+	if len(tags) > 0 {
+		selectTotalCountSql += ` AND pt.tag IN (?)`
+		selectProjectWithTagsSql += ` AND pt.tag IN (?)`
+		parameters = append(parameters, tags)
+	}
+	selectProjectWithTagsSql += ` GROUP BY p.id LIMIT ? OFFSET ?`
 	// 查询总数
 	var total int64
 	if err := db.DB(ctx).
-		Raw(`SELECT COUNT(DISTINCT p.id) as total 
-			FROM projects p 
-			INNER JOIN project_items pi ON p.id = pi.project_id 
-			WHERE pi.receiver_id IS NULL AND p.end_time > ?`, now).Count(&total).Error; err != nil {
+		Raw(selectTotalCountSql, parameters...).Count(&total).Error; err != nil {
 		return nil, err
 	}
 
@@ -41,19 +58,11 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int) (*ProjectsPage
 			Items: []ProjectWithTags{},
 		}, nil
 	}
-
 	// 查询项目列表及其标签
+	parameters = append(parameters, offset, limit)
 	var projectsWithTags []ProjectWithTags
 	if err := db.DB(ctx).
-		Raw(`SELECT 
-				p.*,
-				GROUP_CONCAT(DISTINCT pt.tag SEPARATOR ',') AS tags
-			FROM projects p
-			INNER JOIN project_items pi ON p.id = pi.project_id
-			LEFT JOIN project_tags pt ON p.id = pt.project_id
-			WHERE pi.receiver_id IS NULL AND p.end_time > ?
-			GROUP BY p.id
-			LIMIT ? OFFSET ?`, now, limit, offset).
+		Raw(selectProjectWithTagsSql, parameters...).
 		Scan(&projectsWithTags).Error; err != nil {
 		return nil, err
 	}
@@ -85,7 +94,8 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 	var projectsWithTags []ProjectWithTags
 	if err := db.DB(ctx).
 		Raw(`SELECT 
-				p.*,
+				p.id,p.name,p.description,p.distribution_type,p.total_items,
+				p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.created_at,
 				GROUP_CONCAT(DISTINCT pt.tag SEPARATOR ',') AS tags
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id

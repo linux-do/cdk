@@ -63,6 +63,7 @@ func CreateProject(c *gin.Context) {
 		AllowSameIP:       req.AllowSameIP,
 		RiskLevel:         req.RiskLevel,
 		CreatorID:         userID,
+		IsCompleted:       false,
 	}
 
 	// create project
@@ -381,8 +382,9 @@ func ListTags(c *gin.Context) {
 }
 
 type ListProjectsRequest struct {
-	Current int `json:"current" form:"current" binding:"min=1"`
-	Size    int `json:"size" form:"size" binding:"min=1,max=100"`
+	Current int      `json:"current" form:"current" binding:"min=1"`
+	Size    int      `json:"size" form:"size" binding:"min=1,max=100"`
+	Tags    []string `json:"tags" form:"tags" binding:"dive,min=1,max=16"`
 }
 
 type ListProjectsResponseDataResult struct {
@@ -417,14 +419,14 @@ type ListProjectsResponse struct {
 // @Success 200 {object} ListProjectsResponse
 // @Router /api/v1/projects [get]
 func ListProjects(c *gin.Context) {
-	req := &ListProjectsRequest{Current: 1, Size: 10}
+	req := &ListProjectsRequest{}
 	if err := c.ShouldBindQuery(req); err != nil {
 		c.JSON(http.StatusBadRequest, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
 	}
 	offset := (req.Current - 1) * req.Size
 
-	pagedData, err := ListProjectsWithTags(c.Request.Context(), offset, req.Size)
+	pagedData, err := ListProjectsWithTags(c.Request.Context(), offset, req.Size, req.Tags)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
@@ -444,7 +446,7 @@ func ListProjects(c *gin.Context) {
 func ListMyProjects(c *gin.Context) {
 	userID := oauth.GetUserIDFromContext(c)
 
-	req := &ListProjectsRequest{Current: 1, Size: 10}
+	req := &ListProjectsRequest{}
 	if err := c.ShouldBindQuery(req); err != nil {
 		c.JSON(http.StatusBadRequest, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
