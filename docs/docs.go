@@ -117,22 +117,6 @@ const docTemplate = `{
             }
         },
         "/api/v1/projects": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "project"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/project.ListProjectsResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -164,24 +148,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/projects/mine": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "project"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/project.ListProjectsResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/projects/received": {
             "get": {
                 "produces": [
@@ -201,6 +167,45 @@ const docTemplate = `{
             }
         },
         "/api/v1/projects/{id}": {
+            "get": {
+                "description": "获取指定项目所有信息以及领取情况 (Get all information and claim status for a specific project)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "summary": "获取指定项目信息 (Get specific project information)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "项目ID (Project ID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/project.ProjectResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/project.GetProjectResponseData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "put": {
                 "consumes": [
                     "application/json"
@@ -500,36 +505,14 @@ const docTemplate = `{
                 "DistributionTypeInvite"
             ]
         },
-        "project.ListProjectsResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/project.ListProjectsResponseData"
-                },
-                "error_msg": {
-                    "type": "string"
-                }
-            }
-        },
-        "project.ListProjectsResponseData": {
-            "type": "object",
-            "properties": {
-                "results": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/project.ListProjectsResponseDataResult"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "project.ListProjectsResponseDataResult": {
+        "project.GetProjectResponseData": {
             "type": "object",
             "properties": {
                 "allow_same_ip": {
                     "type": "boolean"
+                },
+                "available_items_count": {
+                    "type": "integer"
                 },
                 "created_at": {
                     "type": "string"
@@ -537,10 +520,10 @@ const docTemplate = `{
                 "creator_id": {
                     "type": "integer"
                 },
-                "creator_name": {
+                "creator_nickname": {
                     "type": "string"
                 },
-                "creator_nickname": {
+                "creator_username": {
                     "type": "string"
                 },
                 "description": {
@@ -566,9 +549,6 @@ const docTemplate = `{
                 },
                 "start_time": {
                     "type": "string"
-                },
-                "stock": {
-                    "type": "integer"
                 },
                 "tags": {
                     "type": "array",

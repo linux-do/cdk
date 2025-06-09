@@ -122,33 +122,19 @@ definitions:
     x-enum-varnames:
     - DistributionTypeOneForEach
     - DistributionTypeInvite
-  project.ListProjectsResponse:
-    properties:
-      data:
-        $ref: '#/definitions/project.ListProjectsResponseData'
-      error_msg:
-        type: string
-    type: object
-  project.ListProjectsResponseData:
-    properties:
-      results:
-        items:
-          $ref: '#/definitions/project.ListProjectsResponseDataResult'
-        type: array
-      total:
-        type: integer
-    type: object
-  project.ListProjectsResponseDataResult:
+  project.GetProjectResponseData:
     properties:
       allow_same_ip:
         type: boolean
+      available_items_count:
+        type: integer
       created_at:
         type: string
       creator_id:
         type: integer
-      creator_name:
-        type: string
       creator_nickname:
+        type: string
+      creator_username:
         type: string
       description:
         type: string
@@ -166,8 +152,6 @@ definitions:
         type: integer
       start_time:
         type: string
-      stock:
-        type: integer
       tags:
         items:
           type: string
@@ -332,16 +316,6 @@ paths:
       tags:
       - oauth
   /api/v1/projects:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/project.ListProjectsResponse'
-      tags:
-      - project
     post:
       consumes:
       - application/json
@@ -378,6 +352,30 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+    get:
+      description: 获取指定项目所有信息以及领取情况 (Get all information and claim status for a specific
+        project)
+      parameters:
+      - description: 项目ID (Project ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/project.ProjectResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/project.GetProjectResponseData'
+              type: object
+      summary: 获取指定项目信息 (Get specific project information)
       tags:
       - project
     put:
@@ -421,17 +419,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/project.ProjectResponse'
-      tags:
-      - project
-  /api/v1/projects/mine:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/project.ListProjectsResponse'
       tags:
       - project
   /api/v1/projects/received:
