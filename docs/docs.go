@@ -497,6 +497,12 @@ const docTemplate = `{
                 "content": {
                     "type": "string"
                 },
+                "project_creator": {
+                    "type": "string"
+                },
+                "project_creator_nickname": {
+                    "type": "string"
+                },
                 "project_id": {
                     "type": "string"
                 },

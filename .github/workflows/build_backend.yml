@@ -19,6 +19,16 @@ jobs:
         with:
           go-version: "1.24"
       - name: Install dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go install github.com/swaggo/swag/cmd/swag@latest
+      - name: Make Swagger
+        run: make swagger
+      - name: Diff Files
+        run: |
+          if ! git diff --exit-code; then
+            echo 'Detected unstaged changes after command. Please make swagger locally.'
+            exit 1
+          fi
       - name: Build
         run: go build main.go
