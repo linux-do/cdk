@@ -144,6 +144,8 @@ definitions:
         type: string
       id:
         type: string
+      is_completed:
+        type: boolean
       minimum_trust_level:
         $ref: '#/definitions/oauth.TrustLevel'
       name:
@@ -160,6 +162,51 @@ definitions:
         type: integer
       updated_at:
         type: string
+    type: object
+  project.ListProjectsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/project.ListProjectsResponseData'
+      error_msg:
+        type: string
+    type: object
+  project.ListProjectsResponseData:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/project.ListProjectsResponseDataResult'
+        type: array
+      total:
+        type: integer
+    type: object
+  project.ListProjectsResponseDataResult:
+    properties:
+      allow_same_ip:
+        type: boolean
+      created_at:
+        type: string
+      description:
+        type: string
+      distribution_type:
+        $ref: '#/definitions/project.DistributionType'
+      end_time:
+        type: string
+      id:
+        type: string
+      minimum_trust_level:
+        $ref: '#/definitions/oauth.TrustLevel'
+      name:
+        type: string
+      risk_level:
+        type: integer
+      start_time:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      total_items:
+        type: integer
     type: object
   project.ListReceiveHistoryResponse:
     properties:
@@ -316,6 +363,16 @@ paths:
       tags:
       - oauth
   /api/v1/projects:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListProjectsResponse'
+      tags:
+      - project
     post:
       consumes:
       - application/json
@@ -419,6 +476,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/projects/mine:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListProjectsResponse'
       tags:
       - project
   /api/v1/projects/received:
