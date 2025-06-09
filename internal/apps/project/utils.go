@@ -2,6 +2,7 @@ package project
 
 import (
 	"context"
+	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
 	"strings"
 	"sync"
@@ -21,33 +22,32 @@ type ProjectsPage struct {
 }
 
 // ListProjectsWithTags 查询未结束的项目列表及其标签
-func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string) (*ProjectsPage, error) {
+func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string, currentUser *oauth.User) (*ProjectsPage, error) {
 	now := time.Now()
 
-	selectTotalCountSql := `SELECT COUNT(DISTINCT p.id) as total
+	getTotalCountSql := `SELECT COUNT(DISTINCT p.id) as total
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
-			WHERE p.end_time > ? AND p.is_completed = false`
+			WHERE p.is_completed = false AND p.end_time > ? AND p.minimum_trust_level <= ? AND p.risk_level >= ?`
 
-	selectProjectWithTagsSql := `SELECT 
+	getProjectWithTagsSql := `SELECT 
     			p.id,p.name,p.description,p.distribution_type,p.total_items,
        			p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.created_at,
 				GROUP_CONCAT(DISTINCT pt.tag SEPARATOR ',') AS tags
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
-			WHERE p.end_time > ? AND p.is_completed = false`
+			WHERE p.is_completed = false AND p.end_time > ? AND p.minimum_trust_level <= ? AND p.risk_level >= ?`
 
-	var parameters = []interface{}{now}
+	var parameters = []interface{}{now, currentUser.TrustLevel, currentUser.RiskLevel()}
 	if len(tags) > 0 {
-		selectTotalCountSql += ` AND pt.tag IN (?)`
-		selectProjectWithTagsSql += ` AND pt.tag IN (?)`
+		getTotalCountSql += ` AND pt.tag IN (?)`
+		getProjectWithTagsSql += ` AND pt.tag IN (?)`
 		parameters = append(parameters, tags)
 	}
-	selectProjectWithTagsSql += ` GROUP BY p.id LIMIT ? OFFSET ?`
 	// 查询总数
 	var total int64
 	if err := db.DB(ctx).
-		Raw(selectTotalCountSql, parameters...).Count(&total).Error; err != nil {
+		Raw(getTotalCountSql, parameters...).Count(&total).Error; err != nil {
 		return nil, err
 	}
 
@@ -59,10 +59,11 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string)
 		}, nil
 	}
 	// 查询项目列表及其标签
-	parameters = append(parameters, offset, limit)
+	getProjectWithTagsSql += ` GROUP BY p.id LIMIT ? OFFSET ?`
+	parameters = append(parameters, limit, offset)
 	var projectsWithTags []ProjectWithTags
 	if err := db.DB(ctx).
-		Raw(selectProjectWithTagsSql, parameters...).
+		Raw(getProjectWithTagsSql, parameters...).
 		Scan(&projectsWithTags).Error; err != nil {
 		return nil, err
 	}
@@ -74,11 +75,31 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string)
 }
 
 // ListMyProjectsWithTags 查询我创建的项目列表及其标签
-func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit int) (*ProjectsPage, error) {
+func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit int, tags []string) (*ProjectsPage, error) {
+	getTotalCountSql := `SELECT COUNT(DISTINCT p.id) as total
+			FROM projects p
+			LEFT JOIN project_tags pt ON p.id = pt.project_id
+			WHERE p.creator_id = ?`
+
+	getMyProjectWithTagsSql := `SELECT 
+				p.id,p.name,p.description,p.distribution_type,p.total_items,
+				p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.created_at,
+				GROUP_CONCAT(DISTINCT pt.tag SEPARATOR ',') AS tags
+			FROM projects p
+			LEFT JOIN project_tags pt ON p.id = pt.project_id
+			WHERE p.creator_id = ?`
+
+	var parameters = []interface{}{creatorID}
+
+	if len(tags) > 0 {
+		getTotalCountSql += ` AND pt.tag IN (?)`
+		getMyProjectWithTagsSql += ` AND pt.tag IN (?)`
+		parameters = append(parameters, tags)
+	}
 
 	// 查询总数
 	var total int64
-	if err := db.DB(ctx).Model(&Project{}).Where("creator_id = ?", creatorID).Count(&total).Error; err != nil {
+	if err := db.DB(ctx).Raw(getTotalCountSql, parameters...).Count(&total).Error; err != nil {
 		return nil, err
 	}
 
@@ -91,18 +112,11 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 	}
 
 	// 查询项目列表及其标签
+	getMyProjectWithTagsSql += ` GROUP BY p.id LIMIT ? OFFSET ?`
+	parameters = append(parameters, limit, offset)
 	var projectsWithTags []ProjectWithTags
 	if err := db.DB(ctx).
-		Raw(`SELECT 
-				p.id,p.name,p.description,p.distribution_type,p.total_items,
-				p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.created_at,
-				GROUP_CONCAT(DISTINCT pt.tag SEPARATOR ',') AS tags
-			FROM projects p
-			LEFT JOIN project_tags pt ON p.id = pt.project_id
-			WHERE p.creator_id = ?
-			GROUP BY p.id
-			LIMIT ? OFFSET ?`, creatorID, limit, offset).
-		Scan(&projectsWithTags).Error; err != nil {
+		Raw(getMyProjectWithTagsSql, parameters...).Scan(&projectsWithTags).Error; err != nil {
 		return nil, err
 	}
 

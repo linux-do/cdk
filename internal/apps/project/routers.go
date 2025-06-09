@@ -26,11 +26,11 @@ type ProjectRequest struct {
 	RiskLevel         int8             `json:"risk_level" binding:"min=0,max=100"`
 }
 type GetProjectResponseData struct {
-    Project             `json:",inline"`      // 内嵌所有 Project 字段
-    CreatorUsername     string       `json:"creator_username"`
-    CreatorNickname     string       `json:"creator_nickname"`
-    Tags                []string     `json:"tags"`
-    AvailableItemsCount int64        `json:"available_items_count"`
+	Project             `json:",inline"` // 内嵌所有 Project 字段
+	CreatorUsername     string           `json:"creator_username"`
+	CreatorNickname     string           `json:"creator_nickname"`
+	Tags                []string         `json:"tags"`
+	AvailableItemsCount int64            `json:"available_items_count"`
 }
 
 // GetProject
@@ -46,14 +46,14 @@ func GetProject(c *gin.Context) {
 
 	var project Project // Project struct is in the same package
 	if err := project.Exact(db.DB(c.Request.Context()), projectID); err != nil {
-	    c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
-	    return
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
 	}
 
 	tags, err := project.GetTags(db.DB(c.Request.Context()))
 	if err != nil {
-	    c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
-	    return
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
 	}
 
 	// compute claimed items using stock
@@ -65,11 +65,11 @@ func GetProject(c *gin.Context) {
 	availableItemsCount := stock
 
 	responseData := GetProjectResponseData{
-	    Project:             project,
-	    CreatorUsername:     project.Creator.Username,
-	    CreatorNickname:     project.Creator.Nickname,
-	    Tags:                tags,
-	    AvailableItemsCount: availableItemsCount,
+		Project:             project,
+		CreatorUsername:     project.Creator.Username,
+		CreatorNickname:     project.Creator.Nickname,
+		Tags:                tags,
+		AvailableItemsCount: availableItemsCount,
 	}
 
 	c.JSON(http.StatusOK, ProjectResponse{Data: responseData})
@@ -475,7 +475,9 @@ func ListProjects(c *gin.Context) {
 	}
 	offset := (req.Current - 1) * req.Size
 
-	pagedData, err := ListProjectsWithTags(c.Request.Context(), offset, req.Size, req.Tags)
+	currentUser, _ := oauth.GetUserFromContext(c)
+
+	pagedData, err := ListProjectsWithTags(c.Request.Context(), offset, req.Size, req.Tags, currentUser)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
@@ -502,7 +504,7 @@ func ListMyProjects(c *gin.Context) {
 	}
 	offset := (req.Current - 1) * req.Size
 
-	pagedData, err := ListMyProjectsWithTags(c.Request.Context(), userID, offset, req.Size)
+	pagedData, err := ListMyProjectsWithTags(c.Request.Context(), userID, offset, req.Size, req.Tags)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
