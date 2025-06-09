@@ -422,15 +422,16 @@ func ListProjects(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
 	}
+	offset := (req.Current - 1) * req.Size
 
-	page, err := (&Project{}).ListProjectsWithTags(c.Request.Context(), req.Current, req.Size)
+	pagedData, err := ListProjectsWithTags(c.Request.Context(), offset, req.Size)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, ListProjectsResponse{
-		Data: BuildListProjectsResponse(page),
+		Data: BuildListProjectsResponse(pagedData),
 	})
 }
 
@@ -448,14 +449,15 @@ func ListMyProjects(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
 	}
+	offset := (req.Current - 1) * req.Size
 
-	page, err := (&Project{}).ListMyProjectsWithTags(c.Request.Context(), userID, req.Current, req.Size)
+	pagedData, err := ListMyProjectsWithTags(c.Request.Context(), userID, offset, req.Size)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, ListProjectsResponse{
-		Data: BuildListProjectsResponse(page),
+		Data: BuildListProjectsResponse(pagedData),
 	})
 }
