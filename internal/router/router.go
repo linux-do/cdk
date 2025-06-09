@@ -84,7 +84,6 @@ func Serve() {
 				projectRouter.DELETE("/:id", project.ProjectCreatorPermMiddleware(), project.DeleteProject)
 				projectRouter.POST("/:id/receive", project.ReceiveProjectMiddleware(), project.ReceiveProject)
 				projectRouter.GET("/received", project.ListReceiveHistory)
-				projectRouter.GET("/:id", project.GetProject) // New route for getting a specific project
 			}
 
 			// Tag
