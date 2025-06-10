@@ -28,7 +28,7 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string,
 	getTotalCountSql := `SELECT COUNT(DISTINCT p.id) as total
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
-			WHERE p.is_completed = false AND p.end_time > ? AND p.minimum_trust_level <= ? AND p.risk_level >= ?`
+			WHERE p.end_time > ? AND p.is_completed = false AND p.minimum_trust_level <= ? AND p.risk_level >= ?`
 
 	getProjectWithTagsSql := `SELECT 
     			p.id,p.name,p.description,p.distribution_type,p.total_items,
@@ -36,7 +36,7 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string,
 				GROUP_CONCAT(DISTINCT pt.tag SEPARATOR ',') AS tags
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
-			WHERE p.is_completed = false AND p.end_time > ? AND p.minimum_trust_level <= ? AND p.risk_level >= ?`
+			WHERE p.end_time > ? AND p.is_completed = false AND p.minimum_trust_level <= ? AND p.risk_level >= ?`
 
 	var parameters = []interface{}{now, currentUser.TrustLevel, currentUser.RiskLevel()}
 	if len(tags) > 0 {

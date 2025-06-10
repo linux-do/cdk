@@ -34,6 +34,7 @@ func LoginRequired() gin.HandlerFunc {
 
 		// set user info
 		SetUserToContext(c, &user)
+
 		// next
 		c.Next()
 	}
