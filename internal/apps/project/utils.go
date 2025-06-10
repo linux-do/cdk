@@ -22,7 +22,7 @@ type ProjectsPage struct {
 }
 
 // ListProjectsWithTags 查询未结束的项目列表及其标签
-func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string, currentUser *oauth.User) (*ProjectsPage, error) {
+func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string, currentUser *oauth.User) (*ListProjectsResponseData, error) {
 	now := time.Now()
 
 	getTotalCountSql := `SELECT COUNT(DISTINCT p.id) as total
@@ -53,9 +53,9 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string,
 
 	// 如果没有符合条件的项目，返回空结果
 	if total == 0 {
-		return &ProjectsPage{
-			Total: 0,
-			Items: []ProjectWithTags{},
+		return &ListProjectsResponseData{
+			Total:   0,
+			Results: []ListProjectsResponseDataResult{},
 		}, nil
 	}
 	// 查询项目列表及其标签
@@ -68,14 +68,14 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string,
 		return nil, err
 	}
 
-	return &ProjectsPage{
+	return BuildListProjectsResponse(&ProjectsPage{
 		Total: total,
 		Items: projectsWithTags,
-	}, nil
+	}), nil
 }
 
 // ListMyProjectsWithTags 查询我创建的项目列表及其标签
-func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit int, tags []string) (*ProjectsPage, error) {
+func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit int, tags []string) (*ListProjectsResponseData, error) {
 	getTotalCountSql := `SELECT COUNT(DISTINCT p.id) as total
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
@@ -105,9 +105,9 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 
 	// 如果没有符合条件的项目，返回空结果
 	if total == 0 {
-		return &ProjectsPage{
-			Total: 0,
-			Items: []ProjectWithTags{},
+		return &ListProjectsResponseData{
+			Total:   0,
+			Results: []ListProjectsResponseDataResult{},
 		}, nil
 	}
 
@@ -120,16 +120,16 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 		return nil, err
 	}
 
-	return &ProjectsPage{
+	return BuildListProjectsResponse(&ProjectsPage{
 		Total: total,
 		Items: projectsWithTags,
-	}, nil
+	}), nil
 }
 
 // BuildListProjectsResponse 将ProjectsPage转换为ListProjectsResponseData
-func BuildListProjectsResponse(page *ProjectsPage) ListProjectsResponseData {
+func BuildListProjectsResponse(page *ProjectsPage) *ListProjectsResponseData {
 	if page == nil {
-		return ListProjectsResponseData{
+		return &ListProjectsResponseData{
 			Total:   0,
 			Results: []ListProjectsResponseDataResult{},
 		}
@@ -138,7 +138,7 @@ func BuildListProjectsResponse(page *ProjectsPage) ListProjectsResponseData {
 	results := make([]ListProjectsResponseDataResult, len(page.Items))
 
 	if len(page.Items) == 0 {
-		return ListProjectsResponseData{
+		return &ListProjectsResponseData{
 			Total:   page.Total,
 			Results: results,
 		}
@@ -177,7 +177,7 @@ func BuildListProjectsResponse(page *ProjectsPage) ListProjectsResponseData {
 
 	wg.Wait()
 
-	return ListProjectsResponseData{
+	return &ListProjectsResponseData{
 		Total:   page.Total,
 		Results: results,
 	}

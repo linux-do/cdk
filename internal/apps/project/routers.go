@@ -457,8 +457,8 @@ type ListProjectsResponseData struct {
 }
 
 type ListProjectsResponse struct {
-	ErrorMsg string                   `json:"error_msg"`
-	Data     ListProjectsResponseData `json:"data"`
+	ErrorMsg string                    `json:"error_msg"`
+	Data     *ListProjectsResponseData `json:"data"`
 }
 
 // ListProjects
@@ -484,7 +484,7 @@ func ListProjects(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, ListProjectsResponse{
-		Data: BuildListProjectsResponse(pagedData),
+		Data: pagedData,
 	})
 }
 
@@ -511,6 +511,6 @@ func ListMyProjects(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, ListProjectsResponse{
-		Data: BuildListProjectsResponse(pagedData),
+		Data: pagedData,
 	})
 }
