@@ -305,6 +305,18 @@ func ReceiveProject(c *gin.Context) {
 			if err := tx.Save(item).Error; err != nil {
 				return err
 			}
+
+			// query remaining items
+			if hasStock, err := project.HasStock(c.Request.Context()); err != nil {
+				return err
+			} else if !hasStock {
+				// if remaining is 0, mark project as completed
+				project.IsCompleted = true
+				if err := tx.Save(project).Error; err != nil {
+					return err
+				}
+			}
+
 			// check for ip
 			if !project.AllowSameIP {
 				if err := db.Redis.SetNX(
@@ -315,7 +327,6 @@ func ReceiveProject(c *gin.Context) {
 				).Err(); err != nil {
 					return err
 				}
-
 			}
 			return nil
 		},
