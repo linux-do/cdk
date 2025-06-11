@@ -13,6 +13,7 @@ import {ArrowLeftIcon, Copy, Tag, Gift, Clock, AlertCircle, Package} from 'lucid
 import {toast} from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import {formatDateTimeWithSeconds} from '@/lib/utils';
 
 /** 项目领取状态 */
 interface ReceiveState {
@@ -45,18 +46,6 @@ const getTimeRemainingText = (startTime: Date, currentTime: Date): string | null
   if (hours > 0) return `还剩${hours}小时${minutes}分钟`;
   if (minutes > 0) return `还剩${minutes}分${seconds}秒`;
   return `还剩${seconds}秒`;
-};
-
-/** 格式化日期时间 */
-const formatDateTime = (dateString: string): string => {
-  return new Date(dateString).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
 };
 
 const copyToClipboard = async (text: string): Promise<void> => {
@@ -423,7 +412,7 @@ export function ReceiveMain() {
             )}
           </div>
           <div className="text-sm text-muted-foreground">
-            {formatDateTime(project.start_time)} - {formatDateTime(project.end_time)}
+            {formatDateTimeWithSeconds(project.start_time)} - {formatDateTimeWithSeconds(project.end_time)}
           </div>
         </div>
 

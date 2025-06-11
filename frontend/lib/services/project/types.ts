@@ -180,7 +180,7 @@ export interface GetProjectResponseData extends Project {
   /** 创建者昵称 */
   creator_nickname: string;
   /** 项目标签列表 */
-  tags: string[];
+  tags: string[] | null;
   /** 可领取数量 */
   available_items_count: number;
 }
@@ -189,3 +189,60 @@ export interface GetProjectResponseData extends Project {
  * 获取项目详情响应类型
  */
 export type GetProjectResponse = BackendResponse<GetProjectResponseData>;
+
+/**
+ * 项目列表请求参数
+ */
+export interface ListProjectsRequest {
+  /** 当前页码 */
+  current: number;
+  /** 每页数量 */
+  size: number;
+  /** 标签过滤 */
+  tags?: string[];
+}
+
+/**
+ * 项目列表项
+ */
+export interface ProjectListItem {
+  /** 项目ID */
+  id: string;
+  /** 项目名称 */
+  name: string;
+  /** 项目描述 */
+  description: string;
+  /** 分发类型 */
+  distribution_type: DistributionType;
+  /** 总物品数量 */
+  total_items: number;
+  /** 开始时间 */
+  start_time: string;
+  /** 结束时间 */
+  end_time: string;
+  /** 最低信任等级 */
+  minimum_trust_level: TrustLevel;
+  /** 是否允许同一IP */
+  allow_same_ip: boolean;
+  /** 风险等级 */
+  risk_level: number;
+  /** 项目标签列表 */
+  tags: string[] | null;
+  /** 创建时间 */
+  created_at: string;
+}
+
+/**
+ * 项目列表数据
+ */
+export interface ProjectListData {
+  /** 总数量 */
+  total: number;
+  /** 结果列表 */
+  results: ProjectListItem[];
+}
+
+/**
+ * 项目列表响应类型
+ */
+export type ProjectListResponse = BackendResponse<ProjectListData>;
