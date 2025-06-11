@@ -263,7 +263,6 @@ export function CreateDialog({children, onProjectCreated}: { children?: React.Re
       setCreatedProject({id: projectId, name: formData.name.trim()});
       toast.success('项目创建成功！');
       
-      // 调用回调函数，通知父组件新项目已创建
       onProjectCreated?.(newProject);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '创建项目失败';

@@ -13,7 +13,11 @@ import {ProjectCard} from '@/components/common/project/ProjectCard';
 import services from '@/lib/services';
 import {ProjectListItem, ListProjectsRequest} from '@/lib/services/project/types';
 
-export function MineProject() {
+interface MineProjectProps {
+  onProjectCreated?: (project: ProjectListItem) => void;
+}
+
+export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
   const router = useRouter();
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -25,6 +29,25 @@ export function MineProject() {
   const [deleting, setDeleting] = useState(false);
   const [pageCache, setPageCache] = useState<Map<number, ProjectListItem[]>>(new Map());
   const pageSize = 12;
+
+  /**
+   * 处理新项目创建
+   */
+  const handleProjectCreated = (newProject: ProjectListItem) => {
+    setProjects(prev => [newProject, ...prev]);
+    setTotal(prev => prev + 1);
+    
+    setPageCache(new Map());
+    
+    setProjects(prev => {
+      if (prev.length > pageSize) {
+        return prev.slice(0, pageSize);
+      }
+      return prev;
+    });
+    
+    onProjectCreated?.(newProject);
+  };
 
   /** 获取项目列表 */
   const fetchProjects = async (page: number = 1, forceRefresh: boolean = false) => {
@@ -183,7 +206,7 @@ export function MineProject() {
             <p className="text-sm text-muted-foreground mb-4">
               您还没有创建任何项目，点击下方按钮创建您的第一个项目
             </p>
-            <CreateDialog />
+            <CreateDialog onProjectCreated={handleProjectCreated} />
           </div>
         </CardContent>
       </Card>

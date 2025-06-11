@@ -3,11 +3,18 @@
 import {CreateDialog} from '@/components/common/project/CreateDialog';
 import {MineProject} from '@/components/common/project/MineProject';
 import {Separator} from '@/components/ui/separator';
+import {ProjectListItem} from '@/lib/services/project/types';
+import {useState} from 'react';
 
 /**
  * 项目主页组件
  */
 export function ProjectMain() {
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleProjectCreated = (project: ProjectListItem) => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   return (
     <div className="space-y-6">
@@ -20,14 +27,14 @@ export function ProjectMain() {
           </p>
         </div>
         <div>
-          <CreateDialog />
+          <CreateDialog onProjectCreated={handleProjectCreated} />
         </div>
       </div>
 
       <Separator className="my-8" />
 
       {/* 项目列表区域 */}
-      <MineProject />
+      <MineProject key={refreshTrigger} onProjectCreated={handleProjectCreated} />
     </div>
   );
 }
