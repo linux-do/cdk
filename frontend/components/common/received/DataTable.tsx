@@ -54,7 +54,7 @@ const copyToClipboard = async (text: string): Promise<void> => {
 /** 打开项目详情页 */
 const openProjectDetail = (projectId: string): void => {
   const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_BASE_URL || window.location.origin;
-  const url = `${baseUrl}/received/${projectId}`;
+  const url = `${baseUrl}/receive/${projectId}`;
   window.open(url, '_blank');
 };
 

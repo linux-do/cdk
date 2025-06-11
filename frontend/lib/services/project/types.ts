@@ -170,3 +170,22 @@ export type ReceiveProjectData = null;
  * 领取项目响应类型
  */
 export type ReceiveProjectResponse = BackendResponse<ReceiveProjectData>;
+
+/**
+ * 获取项目详情响应数据
+ */
+export interface GetProjectResponseData extends Project {
+  /** 创建者用户名 */
+  creator_username: string;
+  /** 创建者昵称 */
+  creator_nickname: string;
+  /** 项目标签列表 */
+  tags: string[];
+  /** 可领取数量 */
+  available_items_count: number;
+}
+
+/**
+ * 获取项目详情响应类型
+ */
+export type GetProjectResponse = BackendResponse<GetProjectResponseData>;
