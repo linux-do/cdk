@@ -6,7 +6,6 @@ import {Separator} from '@/components/ui/separator';
 
 /**
  * 项目主页组件
- * 显示项目列表页面的主要内容，包含标题和创建项目功能
  */
 export function ProjectMain() {
 
