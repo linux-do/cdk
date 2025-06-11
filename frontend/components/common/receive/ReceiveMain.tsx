@@ -1,11 +1,11 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useCallback} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 import {useAuth} from '@/hooks/use-auth';
 import services from '@/lib/services';
 import {GetProjectResponseData} from '@/lib/services/project';
-import {TrustLevel} from '@/lib/services/core';
+import {TrustLevel, BasicUserInfo} from '@/lib/services/core';
 import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
 import {Skeleton} from '@/components/ui/skeleton';
@@ -35,12 +35,12 @@ const trustLevelOptions = [
 const getTimeRemainingText = (startTime: Date, currentTime: Date): string | null => {
   const diff = startTime.getTime() - currentTime.getTime();
   if (diff <= 0) return null;
-  
+
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  
+
   if (days > 0) return `还剩${days}天${hours}小时`;
   if (hours > 0) return `还剩${hours}小时${minutes}分钟`;
   if (minutes > 0) return `还剩${minutes}分${seconds}秒`;
@@ -80,20 +80,19 @@ const useProjectData = (projectId: string | undefined, isAuthenticated: boolean,
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProjectDetails = async () => {
+  const fetchProjectDetails = useCallback(async () => {
     if (!projectId || !isAuthenticated) return;
 
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const result = await services.project.getProjectSafe(projectId);
-      
+
       if (result.success && result.data) {
         setProject(result.data);
-        
-        // TODO: 后端字段增加后，从 API 获取用户的领取状态
 
+        // TODO: 后端字段增加后，从 API 获取用户的领取状态
       } else {
         setError(result.error || '获取项目详情失败');
       }
@@ -102,13 +101,13 @@ const useProjectData = (projectId: string | undefined, isAuthenticated: boolean,
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId, isAuthenticated]);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && projectId) {
       fetchProjectDetails();
     }
-  }, [authLoading, isAuthenticated, projectId]);
+  }, [authLoading, isAuthenticated, projectId, fetchProjectDetails]);
 
   return {
     project,
@@ -123,9 +122,9 @@ const useProjectData = (projectId: string | undefined, isAuthenticated: boolean,
 
 /** 项目领取Hook */
 const useReceiveProject = (
-  projectId: string | undefined,
-  setProject: React.Dispatch<React.SetStateAction<GetProjectResponseData | null>>,
-  setReceiveStatus: (status: ReceiveState) => void,
+    projectId: string | undefined,
+    setProject: React.Dispatch<React.SetStateAction<GetProjectResponseData | null>>,
+    setReceiveStatus: (status: ReceiveState) => void,
 ) => {
   const [receiveState, setReceiveState] = useState<ReceiveState>({
     isReceiving: false,
@@ -138,40 +137,40 @@ const useReceiveProject = (
     if (!projectId || receiveState.isReceiving) return;
 
     try {
-      setReceiveState(prev => ({...prev, isReceiving: true}));
+      setReceiveState((prev) => ({...prev, isReceiving: true}));
 
       const result = await services.project.receiveProjectSafe(projectId);
 
       if (result.success) {
-        setProject(prev => prev ? {
+        setProject((prev) => prev ? {
           ...prev,
           available_items_count: prev.available_items_count - 1,
         } : null);
-        
+
         // TODO: 后端字段增加后，使用实际返回的内容
         const receivedContent = '您的兑换码'; // result.data?.content
-        
+
         setReceiveState({
           isReceiving: false,
           hasReceived: true,
           receivedContent,
           receivedAt: new Date().toISOString(),
         });
-        
+
         setReceiveStatus({
           isReceiving: false,
           hasReceived: true,
           receivedContent,
           receivedAt: new Date().toISOString(),
         });
-        
+
         toast.success('领取成功！');
       } else {
-        setReceiveState(prev => ({...prev, isReceiving: false}));
+        setReceiveState((prev) => ({...prev, isReceiving: false}));
         toast.error(result.error || '领取失败');
       }
     } catch (err) {
-      setReceiveState(prev => ({...prev, isReceiving: false}));
+      setReceiveState((prev) => ({...prev, isReceiving: false}));
       const errorMessage = err instanceof Error ? err.message : '领取失败';
       toast.error(errorMessage);
     }
@@ -189,7 +188,7 @@ const ReceiveButton = ({
   onReceive,
 }: {
   project: GetProjectResponseData;
-  user: any;
+  user: BasicUserInfo | null;
   currentTime: Date;
   receiveState: ReceiveState;
   receiveStatus: ReceiveState;
@@ -249,7 +248,7 @@ const ReceiveButton = ({
     );
   }
 
-  if (user.trust_level < project.minimum_trust_level) {
+  if (!user || user.trust_level < project.minimum_trust_level) {
     return (
       <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed">
         <AlertCircle className="w-4 h-4 mr-2" />
@@ -275,7 +274,7 @@ const LoadingSkeleton = () => (
     <div className="flex items-center justify-between">
       <Skeleton className="h-8 w-20" />
     </div>
-    
+
     <div className="flex items-start justify-between gap-4">
       <div className="space-y-4">
         <Skeleton className="h-12 w-64" />
@@ -286,7 +285,7 @@ const LoadingSkeleton = () => (
         </div>
         <Skeleton className="h-5 w-48" />
       </div>
-      
+
       <div className="text-right space-y-2">
         <Skeleton className="h-4 w-20 ml-auto" />
         <Skeleton className="h-10 w-10 ml-auto" />
@@ -329,7 +328,7 @@ const ErrorState = ({error, onRetry, onBack}: {error: string; onRetry: () => voi
       <ArrowLeftIcon className="h-4 w-4 mr-2" />
       返回
     </Button>
-    
+
     <div className="text-center py-12">
       <h2 className="text-lg font-medium text-gray-900 mb-2">获取项目信息失败</h2>
       <p className="text-gray-600 mb-4">{error}</p>
@@ -345,9 +344,9 @@ export function ReceiveMain() {
   const params = useParams();
   const {isAuthenticated, user, isLoading: authLoading} = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
-  
+
   const projectId = Array.isArray(params.projectId) ? params.projectId[0] : params.projectId;
-  
+
   const {
     project,
     receiveStatus,
@@ -357,11 +356,11 @@ export function ReceiveMain() {
     refetch,
     setProject,
   } = useProjectData(projectId, isAuthenticated, authLoading);
-  
+
   const {receiveState, handleReceive} = useReceiveProject(
-    projectId,
-    setProject,
-    setReceiveStatus,
+      projectId,
+      setProject,
+      setReceiveStatus,
   );
 
   // 自定义返回函数
@@ -389,7 +388,7 @@ export function ReceiveMain() {
   if (error) return <ErrorState error={error} onRetry={refetch} onBack={handleGoBack} />;
   if (!project) return <ErrorState error="项目不存在" onRetry={refetch} onBack={handleGoBack} />;
 
-  const trustLevelConfig = trustLevelOptions.find(option => option.value === project.minimum_trust_level);
+  const trustLevelConfig = trustLevelOptions.find((option) => option.value === project.minimum_trust_level);
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -473,7 +472,7 @@ export function ReceiveMain() {
         <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
           {project.description ? (
             <div className="text-gray-600 dark:text-gray-300 leading-relaxed markdown-content">
-              <ReactMarkdown 
+              <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
                   h1: ({children}) => <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">{children}</h1>,
@@ -507,4 +506,4 @@ export function ReceiveMain() {
       </div>
     </div>
   );
-} 
+}
