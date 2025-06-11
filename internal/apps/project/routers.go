@@ -26,11 +26,11 @@ type ProjectRequest struct {
 	RiskLevel         int8             `json:"risk_level" binding:"min=0,max=100"`
 }
 type GetProjectResponseData struct {
-    Project             `json:",inline"`      // 内嵌所有 Project 字段
-    CreatorUsername     string       `json:"creator_username"`
-    CreatorNickname     string       `json:"creator_nickname"`
-    Tags                []string     `json:"tags"`
-    AvailableItemsCount int64        `json:"available_items_count"`
+	Project             `json:",inline"` // 内嵌所有 Project 字段
+	CreatorUsername     string           `json:"creator_username"`
+	CreatorNickname     string           `json:"creator_nickname"`
+	Tags                []string         `json:"tags"`
+	AvailableItemsCount int64            `json:"available_items_count"`
 }
 
 // GetProject
@@ -46,14 +46,14 @@ func GetProject(c *gin.Context) {
 
 	var project Project // Project struct is in the same package
 	if err := project.Exact(db.DB(c.Request.Context()), projectID); err != nil {
-	    c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
-	    return
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
 	}
 
 	tags, err := project.GetTags(db.DB(c.Request.Context()))
 	if err != nil {
-	    c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
-	    return
+		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+		return
 	}
 
 	// compute claimed items using stock
@@ -65,11 +65,11 @@ func GetProject(c *gin.Context) {
 	availableItemsCount := stock
 
 	responseData := GetProjectResponseData{
-	    Project:             project,
-	    CreatorUsername:     project.Creator.Username,
-	    CreatorNickname:     project.Creator.Nickname,
-	    Tags:                tags,
-	    AvailableItemsCount: availableItemsCount,
+		Project:             project,
+		CreatorUsername:     project.Creator.Username,
+		CreatorNickname:     project.Creator.Nickname,
+		Tags:                tags,
+		AvailableItemsCount: availableItemsCount,
 	}
 
 	c.JSON(http.StatusOK, ProjectResponse{Data: responseData})
@@ -112,6 +112,7 @@ func CreateProject(c *gin.Context) {
 		AllowSameIP:       req.AllowSameIP,
 		RiskLevel:         req.RiskLevel,
 		CreatorID:         userID,
+		IsCompleted:       false,
 	}
 
 	// create project
@@ -304,6 +305,18 @@ func ReceiveProject(c *gin.Context) {
 			if err := tx.Save(item).Error; err != nil {
 				return err
 			}
+
+			// query remaining items
+			if hasStock, err := project.HasStock(c.Request.Context()); err != nil {
+				return err
+			} else if !hasStock {
+				// if remaining is 0, mark project as completed
+				project.IsCompleted = true
+				if err := tx.Save(project).Error; err != nil {
+					return err
+				}
+			}
+
 			// check for ip
 			if !project.AllowSameIP {
 				if err := db.Redis.SetNX(
@@ -314,7 +327,6 @@ func ReceiveProject(c *gin.Context) {
 				).Err(); err != nil {
 					return err
 				}
-
 			}
 			return nil
 		},
@@ -427,4 +439,89 @@ func ListTags(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, ListTagsResponse{Data: tags})
+}
+
+type ListProjectsRequest struct {
+	Current int      `json:"current" form:"current" binding:"min=1"`
+	Size    int      `json:"size" form:"size" binding:"min=1,max=100"`
+	Tags    []string `json:"tags" form:"tags" binding:"dive,min=1,max=16"`
+}
+
+type ListProjectsResponseDataResult struct {
+	ID                string           `json:"id"`
+	Name              string           `json:"name"`
+	Description       string           `json:"description"`
+	DistributionType  DistributionType `json:"distribution_type"`
+	TotalItems        int64            `json:"total_items"`
+	StartTime         time.Time        `json:"start_time"`
+	EndTime           time.Time        `json:"end_time"`
+	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level"`
+	AllowSameIP       bool             `json:"allow_same_ip"`
+	RiskLevel         int8             `json:"risk_level"`
+	Tags              []string         `json:"tags"`
+	CreatedAt         time.Time        `json:"created_at"`
+}
+
+type ListProjectsResponseData struct {
+	Total   int64                            `json:"total"`
+	Results []ListProjectsResponseDataResult `json:"results"`
+}
+
+type ListProjectsResponse struct {
+	ErrorMsg string                    `json:"error_msg"`
+	Data     *ListProjectsResponseData `json:"data"`
+}
+
+// ListProjects
+// @Tags project
+// @Params request query ListProjectsRequest true "request query"
+// @Produce json
+// @Success 200 {object} ListProjectsResponse
+// @Router /api/v1/projects [get]
+func ListProjects(c *gin.Context) {
+	req := &ListProjectsRequest{}
+	if err := c.ShouldBindQuery(req); err != nil {
+		c.JSON(http.StatusBadRequest, ListProjectsResponse{ErrorMsg: err.Error()})
+		return
+	}
+	offset := (req.Current - 1) * req.Size
+
+	currentUser, _ := oauth.GetUserFromContext(c)
+
+	pagedData, err := ListProjectsWithTags(c.Request.Context(), offset, req.Size, req.Tags, currentUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, ListProjectsResponse{
+		Data: pagedData,
+	})
+}
+
+// ListMyProjects
+// @Tags project
+// @Params request query ListProjectsRequest true "request query"
+// @Produce json
+// @Success 200 {object} ListProjectsResponse
+// @Router /api/v1/projects/mine [get]
+func ListMyProjects(c *gin.Context) {
+	userID := oauth.GetUserIDFromContext(c)
+
+	req := &ListProjectsRequest{}
+	if err := c.ShouldBindQuery(req); err != nil {
+		c.JSON(http.StatusBadRequest, ListProjectsResponse{ErrorMsg: err.Error()})
+		return
+	}
+	offset := (req.Current - 1) * req.Size
+
+	pagedData, err := ListMyProjectsWithTags(c.Request.Context(), userID, offset, req.Size, req.Tags)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, ListProjectsResponse{
+		Data: pagedData,
+	})
 }

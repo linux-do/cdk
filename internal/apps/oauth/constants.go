@@ -7,6 +7,7 @@ import (
 const (
 	UserNameKey = "username"
 	UserIDKey   = "user_id"
+	UserObjKey  = "user_obj"
 )
 
 type TrustLevel int8

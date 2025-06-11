@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-	"strconv"
-	"time"
 )
 
 type Project struct {
@@ -19,11 +20,12 @@ type Project struct {
 	DistributionType  DistributionType `json:"distribution_type"`
 	TotalItems        int64            `json:"total_items"`
 	StartTime         time.Time        `json:"start_time"`
-	EndTime           time.Time        `json:"end_time"`
-	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level"`
+	EndTime           time.Time        `json:"end_time" gorm:"index:idx_projects_end_completed_trust_risk,priority:1"`
+	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level" gorm:"index:idx_projects_end_completed_trust_risk,priority:3"`
 	AllowSameIP       bool             `json:"allow_same_ip"`
-	RiskLevel         int8             `json:"risk_level"`
+	RiskLevel         int8             `json:"risk_level" gorm:"index:idx_projects_end_completed_trust_risk,priority:4"`
 	CreatorID         uint64           `json:"creator_id" gorm:"index"`
+	IsCompleted       bool             `json:"is_completed" gorm:"index:idx_projects_end_completed_trust_risk,priority:2"`
 	Creator           oauth.User       `json:"-" gorm:"foreignKey:CreatorID"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt         time.Time        `json:"updated_at" gorm:"autoUpdateTime"`
@@ -61,14 +63,14 @@ func (p *Project) RefreshTags(tx *gorm.DB, tags []string) error {
 
 // GetTags retrieves all tags associated with the project.
 func (p *Project) GetTags(tx *gorm.DB) ([]string, error) {
-    var tags []string
-    if err := tx.Model(&ProjectTag{}).
-        Where("project_id = ?", p.ID).
-        Distinct("tag").
-        Pluck("tag", &tags).Error; err != nil {
-        return nil, err
-    }
-    return tags, nil
+	var tags []string
+	if err := tx.Model(&ProjectTag{}).
+		Where("project_id = ?", p.ID).
+		Distinct("tag").
+		Pluck("tag", &tags).Error; err != nil {
+		return nil, err
+	}
+	return tags, nil
 }
 
 func (p *Project) CreateItems(ctx context.Context, tx *gorm.DB, items []string) error {
