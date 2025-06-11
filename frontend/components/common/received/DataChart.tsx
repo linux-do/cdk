@@ -9,6 +9,9 @@ import {Skeleton} from '@/components/ui/skeleton';
 import {ReceiveHistoryItem} from '@/lib/services/project/types';
 import {CountingNumber} from '@/components/animate-ui/text/counting-number';
 
+/**
+ * 时间范围配置
+ */
 const TIME_RANGE_CONFIG = {
   '7d': {label: '7天', days: 7},
   '30d': {label: '30天', days: 30},
@@ -16,138 +19,29 @@ const TIME_RANGE_CONFIG = {
   '6m': {label: '6个月', months: 6},
 } as const;
 
+/**
+ * 图表配置
+ */
 const CHART_CONFIG = {
-  count: {
-    label: '领取数量',
-    color: '#2563eb',
-  },
+  count: {label: '领取数量', color: '#2563eb'},
 } satisfies ChartConfig;
 
 type TimeRange = keyof typeof TIME_RANGE_CONFIG
 
+/**
+ * 数据图表组件的Props接口
+ */
 interface DataChartProps {
+  /** 领取历史数据 */
   data: ReceiveHistoryItem[]
+  /** 是否正在加载 */
   isLoading?: boolean
 }
 
-interface ChartDataItem {
-  date: string
-  displayDate: string
-  count: number
-}
-
-interface StatsData {
-  total: number
-  today: number
-  thisMonth: number
-  avgDaily: number
-}
-
-/** 格式化日期 */
-const formatDate = (date: Date, format: 'day' | 'month'): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-
-  if (format === 'month') {
-    return `${year}-${month}`;
-  }
-
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-/** 计算统计数据 */
-const calculateStats = (data: ReceiveHistoryItem[]): StatsData => {
-  const today = new Date();
-  const todayStr = formatDate(today, 'day');
-  const thisMonthStr = formatDate(today, 'month');
-
-  let todayCount = 0;
-  let thisMonthCount = 0;
-  const total = data.length;
-
-  data.forEach((item) => {
-    if (item.received_at) {
-      const date = new Date(item.received_at);
-      const dateStr = formatDate(date, 'day');
-      const monthStr = formatDate(date, 'month');
-
-      if (dateStr === todayStr) {
-        todayCount++;
-      }
-      if (monthStr === thisMonthStr) {
-        thisMonthCount++;
-      }
-    }
-  });
-
-  const currentDay = today.getDate();
-  const avgDaily = currentDay > 0 ? Math.round(thisMonthCount / currentDay * 10) / 10 : 0;
-
-  return {
-    total,
-    today: todayCount,
-    thisMonth: thisMonthCount,
-    avgDaily,
-  };
-};
-
-/** 生成图表数据 */
-const generateChartData = (data: ReceiveHistoryItem[], timeRange: TimeRange): ChartDataItem[] => {
-  const config = TIME_RANGE_CONFIG[timeRange];
-  const isMonthRange = 'months' in config;
-  const format = isMonthRange ? 'month' : 'day';
-
-  // 时间范围和统计数据
-  const today = new Date();
-  const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  const statsMap = new Map<string, number>();
-  const dateRange: string[] = [];
-
-  // 统计实际数据
-  data.forEach((item) => {
-    if (item.received_at) {
-      const key = formatDate(new Date(item.received_at), format);
-      statsMap.set(key, (statsMap.get(key) || 0) + 1);
-    }
-  });
-
-  // 完整时间范围
-  if (isMonthRange) {
-    for (let i = config.months - 1; i >= 0; i--) {
-      const date = new Date(startDate.getFullYear(), startDate.getMonth() - i, 1);
-      dateRange.push(formatDate(date, 'month'));
-    }
-  } else {
-    for (let i = config.days - 1; i >= 0; i--) {
-      const date = new Date(startDate.getTime() - i * 24 * 60 * 60 * 1000);
-      dateRange.push(formatDate(date, 'day'));
-    }
-  }
-
-  return dateRange.map((dateKey) => {
-    let displayDate: string;
-
-    if (isMonthRange) {
-      const month = dateKey.split('-')[1];
-      displayDate = `${month}月`;
-    } else {
-      const [, month, day] = dateKey.split('-');
-      displayDate = `${month}/${day}`;
-    }
-
-    return {
-      date: dateKey,
-      displayDate,
-      count: statsMap.get(dateKey) || 0,
-    };
-  });
-};
-
-// 统计数据卡片
-const StatCard = ({title, value, suffix = ''}: { title: string; value: number; suffix?: string }) => {
-  // 根据数值是否有小数来决定显示的小数位数
+/**
+ * 统计数据卡片组件
+ */
+const StatCard = ({title, value, suffix = ''}: {title: string; value: number; suffix?: string}) => {
   const decimalPlaces = value % 1 === 0 ? 0 : 2;
 
   return (
@@ -160,7 +54,9 @@ const StatCard = ({title, value, suffix = ''}: { title: string; value: number; s
   );
 };
 
-/** 骨架屏组件 */
+/**
+ * 数据图表骨架屏组件
+ */
 const DataChartSkeleton = () => {
   const chartBarHeights = [60, 35, 50, 25, 30, 55, 45];
 
@@ -205,6 +101,9 @@ const DataChartSkeleton = () => {
   );
 };
 
+/**
+ * 数据图表组件
+ */
 export function DataChart({data, isLoading}: DataChartProps) {
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState<TimeRange>('7d');
@@ -213,21 +112,109 @@ export function DataChart({data, isLoading}: DataChartProps) {
     if (isMobile) setTimeRange('7d');
   }, [isMobile]);
 
-  const chartData = React.useMemo(() =>
-    generateChartData(data, timeRange),
-  [data, timeRange],
-  );
+  /**
+   * 生成图表数据，根据时间范围聚合统计
+   */
+  const chartData = React.useMemo(() => {
+    const config = TIME_RANGE_CONFIG[timeRange];
+    const isMonthRange = 'months' in config;
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-  const stats = React.useMemo(() =>
-    calculateStats(data),
-  [data],
-  );
+    const statsMap = new Map<string, number>();
+    data.forEach((item) => {
+      if (item.received_at) {
+        const date = new Date(item.received_at);
+        let key: string;
+        
+        if (isMonthRange) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          key = `${year}-${month}`;
+        } else {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          key = `${year}-${month}-${day}`;
+        }
+        
+        statsMap.set(key, (statsMap.get(key) || 0) + 1);
+      }
+    });
 
-  const handleTimeRangeChange = (value: string) => {
-    if (value in TIME_RANGE_CONFIG) {
-      setTimeRange(value as TimeRange);
+    const dateRange: string[] = [];
+    if (isMonthRange) {
+      for (let i = config.months - 1; i >= 0; i--) {
+        const date = new Date(startDate.getFullYear(), startDate.getMonth() - i, 1);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        dateRange.push(`${year}-${month}`);
+      }
+    } else {
+      for (let i = config.days - 1; i >= 0; i--) {
+        const date = new Date(startDate.getTime() - i * 24 * 60 * 60 * 1000);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        dateRange.push(`${year}-${month}-${day}`);
+      }
     }
-  };
+
+    return dateRange.map((dateKey) => {
+      let displayDate: string;
+      
+      if (isMonthRange) {
+        const month = dateKey.split('-')[1];
+        displayDate = `${month}月`;
+      } else {
+        const [, month, day] = dateKey.split('-');
+        displayDate = `${month}/${day}`;
+      }
+
+      return {
+        date: dateKey,
+        displayDate,
+        count: statsMap.get(dateKey) || 0,
+      };
+    });
+  }, [data, timeRange]);
+
+  /**
+   * 计算统计数据（总计、今日、本月、日均）
+   */
+  const stats = React.useMemo(() => {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const thisMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+    let todayCount = 0;
+    let thisMonthCount = 0;
+
+    data.forEach((item) => {
+      if (item.received_at) {
+        const date = new Date(item.received_at);
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+        if (dateStr === todayStr) {
+          todayCount++;
+        }
+        if (monthStr === thisMonthStr) {
+          thisMonthCount++;
+        }
+      }
+    });
+
+    const currentDay = today.getDate();
+    const avgDaily = currentDay > 0 ? Math.round(thisMonthCount / currentDay * 10) / 10 : 0;
+
+    return {
+      total: data.length,
+      today: todayCount,
+      thisMonth: thisMonthCount,
+      avgDaily,
+    };
+  }, [data]);
 
   if (isLoading) {
     return <DataChartSkeleton />;
@@ -235,7 +222,6 @@ export function DataChart({data, isLoading}: DataChartProps) {
 
   return (
     <div className="space-y-4">
-      {/* 统计数据 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard title="总计" value={stats.total} />
         <StatCard title="今日" value={stats.today} />
@@ -243,7 +229,6 @@ export function DataChart({data, isLoading}: DataChartProps) {
         <StatCard title="日均" value={stats.avgDaily} />
       </div>
 
-      {/* 图表区域 */}
       <div>
         <div className="mb-4">
           <div className="flex items-center justify-between">
@@ -252,10 +237,12 @@ export function DataChart({data, isLoading}: DataChartProps) {
             </h2>
 
             <div>
-              <Select value={timeRange} onValueChange={handleTimeRangeChange}>
-                <SelectTrigger
-                  className="flex w-24 max-h-[32px] text-xs"
-                >
+              <Select value={timeRange} onValueChange={(value) => {
+                if (value in TIME_RANGE_CONFIG) {
+                  setTimeRange(value as TimeRange);
+                }
+              }}>
+                <SelectTrigger className="flex w-24 max-h-[32px] text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="w-24">

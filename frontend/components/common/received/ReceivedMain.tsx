@@ -5,81 +5,75 @@ import {DataChart} from './DataChart';
 import {DataTable} from './DataTable';
 import {Separator} from '@/components/ui/separator';
 import {toast} from 'sonner';
-import {useAuth} from '@/hooks/use-auth';
 import services from '@/lib/services';
 import {ReceiveHistoryItem} from '@/lib/services/project/types';
 
-/** 领取记录数据获取逻辑 */
-const useReceiveHistory = (isAuthenticated: boolean, authLoading: boolean) => {
+const PAGE_SIZE = 100;
+
+/**
+ * 我的领取页面主组件
+ */
+export function ReceivedMain() {
   const [data, setData] = useState<ReceiveHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!isAuthenticated || authLoading) {
-        return;
+  /**
+   * 获取所有领取记录
+   */
+  const fetchAllReceiveHistory = async () => {
+    try {
+      setLoading(true);
+
+      const firstPageResult = await services.project.getReceiveHistorySafe({
+        current: 1,
+        size: PAGE_SIZE,
+      });
+
+      if (!firstPageResult.success || !firstPageResult.data) {
+        throw new Error(firstPageResult.error || '获取数据失败');
       }
 
-      try {
-        setLoading(true);
+      const {total, results} = firstPageResult.data;
+      let allResults = [...results];
 
-        // 获取第一页数据
-        const firstPageResult = await services.project.getReceiveHistorySafe({
-          current: 1,
-          size: 100,
+      if (total > PAGE_SIZE) {
+        const totalPages = Math.ceil(total / PAGE_SIZE);
+        const remainingPages = Array.from({length: totalPages - 1}, (_, i) => i + 2);
+        
+        const remainingRequests = remainingPages.map(page =>
+          services.project.getReceiveHistorySafe({
+            current: page,
+            size: PAGE_SIZE,
+          })
+        );
+
+        const remainingResults = await Promise.all(remainingRequests);
+        
+        remainingResults.forEach(result => {
+          if (result.success && result.data) {
+            allResults.push(...result.data.results);
+          }
         });
-
-        if (!firstPageResult.success || !firstPageResult.data) {
-          throw new Error(firstPageResult.error || '获取数据失败');
-        }
-
-        const {total, results} = firstPageResult.data;
-        const allResults = [...results];
-
-        // 获取剩余数据
-        if (total > 100) {
-          const totalPages = Math.ceil(total / 100);
-          const remainingRequests = Array.from({length: totalPages - 1}, (_, i) =>
-            services.project.getReceiveHistorySafe({
-              current: i + 2,
-              size: 100,
-            }),
-          );
-
-          const remainingResults = await Promise.all(remainingRequests);
-
-          remainingResults.forEach((result) => {
-            if (result.success && result.data) {
-              allResults.push(...result.data.results);
-            }
-          });
-        }
-
-        setData(allResults);
-      } catch (err) {
-        console.error('获取领取记录失败:', err);
-        const errorMessage = err instanceof Error ? err.message : '加载数据失败，请稍后再试';
-        toast.error(errorMessage);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchData();
-  }, [isAuthenticated, authLoading]);
+      setData(allResults);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '加载数据失败';
+      toast.error(errorMessage);
+      console.error('获取领取记录失败:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  return {data, loading};
-};
+  useEffect(() => {
+    fetchAllReceiveHistory();
+  }, []);
 
-export function ReceivedMain() {
-  const {isAuthenticated, isLoading: authLoading} = useAuth();
-  const {data: claims, loading: dataLoading} = useReceiveHistory(isAuthenticated, authLoading);
-
-  const isLoading = dataLoading || authLoading;
+  const isLoading = loading;
 
   return (
     <div className="space-y-6">
-      {/* 页面头部 */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">我的领取</h1>
@@ -92,19 +86,9 @@ export function ReceivedMain() {
       <Separator className="my-8" />
 
       <div className="space-y-6">
-        {/* 数据统计图表 */}
-        <DataChart
-          data={claims}
-          isLoading={isLoading}
-        />
-
+        <DataChart data={data} isLoading={isLoading} />
         <Separator className="my-8" />
-
-        {/* 领取数据表格 */}
-        <DataTable
-          data={claims}
-          isLoading={isLoading}
-        />
+        <DataTable data={data} isLoading={isLoading} />
       </div>
     </div>
   );

@@ -1,2 +1,4 @@
-export {ProjectMain} from './ProjectMain';
-export {CreateDialog} from './CreateDialog';
+export { ProjectMain } from './ProjectMain';
+export { MineProject } from './MineProject';
+export { ProjectCard } from './ProjectCard';
+export { CreateDialog } from './CreateDialog';

@@ -8,40 +8,31 @@ import {Search, ExternalLink, Package, Copy, ChevronLeft, ChevronRight} from 'lu
 import {Skeleton} from '@/components/ui/skeleton';
 import {toast} from 'sonner';
 import {ReceiveHistoryItem} from '@/lib/services/project/types';
+import {formatDateTimeWithSeconds} from '@/lib/utils';
 
 const ITEMS_PER_PAGE = 20;
 const MAX_PAGINATION_BUTTONS = 5;
-
 const SORT_DIRECTIONS = {
   ASC: 'asc' as const,
   DESC: 'desc' as const,
 };
 
+/**
+ * 数据表格组件的Props接口
+ */
 interface DataTableProps {
-  data: ReceiveHistoryItem[]
-  isLoading?: boolean
+  /** 领取历史数据 */
+  data: ReceiveHistoryItem[];
+  /** 加载状态 */
+  isLoading?: boolean;
 }
 
-type SortField = keyof ReceiveHistoryItem
-type SortDirection = typeof SORT_DIRECTIONS[keyof typeof SORT_DIRECTIONS]
+type SortField = keyof ReceiveHistoryItem;
+type SortDirection = typeof SORT_DIRECTIONS[keyof typeof SORT_DIRECTIONS];
 
-/** 格式化日期为本地化字符串 */
-const formatDateTime = (dateString: string | null): string => {
-  if (!dateString) return '未知';
-
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
-};
-
-/** 复制文本到剪贴板 */
+/**
+ * 复制文本到剪贴板
+ */
 const copyToClipboard = async (text: string): Promise<void> => {
   try {
     await navigator.clipboard.writeText(text);
@@ -51,69 +42,63 @@ const copyToClipboard = async (text: string): Promise<void> => {
   }
 };
 
-/** 打开项目详情页 */
+/**
+ * 打开项目详情页
+ */
 const openProjectDetail = (projectId: string): void => {
   const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_BASE_URL || window.location.origin;
   const url = `${baseUrl}/receive/${projectId}`;
   window.open(url, '_blank');
 };
 
-/** 数据过滤和排序逻辑 */
-const useDataProcessing = (
-    data: ReceiveHistoryItem[],
-    searchTerm: string,
-    sortField: SortField,
-    sortDirection: SortDirection,
-) => {
-  return useMemo(() => {
-    let filtered = data;
+/**
+ * 数据过滤和排序处理
+ * 
+ * @param data 原始数据
+ * @param searchTerm 搜索关键词
+ * @param sortField 排序字段
+ * @param sortDirection 排序方向
+ */
+const processData = (
+  data: ReceiveHistoryItem[],
+  searchTerm: string,
+  sortField: SortField,
+  sortDirection: SortDirection,
+): ReceiveHistoryItem[] => {
+  let filtered = data;
 
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = data.filter((item) =>
-        item.project_name.toLowerCase().includes(term) ||
-        item.project_creator.toLowerCase().includes(term) ||
-        item.project_creator_nickname.toLowerCase().includes(term),
-      );
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    filtered = data.filter((item) =>
+      item.project_name.toLowerCase().includes(term) ||
+      item.project_creator.toLowerCase().includes(term) ||
+      item.project_creator_nickname.toLowerCase().includes(term),
+    );
+  }
+
+  return filtered.sort((a, b) => {
+    let aValue: string | number | null = a[sortField];
+    let bValue: string | number | null = b[sortField];
+
+    if (sortField === 'received_at') {
+      const aTime = aValue ? new Date(aValue as string).getTime() : 0;
+      const bTime = bValue ? new Date(bValue as string).getTime() : 0;
+      aValue = aTime;
+      bValue = bTime;
     }
 
-    filtered.sort((a, b) => {
-      let aValue: string | number | null = a[sortField];
-      let bValue: string | number | null = b[sortField];
+    if (aValue === null || aValue === undefined) return 1;
+    if (bValue === null || bValue === undefined) return -1;
 
-      if (sortField === 'received_at') {
-        const aTime = aValue ? new Date(aValue as string).getTime() : 0;
-        const bTime = bValue ? new Date(bValue as string).getTime() : 0;
-        aValue = aTime;
-        bValue = bTime;
-      }
-
-      if (aValue === null || aValue === undefined) return 1;
-      if (bValue === null || bValue === undefined) return -1;
-
-      return sortDirection === SORT_DIRECTIONS.ASC ?
-        (aValue < bValue ? -1 : aValue > bValue ? 1 : 0) :
-        (aValue > bValue ? -1 : aValue < bValue ? 1 : 0);
-    });
-
-    return filtered;
-  }, [data, searchTerm, sortField, sortDirection]);
+    return sortDirection === SORT_DIRECTIONS.ASC ?
+      (aValue < bValue ? -1 : aValue > bValue ? 1 : 0) :
+      (aValue > bValue ? -1 : aValue < bValue ? 1 : 0);
+  });
 };
 
-/** 分页逻辑 */
-const usePagination = (data: ReceiveHistoryItem[], currentPage: number) => {
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
-
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return data.slice(startIndex, endIndex);
-  }, [data, currentPage]);
-
-  return {totalPages, paginatedData};
-};
-
-/** 空状态组件 */
+/**
+ * 空状态组件
+ */
 const EmptyState = ({searchTerm}: { searchTerm: string }) => (
   <TableRow>
     <TableCell colSpan={5} className="h-[300px] text-center">
@@ -134,54 +119,9 @@ const EmptyState = ({searchTerm}: { searchTerm: string }) => (
   </TableRow>
 );
 
-/** 表格行组件 */
-const TableRowComponent = ({item, index}: { item: ReceiveHistoryItem; index: number }) => (
-  <TableRow key={`${item.project_id}-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
-    <TableCell className="py-2 w-36">
-      <div className="text-xs font-medium truncate text-gray-600 dark:text-gray-400">
-        {item.project_name}
-      </div>
-    </TableCell>
-    <TableCell className="py-2 w-40">
-      <div className="text-xs truncate text-gray-600 dark:text-gray-400">
-        {item.project_creator}({item.project_creator_nickname})
-      </div>
-    </TableCell>
-    <TableCell className="py-2">
-      <div className="group relative">
-        <div className="text-xs font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded break-all pr-7 text-gray-600 dark:text-gray-400">
-          {item.content}
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => copyToClipboard(item.content)}
-          className="absolute right-0.5 top-0.5 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
-        >
-          <Copy className="h-3 w-3" />
-        </Button>
-      </div>
-    </TableCell>
-    <TableCell className="py-2 w-44">
-      <div className="text-xs text-gray-600 dark:text-gray-400 font-mono">
-        {formatDateTime(item.received_at)}
-      </div>
-    </TableCell>
-    <TableCell className="py-2 text-center w-16">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => openProjectDetail(item.project_id)}
-        className="h-7 px-2 text-xs hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 text-gray-600 dark:text-gray-400"
-      >
-        <ExternalLink className="h-3 w-3 mr-1" />
-        查看
-      </Button>
-    </TableCell>
-  </TableRow>
-);
-
-/** 分页组件 */
+/**
+ * 分页组件
+ */
 const Pagination = ({
   currentPage,
   totalPages,
@@ -290,95 +230,105 @@ const Pagination = ({
   );
 };
 
-/** 表格骨架屏组件 */
+/**
+ * 数据表格骨架屏组件
+ */
 const DataTableSkeleton = () => (
   <div className="space-y-4">
     <div className="flex items-center justify-between">
-      <Skeleton className="h-6 w-20" />
-      <div className="relative w-56">
-        <Skeleton className="h-[30px] w-full rounded-md border" />
-      </div>
+      <Skeleton className="h-4 w-32" />
+      <Skeleton className="h-8 w-48" />
     </div>
 
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <TableHead className="h-10 w-36">
+          <TableRow>
+            <TableHead className="w-[120px]">
               <Skeleton className="h-4 w-16" />
             </TableHead>
-            <TableHead className="h-10 w-40">
-              <Skeleton className="h-4 w-12" />
+            <TableHead>
+              <Skeleton className="h-4 w-20" />
             </TableHead>
-            <TableHead className="h-10">
+            <TableHead>
               <Skeleton className="h-4 w-16" />
             </TableHead>
-            <TableHead className="h-10 w-44">
-              <Skeleton className="h-4 w-16" />
+            <TableHead>
+              <Skeleton className="h-4 w-20" />
             </TableHead>
-            <TableHead className="w-16 h-10"></TableHead>
+            <TableHead className="text-right">
+              <Skeleton className="h-4 w-12 ml-auto" />
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {Array.from({length: 8}).map((_, index) => (
-            <TableRow key={index} className="border-b border-gray-100 dark:border-gray-800">
-              <TableCell className="py-2 w-36">
-                <Skeleton className="h-3 w-28" />
+          {Array.from({length: 10}).map((_, i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
               </TableCell>
-              <TableCell className="py-2 w-40">
-                <Skeleton className="h-3 w-32" />
-              </TableCell>
-              <TableCell className="py-2">
-                <div className="group relative">
-                  <div className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded pr-7">
-                    <Skeleton className="h-3 w-full" />
-                  </div>
+              <TableCell>
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-20" />
                 </div>
               </TableCell>
-              <TableCell className="py-2 w-44">
-                <Skeleton className="h-3 w-36" />
+              <TableCell>
+                <Skeleton className="h-4 w-16" />
               </TableCell>
-              <TableCell className="py-2 text-center w-16">
-                <Skeleton className="h-7 w-12 mx-auto rounded-md" />
+              <TableCell>
+                <Skeleton className="h-4 w-20" />
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end space-x-1">
+                  <Skeleton className="h-6 w-6" />
+                  <Skeleton className="h-6 w-6" />
+                </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+    </div>
 
-      <div className="border-t border-gray-200 dark:border-gray-700 py-3">
-        <div className="flex items-center justify-between px-2">
-          <Skeleton className="h-3 w-32" />
-          <div className="flex items-center space-x-1">
-            <Skeleton className="h-7 w-7 rounded-md" />
-            <Skeleton className="h-7 w-7 rounded-md" />
-            <Skeleton className="h-7 w-7 rounded-md" />
-            <Skeleton className="h-7 w-7 rounded-md" />
-            <Skeleton className="h-7 w-7 rounded-md" />
-          </div>
-        </div>
+    <div className="flex items-center justify-between px-2">
+      <Skeleton className="h-4 w-20" />
+      <div className="flex items-center space-x-1">
+        <Skeleton className="h-7 w-7" />
+        <Skeleton className="h-7 w-7" />
+        <Skeleton className="h-7 w-7" />
+        <Skeleton className="h-7 w-7" />
       </div>
     </div>
   </div>
 );
 
+/**
+ * 数据表格组件
+ */
 export function DataTable({data, isLoading}: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('received_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.DESC);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredAndSortedData = useDataProcessing(data, searchTerm, sortField, sortDirection);
-  const {totalPages, paginatedData} = usePagination(filteredAndSortedData, currentPage);
-
-  // 搜索时重置到第一页
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  /** 处理列排序 */
+  const sortedAndFilteredData = useMemo(
+    () => processData(data, searchTerm, sortField, sortDirection),
+    [data, searchTerm, sortField, sortDirection],
+  );
+
+  const totalPages = Math.ceil(sortedAndFilteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = sortedAndFilteredData.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
   const handleSort = (field: SortField) => {
-    if (sortField === field) {
+    if (field === sortField) {
       setSortDirection(sortDirection === SORT_DIRECTIONS.ASC ? SORT_DIRECTIONS.DESC : SORT_DIRECTIONS.ASC);
     } else {
       setSortField(field);
@@ -387,14 +337,9 @@ export function DataTable({data, isLoading}: DataTableProps) {
     setCurrentPage(1);
   };
 
-  /** 渲染排序图标 */
   const renderSortIcon = (field: SortField) => {
-    if (sortField !== field) return null;
-    return (
-      <span className="ml-1 text-gray-400">
-        {sortDirection === SORT_DIRECTIONS.ASC ? '↑' : '↓'}
-      </span>
-    );
+    if (field !== sortField) return null;
+    return sortDirection === SORT_DIRECTIONS.ASC ? ' ↑' : ' ↓';
   };
 
   if (isLoading) {
@@ -403,71 +348,118 @@ export function DataTable({data, isLoading}: DataTableProps) {
 
   return (
     <div className="space-y-4">
-      {/* 头部搜索 */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">领取记录</h2>
+        <h2 className="text-base font-semibold">
+          详细记录
+        </h2>
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" />
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="搜索项目名称或分发者..."
+            placeholder="搜索项目名称或创建者..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8 w-56 h-[30px] text-xs"
+            className="pl-8 w-48"
           />
         </div>
       </div>
 
-      {/* 数据表格 */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-              <TableHead
-                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium h-10 w-36"
-                onClick={() => handleSort('project_name')}
-              >
-                项目名称
-                {renderSortIcon('project_name')}
+            <TableRow>
+              <TableHead className="w-[120px]">
+                <button
+                  className="font-medium hover:text-primary transition-colors"
+                  onClick={() => handleSort('received_at')}
+                >
+                  领取时间{renderSortIcon('received_at')}
+                </button>
               </TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium h-10 w-40"
-                onClick={() => handleSort('project_creator_nickname')}
-              >
-                分发者
-                {renderSortIcon('project_creator_nickname')}
+              <TableHead>
+                <button
+                  className="font-medium hover:text-primary transition-colors"
+                  onClick={() => handleSort('project_name')}
+                >
+                  项目名称{renderSortIcon('project_name')}
+                </button>
               </TableHead>
-              <TableHead className="text-sm font-medium h-10">领取内容</TableHead>
-              <TableHead
-                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium h-10 w-44"
-                onClick={() => handleSort('received_at')}
-              >
-                领取时间
-                {renderSortIcon('received_at')}
+              <TableHead>
+                <button
+                  className="font-medium hover:text-primary transition-colors"
+                  onClick={() => handleSort('project_creator_nickname')}
+                >
+                  创建者{renderSortIcon('project_creator_nickname')}
+                </button>
               </TableHead>
-              <TableHead className="w-16 h-10"></TableHead>
+              <TableHead>
+                <button
+                  className="font-medium hover:text-primary transition-colors"
+                  onClick={() => handleSort('project_id')}
+                >
+                  项目ID{renderSortIcon('project_id')}
+                </button>
+              </TableHead>
+              <TableHead className="text-right">操作</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className={paginatedData.length === 0 ? 'h-[300px]' : ''}>
+          <TableBody>
             {paginatedData.length === 0 ? (
               <EmptyState searchTerm={searchTerm} />
             ) : (
-              paginatedData.map((item, index) => (
-                <TableRowComponent key={`${item.project_id}-${index}`} item={item} index={index} />
+              paginatedData.map((item) => (
+                <TableRow key={`${item.project_id}-${item.received_at}`}>
+                  <TableCell className="text-xs text-gray-600 dark:text-gray-400">
+                    {item.received_at ? formatDateTimeWithSeconds(item.received_at) : '-'}
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium text-sm">{item.project_name}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                        {item.content || '暂无内容'}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {item.project_creator_nickname || item.project_creator}
+                  </TableCell>
+                  <TableCell className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                    {item.project_id}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyToClipboard(item.project_id)}
+                        className="h-6 w-6 p-0"
+                        title="复制项目ID"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openProjectDetail(item.project_id)}
+                        className="h-6 w-6 p-0"
+                        title="查看详情"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
               ))
             )}
           </TableBody>
         </Table>
-
-        {/* 分页控制器 */}
-        <div className="border-t border-gray-200 dark:border-gray-700 py-3">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            dataLength={filteredAndSortedData.length}
-            onPageChange={setCurrentPage}
-          />
-        </div>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        dataLength={sortedAndFilteredData.length}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }
