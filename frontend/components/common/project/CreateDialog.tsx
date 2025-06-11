@@ -499,7 +499,7 @@ export function CreateDialog({children}: { children?: React.ReactNode }) {
                       IP 管控
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      如果开启，则同一个 IP 只能领取一次。
+                      如果开启，则同一个 IP 可以多次领取内容。
                     </p>
                   </div>
                 </Label>
