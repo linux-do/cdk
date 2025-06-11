@@ -18,7 +18,7 @@ export function formatDate(dateString: string): string {
       month: '2-digit',
       day: '2-digit',
     });
-  } catch (error) {
+  } catch {
     return dateString;
   }
 }
@@ -38,7 +38,7 @@ export function formatDateTime(dateString: string): string {
       hour: '2-digit',
       minute: '2-digit',
     });
-  } catch (error) {
+  } catch {
     return dateString;
   }
 }
@@ -59,7 +59,7 @@ export function formatDateTimeWithSeconds(dateString: string): string {
       minute: '2-digit',
       second: '2-digit',
     });
-  } catch (error) {
+  } catch {
     return dateString;
   }
 }

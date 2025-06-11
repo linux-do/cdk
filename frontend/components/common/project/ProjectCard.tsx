@@ -1,25 +1,25 @@
 'use client';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Shield, Clock, Package, Settings, Trash2, Calendar } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ProjectListItem } from "@/lib/services/project/types";
-import { formatDate, formatDateTimeWithSeconds } from "@/lib/utils";
+import {Badge} from '@/components/ui/badge';
+import {Button} from '@/components/ui/button';
+import {Shield, Clock, Package, Settings, Trash2, Calendar} from 'lucide-react';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
+import {ProjectListItem} from '@/lib/services/project/types';
+import {formatDate, formatDateTimeWithSeconds} from '@/lib/utils';
 
 /** 分发模式名称映射 */
 const DISTRIBUTION_MODE_NAMES: Record<number, string> = {
-  0: "一码一用",
-  1: "邀请制"
+  0: '一码一用',
+  1: '邀请制',
 };
 
 /** 信任等级配置 */
 const TRUST_LEVEL_CONFIG: Record<number, { name: string; gradient: string }> = {
-  0: { name: "新用户", gradient: "bg-gradient-to-br from-gray-500 to-gray-600" },
-  1: { name: "基础用户", gradient: "bg-gradient-to-br from-green-500 to-emerald-600" },
-  2: { name: "用户", gradient: "bg-gradient-to-br from-blue-500 to-cyan-600" },
-  3: { name: "活跃用户", gradient: "bg-gradient-to-br from-purple-500 to-pink-600" },
-  4: { name: "领导者", gradient: "bg-gradient-to-br from-orange-500 to-red-600" },
+  0: {name: '新用户', gradient: 'bg-gradient-to-br from-gray-500 to-gray-600'},
+  1: {name: '基础用户', gradient: 'bg-gradient-to-br from-green-500 to-emerald-600'},
+  2: {name: '用户', gradient: 'bg-gradient-to-br from-blue-500 to-cyan-600'},
+  3: {name: '活跃用户', gradient: 'bg-gradient-to-br from-purple-500 to-pink-600'},
+  4: {name: '领导者', gradient: 'bg-gradient-to-br from-orange-500 to-red-600'},
 };
 
 /** 基于项目最低信任等级生成渐变配色 */
@@ -35,9 +35,9 @@ interface ProjectCardProps {
   onDelete?: (project: ProjectListItem) => void;
 }
 
-export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardProps) {
+export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardProps) {
   const gradientTheme = getTrustLevelGradient(project.minimum_trust_level);
-  
+
   const now = new Date();
   const startTime = new Date(project.start_time);
   const endTime = new Date(project.end_time);
@@ -48,7 +48,7 @@ export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardP
   return (
     <TooltipProvider>
       <div className="w-full max-w-sm mx-auto">
-        <div 
+        <div
           className={`${gradientTheme} p-4 sm:p-6 rounded-2xl group hover:rounded-xl transition-all duration-300 text-white relative overflow-hidden hover:shadow-lg hover:scale-[1.02] transform cursor-pointer`}
           onClick={() => onClick?.(project)}
         >
@@ -62,10 +62,10 @@ export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardP
                   {isExpired && <span className="text-[8px] sm:text-[10px] text-white font-medium">已结束</span>}
                 </div>
               </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>开始: {formatDateTimeWithSeconds(project.start_time)}</p>
-                  <p>结束: {formatDateTimeWithSeconds(project.end_time)}</p>
-                </TooltipContent>
+              <TooltipContent side="bottom">
+                <p>开始: {formatDateTimeWithSeconds(project.start_time)}</p>
+                <p>结束: {formatDateTimeWithSeconds(project.end_time)}</p>
+              </TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -113,7 +113,7 @@ export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardP
               )}
             </div>
           )}
-          
+
           <div className="flex flex-col items-center justify-center h-28 sm:h-32">
             <h3 className="text-lg sm:text-2xl font-bold text-white text-center leading-tight line-clamp-2 px-2">
               {project.name}
@@ -134,7 +134,7 @@ export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardP
             </div>
           </div>
         </div>
-        
+
         <div className="space-y-1.5 sm:space-y-2 mt-3">
           <div className="flex items-center justify-between gap-2">
             <h4 className="font-semibold text-foreground text-sm sm:text-base line-clamp-1 flex-1 min-w-0">
@@ -150,9 +150,9 @@ export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardP
               {project.tags && project.tags.length > 0 ? (
                 <>
                   {project.tags.slice(0, 2).map((tag, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary" 
+                    <Badge
+                      key={index}
+                      variant="secondary"
                       className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5"
                     >
                       {tag}
@@ -168,9 +168,9 @@ export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardP
                       <TooltipContent side="top" className="p-2">
                         <div className="flex flex-wrap gap-1 max-w-[200px]">
                           {project.tags.slice(2).map((tag, index) => (
-                            <Badge 
-                              key={index} 
-                              variant="secondary" 
+                            <Badge
+                              key={index}
+                              variant="secondary"
                               className="text-[9px] sm:text-[10px] px-1 py-0.5"
                             >
                               {tag}
@@ -187,7 +187,7 @@ export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardP
                 </Badge>
               )}
             </div>
-            
+
             <div className="flex items-center gap-1 flex-shrink-0">
               <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground" />
               <span className="text-[9px] sm:text-[10px] text-muted-foreground">
@@ -199,4 +199,4 @@ export function ProjectCard({ project, onClick, onEdit, onDelete }: ProjectCardP
       </div>
     </TooltipProvider>
   );
-} 
+}

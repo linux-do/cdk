@@ -126,7 +126,7 @@ export function DataChart({data, isLoading}: DataChartProps) {
       if (item.received_at) {
         const date = new Date(item.received_at);
         let key: string;
-        
+
         if (isMonthRange) {
           const year = date.getFullYear();
           const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -137,7 +137,7 @@ export function DataChart({data, isLoading}: DataChartProps) {
           const day = String(date.getDate()).padStart(2, '0');
           key = `${year}-${month}-${day}`;
         }
-        
+
         statsMap.set(key, (statsMap.get(key) || 0) + 1);
       }
     });
@@ -162,7 +162,7 @@ export function DataChart({data, isLoading}: DataChartProps) {
 
     return dateRange.map((dateKey) => {
       let displayDate: string;
-      
+
       if (isMonthRange) {
         const month = dateKey.split('-')[1];
         displayDate = `${month}月`;

@@ -53,17 +53,17 @@ const openProjectDetail = (projectId: string): void => {
 
 /**
  * 数据过滤和排序处理
- * 
+ *
  * @param data 原始数据
  * @param searchTerm 搜索关键词
  * @param sortField 排序字段
  * @param sortDirection 排序方向
  */
 const processData = (
-  data: ReceiveHistoryItem[],
-  searchTerm: string,
-  sortField: SortField,
-  sortDirection: SortDirection,
+    data: ReceiveHistoryItem[],
+    searchTerm: string,
+    sortField: SortField,
+    sortDirection: SortDirection,
 ): ReceiveHistoryItem[] => {
   let filtered = data;
 
@@ -317,14 +317,14 @@ export function DataTable({data, isLoading}: DataTableProps) {
   }, [searchTerm]);
 
   const sortedAndFilteredData = useMemo(
-    () => processData(data, searchTerm, sortField, sortDirection),
-    [data, searchTerm, sortField, sortDirection],
+      () => processData(data, searchTerm, sortField, sortDirection),
+      [data, searchTerm, sortField, sortDirection],
   );
 
   const totalPages = Math.ceil(sortedAndFilteredData.length / ITEMS_PER_PAGE);
   const paginatedData = sortedAndFilteredData.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE,
   );
 
   const handleSort = (field: SortField) => {

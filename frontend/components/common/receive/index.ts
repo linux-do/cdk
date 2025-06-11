@@ -1,1 +1,1 @@
-export { ReceiveMain } from './ReceiveMain';
+export {ReceiveMain} from './ReceiveMain';

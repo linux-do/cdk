@@ -16,7 +16,7 @@ import {X, Plus, User, Lock, Copy, ExternalLink, CheckCircle} from 'lucide-react
 import {toast} from 'sonner';
 import services from '@/lib/services';
 import {TrustLevel} from '@/lib/services/core/types';
-import {DistributionType} from '@/lib/services/project/types';
+import {DistributionType, ProjectListItem} from '@/lib/services/project/types';
 import {Counter} from '@/components/animate-ui/components/counter';
 import {TagSelector} from '@/components/ui/tag-selector';
 
@@ -58,7 +58,7 @@ interface ProjectInfo {
 /**
  * 创建项目对话框组件
  */
-export function CreateDialog({children, onProjectCreated}: { children?: React.ReactNode; onProjectCreated?: (project: any) => void }) {
+export function CreateDialog({children, onProjectCreated}: { children?: React.ReactNode; onProjectCreated?: (project: ProjectListItem) => void }) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -186,7 +186,7 @@ export function CreateDialog({children, onProjectCreated}: { children?: React.Re
       if (existingDuplicateCount > 0) details.push(`${existingDuplicateCount} 个已存在`);
       message += `，已跳过 ${details.join('，')}`;
     }
-    
+
     toast.success(message);
   };
 
@@ -262,7 +262,7 @@ export function CreateDialog({children, onProjectCreated}: { children?: React.Re
       setCreateSuccess(true);
       setCreatedProject({id: projectId, name: formData.name.trim()});
       toast.success('项目创建成功！');
-      
+
       onProjectCreated?.(newProject);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '创建项目失败';

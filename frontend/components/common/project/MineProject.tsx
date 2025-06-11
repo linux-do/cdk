@@ -1,12 +1,12 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {useRouter} from 'next/navigation';
 import {Card, CardContent} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Skeleton} from '@/components/ui/skeleton';
 import {ChevronLeft, ChevronRight, FolderOpen, Trash2} from 'lucide-react';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle} from "@/components/ui/alert-dialog";
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle} from '@/components/ui/alert-dialog';
 import {toast} from 'sonner';
 import {CreateDialog} from '@/components/common/project/CreateDialog';
 import {ProjectCard} from '@/components/common/project/ProjectCard';
@@ -17,7 +17,7 @@ interface MineProjectProps {
   onProjectCreated?: (project: ProjectListItem) => void;
 }
 
-export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
+export function MineProject({onProjectCreated}: MineProjectProps = {}) {
   const router = useRouter();
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -34,23 +34,24 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
    * 处理新项目创建
    */
   const handleProjectCreated = (newProject: ProjectListItem) => {
-    setProjects(prev => [newProject, ...prev]);
-    setTotal(prev => prev + 1);
-    
+    setProjects((prev) => [newProject, ...prev]);
+    setTotal((prev) => prev + 1);
     setPageCache(new Map());
-    
-    setProjects(prev => {
+
+    setProjects((prev) => {
       if (prev.length > pageSize) {
         return prev.slice(0, pageSize);
       }
       return prev;
     });
-    
+
     onProjectCreated?.(newProject);
   };
 
-  /** 获取项目列表 */
-  const fetchProjects = async (page: number = 1, forceRefresh: boolean = false) => {
+  /**
+   * 获取项目列表
+   */
+  const fetchProjects = useCallback(async (page: number = 1, forceRefresh: boolean = false) => {
     if (!forceRefresh && pageCache.has(page)) {
       const cachedData = pageCache.get(page)!;
       setProjects(cachedData);
@@ -71,8 +72,8 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
     if (result.success && result.data) {
       setProjects(result.data.results);
       setTotal(result.data.total);
-      
-      setPageCache(prev => new Map(prev.set(page, result.data!.results)));
+
+      setPageCache((prev) => new Map(prev.set(page, result.data!.results)));
     } else {
       setError(result.error || '获取项目列表失败');
       setProjects([]);
@@ -80,7 +81,7 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
     }
 
     setLoading(false);
-  };
+  }, [pageCache, pageSize]);
 
   /** 删除项目 */
   const handleDeleteProject = async (project: ProjectListItem) => {
@@ -99,22 +100,22 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
 
       if (result.success) {
         toast.success('项目删除成功');
-        
+
         setPageCache(new Map());
-        
-        setProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
-        setTotal(prev => prev - 1);
-        
+
+        setProjects((prev) => prev.filter((p) => p.id !== projectToDelete.id));
+        setTotal((prev) => prev - 1);
+
         const remainingProjects = projects.length - 1;
         if (remainingProjects === 0 && currentPage > 1) {
-          setCurrentPage(prev => prev - 1);
+          setCurrentPage((prev) => prev - 1);
         } else if (remainingProjects === 0) {
           fetchProjects(1, true);
         }
       } else {
         toast.error(result.error || '删除项目失败');
       }
-    } catch (error) {
+    } catch {
       toast.error('删除项目失败');
     } finally {
       setDeleting(false);
@@ -136,7 +137,7 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
 
   useEffect(() => {
     fetchProjects(currentPage);
-  }, [currentPage]);
+  }, [currentPage, fetchProjects]);
 
   const totalPages = Math.ceil(total / pageSize);
 
@@ -162,22 +163,22 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
                 <Skeleton className="h-3 w-3 sm:h-4 sm:w-4 rounded-full" />
                 <Skeleton className="h-3 w-8 sm:h-4 sm:w-10 rounded" />
               </div>
-              
+
               <div className="flex flex-col items-center justify-center h-28 sm:h-32">
                 <Skeleton className="h-4 sm:h-6 w-2/3 bg-white/30 dark:bg-gray-600 rounded" />
               </div>
-              
+
               <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
                 <Skeleton className="h-3 w-3 sm:h-4 sm:w-4 bg-white/30 dark:bg-gray-600 rounded" />
               </div>
             </div>
-            
+
             <div className="space-y-1.5 sm:space-y-2 mt-3">
               <div className="flex items-center justify-between gap-2">
                 <Skeleton className="h-3 sm:h-4 w-2/3 rounded" />
                 <Skeleton className="h-4 w-12 sm:w-14 rounded-full" />
               </div>
-              
+
               <div className="flex items-center justify-between gap-2">
                 <div className="flex gap-1">
                   <Skeleton className="h-3 w-8 sm:w-10 rounded-full" />
@@ -217,9 +218,9 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {projects.map((project) => (
-          <ProjectCard 
-            key={project.id} 
-            project={project} 
+          <ProjectCard
+            key={project.id}
+            project={project}
             onClick={handleCardClick}
             onEdit={handleEditProject}
             onDelete={handleDeleteProject}
@@ -267,7 +268,7 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
               确认删除项目
             </AlertDialogTitle>
             <AlertDialogDescription>
-              您确定要删除项目 "<span className="font-medium">{projectToDelete?.name}</span>" 吗？
+              您确定要删除项目 &quot;<span className="font-medium">{projectToDelete?.name}</span>&quot; 吗？
               <br />
               <span className="text-red-600 font-medium">此操作无法撤销，项目的所有数据将被永久删除。</span>
             </AlertDialogDescription>
@@ -288,4 +289,4 @@ export function MineProject({ onProjectCreated }: MineProjectProps = {}) {
       </AlertDialog>
     </div>
   );
-} 
+}

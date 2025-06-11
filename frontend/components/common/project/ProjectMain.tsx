@@ -3,7 +3,6 @@
 import {CreateDialog} from '@/components/common/project/CreateDialog';
 import {MineProject} from '@/components/common/project/MineProject';
 import {Separator} from '@/components/ui/separator';
-import {ProjectListItem} from '@/lib/services/project/types';
 import {useState} from 'react';
 
 /**
@@ -12,8 +11,8 @@ import {useState} from 'react';
 export function ProjectMain() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const handleProjectCreated = (project: ProjectListItem) => {
-    setRefreshTrigger(prev => prev + 1);
+  const handleProjectCreated = () => {
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   return (

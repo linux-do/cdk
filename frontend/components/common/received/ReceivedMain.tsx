@@ -34,22 +34,22 @@ export function ReceivedMain() {
       }
 
       const {total, results} = firstPageResult.data;
-      let allResults = [...results];
+      const allResults = [...results];
 
       if (total > PAGE_SIZE) {
         const totalPages = Math.ceil(total / PAGE_SIZE);
         const remainingPages = Array.from({length: totalPages - 1}, (_, i) => i + 2);
-        
-        const remainingRequests = remainingPages.map(page =>
+
+        const remainingRequests = remainingPages.map((page) =>
           services.project.getReceiveHistorySafe({
             current: page,
             size: PAGE_SIZE,
-          })
+          }),
         );
 
         const remainingResults = await Promise.all(remainingRequests);
-        
-        remainingResults.forEach(result => {
+
+        remainingResults.forEach((result) => {
           if (result.success && result.data) {
             allResults.push(...result.data.results);
           }

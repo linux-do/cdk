@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useCallback} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 import {useAuth} from '@/hooks/use-auth';
 import services from '@/lib/services';
@@ -246,7 +246,7 @@ export function ReceiveMain() {
   /**
    * 获取项目详情
    */
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     if (!projectId || !isAuthenticated) return;
 
     try {
@@ -265,7 +265,7 @@ export function ReceiveMain() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId, isAuthenticated]);
 
   /**
    * 处理项目领取
@@ -322,7 +322,7 @@ export function ReceiveMain() {
     if (!authLoading && isAuthenticated && projectId) {
       fetchProject();
     }
-  }, [authLoading, isAuthenticated, projectId]);
+  }, [authLoading, isAuthenticated, projectId, fetchProject]);
 
   if (!authLoading && !isAuthenticated) return null;
   if (authLoading || isLoading) return <LoadingSkeleton />;
