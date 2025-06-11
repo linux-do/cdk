@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState, useCallback} from 'react';
+import {useEffect, useState} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 import {useAuth} from '@/hooks/use-auth';
 import services from '@/lib/services';
@@ -15,15 +15,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {formatDateTimeWithSeconds} from '@/lib/utils';
 
-/** 项目领取状态 */
-interface ReceiveState {
-  isReceiving: boolean;
-  hasReceived: boolean;
-  receivedContent: string | null;
-  receivedAt: string | null;
-}
-
-/** 信任等级选项列表 */
+/**
+ * 信任等级配置
+ */
 const trustLevelOptions = [
   {value: TrustLevel.NEW_USER, label: '新用户'},
   {value: TrustLevel.BASIC_USER, label: '基础用户'},
@@ -32,7 +26,9 @@ const trustLevelOptions = [
   {value: TrustLevel.LEADER, label: '领导者'},
 ];
 
-/** 获取时间剩余文本 */
+/**
+ * 计算时间剩余显示文本
+ */
 const getTimeRemainingText = (startTime: Date, currentTime: Date): string | null => {
   const diff = startTime.getTime() - currentTime.getTime();
   if (diff <= 0) return null;
@@ -48,6 +44,9 @@ const getTimeRemainingText = (startTime: Date, currentTime: Date): string | null
   return `还剩${seconds}秒`;
 };
 
+/**
+ * 复制文本到剪贴板
+ */
 const copyToClipboard = async (text: string): Promise<void> => {
   try {
     await navigator.clipboard.writeText(text);
@@ -57,134 +56,27 @@ const copyToClipboard = async (text: string): Promise<void> => {
   }
 };
 
-/** 项目数据获取Hook */
-const useProjectData = (projectId: string | undefined, isAuthenticated: boolean, authLoading: boolean) => {
-  const [project, setProject] = useState<GetProjectResponseData | null>(null);
-  const [receiveStatus, setReceiveStatus] = useState<ReceiveState>({
-    isReceiving: false,
-    hasReceived: false,
-    receivedContent: null,
-    receivedAt: null,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchProjectDetails = useCallback(async () => {
-    if (!projectId || !isAuthenticated) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const result = await services.project.getProjectSafe(projectId);
-
-      if (result.success && result.data) {
-        setProject(result.data);
-
-        // TODO: 后端字段增加后，从 API 获取用户的领取状态
-      } else {
-        setError(result.error || '获取项目详情失败');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '获取项目详情失败');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [projectId, isAuthenticated]);
-
-  useEffect(() => {
-    if (!authLoading && isAuthenticated && projectId) {
-      fetchProjectDetails();
-    }
-  }, [authLoading, isAuthenticated, projectId, fetchProjectDetails]);
-
-  return {
-    project,
-    receiveStatus,
-    setReceiveStatus,
-    isLoading,
-    error,
-    refetch: fetchProjectDetails,
-    setProject,
-  };
-};
-
-/** 项目领取Hook */
-const useReceiveProject = (
-    projectId: string | undefined,
-    setProject: React.Dispatch<React.SetStateAction<GetProjectResponseData | null>>,
-    setReceiveStatus: (status: ReceiveState) => void,
-) => {
-  const [receiveState, setReceiveState] = useState<ReceiveState>({
-    isReceiving: false,
-    hasReceived: false,
-    receivedContent: null,
-    receivedAt: null,
-  });
-
-  const handleReceive = async () => {
-    if (!projectId || receiveState.isReceiving) return;
-
-    try {
-      setReceiveState((prev) => ({...prev, isReceiving: true}));
-
-      const result = await services.project.receiveProjectSafe(projectId);
-
-      if (result.success) {
-        setProject((prev) => prev ? {
-          ...prev,
-          available_items_count: prev.available_items_count - 1,
-        } : null);
-
-        // TODO: 后端字段增加后，使用实际返回的内容
-        const receivedContent = '您的兑换码'; // result.data?.content
-
-        setReceiveState({
-          isReceiving: false,
-          hasReceived: true,
-          receivedContent,
-          receivedAt: new Date().toISOString(),
-        });
-
-        setReceiveStatus({
-          isReceiving: false,
-          hasReceived: true,
-          receivedContent,
-          receivedAt: new Date().toISOString(),
-        });
-
-        toast.success('领取成功！');
-      } else {
-        setReceiveState((prev) => ({...prev, isReceiving: false}));
-        toast.error(result.error || '领取失败');
-      }
-    } catch (err) {
-      setReceiveState((prev) => ({...prev, isReceiving: false}));
-      const errorMessage = err instanceof Error ? err.message : '领取失败';
-      toast.error(errorMessage);
-    }
-  };
-
-  return {receiveState, handleReceive};
-};
-
+/**
+ * 项目领取按钮组件
+ */
 const ReceiveButton = ({
   project,
   user,
   currentTime,
-  receiveState,
-  receiveStatus,
+  isReceiving,
+  hasReceived,
+  receivedContent,
   onReceive,
 }: {
   project: GetProjectResponseData;
   user: BasicUserInfo | null;
   currentTime: Date;
-  receiveState: ReceiveState;
-  receiveStatus: ReceiveState;
+  isReceiving: boolean;
+  hasReceived: boolean;
+  receivedContent: string | null;
   onReceive: () => void;
 }) => {
-  if (receiveStatus.hasReceived || receiveState.hasReceived) {
-    const content = receiveStatus.receivedContent || receiveState.receivedContent;
+  if (hasReceived && receivedContent) {
     return (
       <div className="space-y-4">
         <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
@@ -193,13 +85,13 @@ const ReceiveButton = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => copyToClipboard(content!)}
+              onClick={() => copyToClipboard(receivedContent)}
               className="h-8 px-2"
             >
               <Copy className="h-4 w-4" />
             </Button>
           </div>
-          <code className="block font-mono text-lg">{content}</code>
+          <code className="block font-mono text-lg">{receivedContent}</code>
         </div>
       </div>
     );
@@ -249,15 +141,18 @@ const ReceiveButton = ({
   return (
     <Button
       onClick={onReceive}
-      disabled={receiveState.isReceiving}
+      disabled={isReceiving}
       className="w-full bg-black text-white hover:bg-gray-800 disabled:bg-gray-100 disabled:text-gray-400"
     >
       <Gift className="w-4 h-4 mr-2" />
-      {receiveState.isReceiving ? '领取中...' : '立即领取'}
+      {isReceiving ? '领取中...' : '立即领取'}
     </Button>
   );
 };
 
+/**
+ * 加载骨架屏组件
+ */
 const LoadingSkeleton = () => (
   <div className="max-w-4xl mx-auto p-6 space-y-6">
     <div className="flex items-center justify-between">
@@ -306,6 +201,9 @@ const LoadingSkeleton = () => (
   </div>
 );
 
+/**
+ * 错误状态组件
+ */
 const ErrorState = ({error, onRetry, onBack}: {error: string; onRetry: () => void; onBack: () => void}) => (
   <div className="max-w-4xl mx-auto p-6">
     <Button
@@ -328,31 +226,79 @@ const ErrorState = ({error, onRetry, onBack}: {error: string; onRetry: () => voi
   </div>
 );
 
+/**
+ * 项目领取页面主组件
+ */
 export function ReceiveMain() {
   const router = useRouter();
   const params = useParams();
   const {isAuthenticated, user, isLoading: authLoading} = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [project, setProject] = useState<GetProjectResponseData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isReceiving, setIsReceiving] = useState(false);
+  const [hasReceived, setHasReceived] = useState(false);
+  const [receivedContent, setReceivedContent] = useState<string | null>(null);
 
   const projectId = Array.isArray(params.projectId) ? params.projectId[0] : params.projectId;
 
-  const {
-    project,
-    receiveStatus,
-    setReceiveStatus,
-    isLoading,
-    error,
-    refetch,
-    setProject,
-  } = useProjectData(projectId, isAuthenticated, authLoading);
+  /**
+   * 获取项目详情
+   */
+  const fetchProject = async () => {
+    if (!projectId || !isAuthenticated) return;
 
-  const {receiveState, handleReceive} = useReceiveProject(
-      projectId,
-      setProject,
-      setReceiveStatus,
-  );
+    try {
+      setIsLoading(true);
+      setError(null);
 
-  // 自定义返回函数
+      const result = await services.project.getProjectSafe(projectId);
+
+      if (result.success && result.data) {
+        setProject(result.data);
+      } else {
+        setError(result.error || '获取项目详情失败');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取项目详情失败');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * 处理项目领取
+   */
+  const handleReceive = async () => {
+    if (!projectId || isReceiving || hasReceived) return;
+
+    try {
+      setIsReceiving(true);
+
+      const result = await services.project.receiveProjectSafe(projectId);
+
+      if (result.success) {
+        setProject((prev) => prev ? {
+          ...prev,
+          available_items_count: prev.available_items_count - 1,
+        } : null);
+
+        const content = '您的兑换码';
+        setHasReceived(true);
+        setReceivedContent(content);
+        toast.success('领取成功！');
+      } else {
+        toast.error(result.error || '领取失败');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '领取失败';
+      toast.error(errorMessage);
+    } finally {
+      setIsReceiving(false);
+    }
+  };
+
   const handleGoBack = () => {
     if (document.referrer && document.referrer !== window.location.href) {
       router.back();
@@ -372,10 +318,16 @@ export function ReceiveMain() {
     }
   }, [authLoading, isAuthenticated, projectId, router]);
 
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && projectId) {
+      fetchProject();
+    }
+  }, [authLoading, isAuthenticated, projectId]);
+
   if (!authLoading && !isAuthenticated) return null;
   if (authLoading || isLoading) return <LoadingSkeleton />;
-  if (error) return <ErrorState error={error} onRetry={refetch} onBack={handleGoBack} />;
-  if (!project) return <ErrorState error="项目不存在" onRetry={refetch} onBack={handleGoBack} />;
+  if (error) return <ErrorState error={error} onRetry={fetchProject} onBack={handleGoBack} />;
+  if (!project) return <ErrorState error="项目不存在" onRetry={fetchProject} onBack={handleGoBack} />;
 
   const trustLevelConfig = trustLevelOptions.find((option) => option.value === project.minimum_trust_level);
 
@@ -449,13 +401,13 @@ export function ReceiveMain() {
           project={project}
           user={user}
           currentTime={currentTime}
-          receiveState={receiveState}
-          receiveStatus={receiveStatus}
+          isReceiving={isReceiving}
+          hasReceived={hasReceived}
+          receivedContent={receivedContent}
           onReceive={handleReceive}
         />
       </div>
 
-      {/* 项目描述部分 */}
       <div className="pt-6 border-t border-gray-200">
         <h3 className="font-medium mb-3">项目描述</h3>
         <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
