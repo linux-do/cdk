@@ -16,7 +16,7 @@ import {Counter} from '@/components/animate-ui/components/counter';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
 import {FORM_LIMITS, TRUST_LEVEL_OPTIONS, handleBulkImportContent, validateProjectForm} from '@/components/common/project';
-import {X, Settings, CheckCircle} from 'lucide-react';
+import {X, Pencil, CheckCircle} from 'lucide-react';
 import services from '@/lib/services';
 import {TrustLevel} from '@/lib/services/core/types';
 import {ProjectListItem} from '@/lib/services/project/types';
@@ -202,7 +202,7 @@ export function EditDialog({
       <DialogTrigger asChild>
         {children || (
           <Button size="sm" variant="ghost">
-            <Settings className="h-4 w-4" />
+            <Pencil className="h-4 w-4" />
           </Button>
         )}
       </DialogTrigger>

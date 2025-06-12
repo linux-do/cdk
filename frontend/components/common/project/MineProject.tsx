@@ -7,7 +7,7 @@ import {Button} from '@/components/ui/button';
 import {Skeleton} from '@/components/ui/skeleton';
 import {Card, CardContent} from '@/components/ui/card';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle} from '@/components/ui/alert-dialog';
-import {ChevronLeft, ChevronRight, FolderOpen, Trash2, Settings} from 'lucide-react';
+import {ChevronLeft, ChevronRight, FolderOpen, Trash2, Pencil} from 'lucide-react';
 import {CreateDialog, EditDialog, ProjectCard} from '@/components/common/project';
 import services from '@/lib/services';
 import {ProjectListItem, ListProjectsRequest} from '@/lib/services/project/types';
@@ -253,7 +253,7 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
                     size="sm"
                     className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-white/20 hover:bg-white/30 text-white"
                   >
-                    <Settings className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                    <Pencil className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   </Button>
                 </EditDialog>
               </div>

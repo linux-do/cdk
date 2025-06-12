@@ -15,7 +15,7 @@ export const FORM_LIMITS = {
  * 默认表单值
  */
 export const DEFAULT_FORM_VALUES = {
-  RISK_LEVEL: 80 as number,
+  RISK_LEVEL: 75 as number,
   TIME_OFFSET_24H: (24 * 60 * 60 * 1000) as number,
 } as const;
 
@@ -41,15 +41,12 @@ export const TRUST_LEVEL_OPTIONS = [
 /**
  * 信任等级配置 - 用于卡片样式和显示
  */
-export const TRUST_LEVEL_CONFIG: Record<
-  number,
-  { name: string; gradient: string }
-> = {
-  0: {name: '新用户', gradient: 'bg-gradient-to-br from-gray-500 to-gray-600'},
-  1: {name: '基础用户', gradient: 'bg-gradient-to-br from-green-500 to-emerald-600'},
-  2: {name: '用户', gradient: 'bg-gradient-to-br from-blue-500 to-cyan-600'},
-  3: {name: '活跃用户', gradient: 'bg-gradient-to-br from-purple-500 to-pink-600'},
-  4: {name: '领导者', gradient: 'bg-gradient-to-br from-orange-500 to-red-600'},
+export const TRUST_LEVEL_CONFIG: Record<number, {name: string; gradient: string}> = {
+  0: {name: '新用户', gradient: 'bg-gradient-to-br from-gray-600 to-gray-700'},
+  1: {name: '基础用户', gradient: 'bg-gradient-to-br from-emerald-500 to-cyan-500'},
+  2: {name: '用户', gradient: 'bg-gradient-to-br from-blue-600 to-purple-700'},
+  3: {name: '活跃用户', gradient: 'bg-gradient-to-br from-purple-600 to-pink-600'},
+  4: {name: '领导者', gradient: 'bg-gradient-to-br from-orange-500 to-pink-500'},
 };
 
 /**
