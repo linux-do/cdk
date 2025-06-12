@@ -10,6 +10,9 @@ import {
   ReceiveProjectResponse,
   GetProjectResponseData,
   GetProjectResponse,
+  ListProjectsRequest,
+  ProjectListData,
+  ProjectListResponse,
 } from './types';
 import apiClient from '../core/api-client';
 
@@ -126,6 +129,48 @@ export class ProjectService extends BaseService {
       // 在API失败时返回空数组而不是抛出错误
       return [];
     }
+  }
+
+  /**
+   * 获取项目列表
+   * @param params - 分页和过滤参数
+   * @returns 项目列表数据
+   */
+  static async getProjects(params: ListProjectsRequest): Promise<ProjectListData> {
+    const response = await apiClient.get<ProjectListResponse>(`${this.basePath}`, {
+      params: {
+        current: params.current,
+        size: params.size,
+        tags: params.tags,
+      },
+    });
+
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
+
+    return response.data.data as ProjectListData;
+  }
+
+  /**
+   * 获取我的项目列表
+   * @param params - 分页和过滤参数
+   * @returns 我的项目列表数据
+   */
+  static async getMyProjects(params: ListProjectsRequest): Promise<ProjectListData> {
+    const response = await apiClient.get<ProjectListResponse>(`${this.basePath}/mine`, {
+      params: {
+        current: params.current,
+        size: params.size,
+        tags: params.tags,
+      },
+    });
+
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
+
+    return response.data.data as ProjectListData;
   }
 
   /**
@@ -294,6 +339,60 @@ export class ProjectService extends BaseService {
       return {
         success: false,
         tags: [],
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 获取项目列表（带错误处理）
+   * @param params - 分页和过滤参数
+   * @returns 获取结果，包含成功状态、项目列表数据和错误信息
+   */
+  static async getProjectsSafe(params: ListProjectsRequest): Promise<{
+    success: boolean;
+    data?: ProjectListData;
+    error?: string;
+  }> {
+    try {
+      const data = await this.getProjects(params);
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '获取项目列表失败';
+      console.error('获取项目列表失败:', errorMessage);
+      return {
+        success: false,
+        data: {total: 0, results: []},
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 获取我的项目列表（带错误处理）
+   * @param params - 分页和过滤参数
+   * @returns 获取结果，包含成功状态、我的项目列表数据和错误信息
+   */
+  static async getMyProjectsSafe(params: ListProjectsRequest): Promise<{
+    success: boolean;
+    data?: ProjectListData;
+    error?: string;
+  }> {
+    try {
+      const data = await this.getMyProjects(params);
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '获取我的项目列表失败';
+      console.error('获取我的项目列表失败:', errorMessage);
+      return {
+        success: false,
+        data: {total: 0, results: []},
         error: errorMessage,
       };
     }
