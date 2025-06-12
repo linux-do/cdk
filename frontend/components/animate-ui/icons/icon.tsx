@@ -4,7 +4,7 @@ import * as React from 'react';
 import {
   SVGMotionProps,
   useAnimation,
-  type AnimationControls,
+  animationControls,
   type Variants,
 } from 'motion/react';
 
@@ -41,7 +41,7 @@ type StaticAnimations = keyof typeof staticAnimations;
 type TriggerProp<T = string> = boolean | StaticAnimations | T;
 
 interface AnimateIconContextValue {
-  controls: AnimationControls | undefined;
+  controls: ReturnType<typeof animationControls> | undefined;
   animation: StaticAnimations | string;
   loop: boolean;
   loopDelay: number;
