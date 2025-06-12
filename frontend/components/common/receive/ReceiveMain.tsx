@@ -3,28 +3,18 @@
 import {useEffect, useState, useCallback} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 import {useAuth} from '@/hooks/use-auth';
-import services from '@/lib/services';
-import {GetProjectResponseData} from '@/lib/services/project';
-import {TrustLevel, BasicUserInfo} from '@/lib/services/core';
+import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
 import {Skeleton} from '@/components/ui/skeleton';
+import {TRUST_LEVEL_OPTIONS} from '@/components/common/project';
 import {ArrowLeftIcon, Copy, Tag, Gift, Clock, AlertCircle, Package} from 'lucide-react';
-import {toast} from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {formatDateTimeWithSeconds} from '@/lib/utils';
-
-/**
- * 信任等级配置
- */
-const trustLevelOptions = [
-  {value: TrustLevel.NEW_USER, label: '新用户'},
-  {value: TrustLevel.BASIC_USER, label: '基础用户'},
-  {value: TrustLevel.USER, label: '普通用户'},
-  {value: TrustLevel.ACTIVE_USER, label: '活跃用户'},
-  {value: TrustLevel.LEADER, label: '领导者'},
-];
+import services from '@/lib/services';
+import {BasicUserInfo} from '@/lib/services/core';
+import {GetProjectResponseData} from '@/lib/services/project';
 
 /**
  * 计算时间剩余显示文本
@@ -329,7 +319,7 @@ export function ReceiveMain() {
   if (error) return <ErrorState error={error} onRetry={fetchProject} onBack={handleGoBack} />;
   if (!project) return <ErrorState error="项目不存在" onRetry={fetchProject} onBack={handleGoBack} />;
 
-  const trustLevelConfig = trustLevelOptions.find((option) => option.value === project.minimum_trust_level);
+  const trustLevelConfig = TRUST_LEVEL_OPTIONS.find((option) => option.value === project.minimum_trust_level);
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">

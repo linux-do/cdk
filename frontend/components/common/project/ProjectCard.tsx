@@ -2,30 +2,12 @@
 
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
-import {Shield, Clock, Package, Settings, Trash2, Calendar} from 'lucide-react';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
+import {MotionEffect} from '@/components/animate-ui/effects/motion-effect';
+import {DISTRIBUTION_MODE_NAMES, TRUST_LEVEL_CONFIG, getTrustLevelGradient} from '@/components/common/project';
+import {Shield, Clock, Package, Settings, Trash2, Calendar} from 'lucide-react';
 import {ProjectListItem} from '@/lib/services/project/types';
 import {formatDate, formatDateTimeWithSeconds} from '@/lib/utils';
-
-/** 分发模式名称映射 */
-const DISTRIBUTION_MODE_NAMES: Record<number, string> = {
-  0: '一码一用',
-  1: '邀请制',
-};
-
-/** 信任等级配置 */
-const TRUST_LEVEL_CONFIG: Record<number, { name: string; gradient: string }> = {
-  0: {name: '新用户', gradient: 'bg-gradient-to-br from-gray-500 to-gray-600'},
-  1: {name: '基础用户', gradient: 'bg-gradient-to-br from-green-500 to-emerald-600'},
-  2: {name: '用户', gradient: 'bg-gradient-to-br from-blue-500 to-cyan-600'},
-  3: {name: '活跃用户', gradient: 'bg-gradient-to-br from-purple-500 to-pink-600'},
-  4: {name: '领导者', gradient: 'bg-gradient-to-br from-orange-500 to-red-600'},
-};
-
-/** 基于项目最低信任等级生成渐变配色 */
-const getTrustLevelGradient = (trustLevel: number): string => {
-  return TRUST_LEVEL_CONFIG[trustLevel]?.gradient || TRUST_LEVEL_CONFIG[0].gradient;
-};
 
 /** 项目卡片组件属性接口 */
 interface ProjectCardProps {
@@ -33,9 +15,18 @@ interface ProjectCardProps {
   onClick?: (project: ProjectListItem) => void;
   onEdit?: (project: ProjectListItem) => void;
   onDelete?: (project: ProjectListItem) => void;
+  delay?: number;
+  editButton?: React.ReactNode;
 }
 
-export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  onClick,
+  onEdit,
+  onDelete,
+  delay = 0,
+  editButton,
+}: ProjectCardProps) {
   const gradientTheme = getTrustLevelGradient(project.minimum_trust_level);
 
   const now = new Date();
@@ -47,7 +38,14 @@ export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardPro
 
   return (
     <TooltipProvider>
-      <div className="w-full max-w-sm mx-auto">
+      <MotionEffect
+        slide={{direction: 'down'}}
+        fade
+        zoom
+        inView
+        delay={delay}
+        className="w-full max-w-sm mx-auto"
+      >
         <div
           className={`${gradientTheme} p-4 sm:p-6 rounded-2xl group hover:rounded-xl transition-all duration-300 text-white relative overflow-hidden hover:shadow-lg hover:scale-[1.02] transform cursor-pointer`}
           onClick={() => onClick?.(project)}
@@ -57,9 +55,21 @@ export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardPro
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-0.5 sm:gap-1">
                   <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-white drop-shadow-md" />
-                  {isUpcoming && <span className="text-[8px] sm:text-[10px] text-white font-medium">即将开始</span>}
-                  {isActive && <span className="text-[8px] sm:text-[10px] text-white font-medium">进行中</span>}
-                  {isExpired && <span className="text-[8px] sm:text-[10px] text-white font-medium">已结束</span>}
+                  {isUpcoming && (
+                    <span className="text-[8px] sm:text-[10px] text-white font-medium">
+                      即将开始
+                    </span>
+                  )}
+                  {isActive && (
+                    <span className="text-[8px] sm:text-[10px] text-white font-medium">
+                      进行中
+                    </span>
+                  )}
+                  {isExpired && (
+                    <span className="text-[8px] sm:text-[10px] text-white font-medium">
+                      已结束
+                    </span>
+                  )}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -72,31 +82,38 @@ export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardPro
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-0.5">
                   <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-white drop-shadow-md" />
-                  <span className="text-[8px] sm:text-[10px] text-white font-medium">T{project.minimum_trust_level}</span>
+                  <span className="text-[8px] sm:text-[10px] text-white font-medium">
+                    T{project.minimum_trust_level}
+                  </span>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <p>最低等级: {TRUST_LEVEL_CONFIG[project.minimum_trust_level]?.name || TRUST_LEVEL_CONFIG[0].name}</p>
+                <p>
+                  最低等级:{' '}
+                  {TRUST_LEVEL_CONFIG[project.minimum_trust_level]?.name ||
+                    TRUST_LEVEL_CONFIG[0].name}
+                </p>
               </TooltipContent>
             </Tooltip>
           </div>
 
-          {(onEdit || onDelete) && (
+          {(onEdit || onDelete || editButton) && (
             <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {onEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-white/20 hover:bg-white/30 text-white"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onEdit(project);
-                  }}
-                >
-                  <Settings className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                </Button>
-              )}
+              {editButton ||
+                (onEdit && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-white/20 hover:bg-white/30 text-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onEdit(project);
+                    }}
+                  >
+                    <Settings className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                  </Button>
+                ))}
               {onDelete && (
                 <Button
                   variant="ghost"
@@ -124,7 +141,9 @@ export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardPro
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-1">
                     <Package className="h-3 w-3 sm:h-4 sm:w-4 text-white drop-shadow-md" />
-                    <span className="text-[10px] sm:text-xs">{project.total_items}</span>
+                    <span className="text-[10px] sm:text-xs">
+                      {project.total_items}
+                    </span>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -161,7 +180,10 @@ export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardPro
                   {project.tags.length > 2 && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="secondary" className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 cursor-default">
+                        <Badge
+                          variant="secondary"
+                          className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 cursor-default"
+                        >
                           +{project.tags.length - 2}
                         </Badge>
                       </TooltipTrigger>
@@ -182,7 +204,10 @@ export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardPro
                   )}
                 </>
               ) : (
-                <Badge variant="secondary" className="text-[9px] -ml-1 sm:text-[10px] py-0.5">
+                <Badge
+                  variant="secondary"
+                  className="text-[9px] -ml-1 sm:text-[10px] py-0.5"
+                >
                   无标签
                 </Badge>
               )}
@@ -196,7 +221,7 @@ export function ProjectCard({project, onClick, onEdit, onDelete}: ProjectCardPro
             </div>
           </div>
         </div>
-      </div>
+      </MotionEffect>
     </TooltipProvider>
   );
 }

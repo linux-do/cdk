@@ -1,7 +1,6 @@
 'use client';
 
-import {CreateDialog} from '@/components/common/project/CreateDialog';
-import {MineProject} from '@/components/common/project/MineProject';
+import {CreateDialog, MineProject} from '@/components/common/project';
 import {Separator} from '@/components/ui/separator';
 import {useState} from 'react';
 
@@ -21,9 +20,7 @@ export function ProjectMain() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">我的项目</h1>
-          <p className="text-muted-foreground mt-1">
-            管理您的项目和分发内容
-          </p>
+          <p className="text-muted-foreground mt-1">管理您的项目和分发内容</p>
         </div>
         <div>
           <CreateDialog onProjectCreated={handleProjectCreated} />
@@ -33,7 +30,10 @@ export function ProjectMain() {
       <Separator className="my-8" />
 
       {/* 项目列表区域 */}
-      <MineProject key={refreshTrigger} onProjectCreated={handleProjectCreated} />
+      <MineProject
+        key={refreshTrigger}
+        onProjectCreated={handleProjectCreated}
+      />
     </div>
   );
 }

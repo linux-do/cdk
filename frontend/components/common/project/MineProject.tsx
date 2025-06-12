@@ -2,14 +2,13 @@
 
 import {useState, useEffect, useCallback} from 'react';
 import {useRouter} from 'next/navigation';
-import {Card, CardContent} from '@/components/ui/card';
+import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Skeleton} from '@/components/ui/skeleton';
-import {ChevronLeft, ChevronRight, FolderOpen, Trash2} from 'lucide-react';
+import {Card, CardContent} from '@/components/ui/card';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle} from '@/components/ui/alert-dialog';
-import {toast} from 'sonner';
-import {CreateDialog} from '@/components/common/project/CreateDialog';
-import {ProjectCard} from '@/components/common/project/ProjectCard';
+import {ChevronLeft, ChevronRight, FolderOpen, Trash2, Settings} from 'lucide-react';
+import {CreateDialog, EditDialog, ProjectCard} from '@/components/common/project';
 import services from '@/lib/services';
 import {ProjectListItem, ListProjectsRequest} from '@/lib/services/project/types';
 
@@ -25,9 +24,12 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
   const [, setError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<ProjectListItem | null>(null);
+  const [projectToDelete, setProjectToDelete] =
+    useState<ProjectListItem | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [pageCache, setPageCache] = useState<Map<number, ProjectListItem[]>>(new Map());
+  const [pageCache, setPageCache] = useState<Map<number, ProjectListItem[]>>(
+      new Map(),
+  );
   const pageSize = 12;
 
   /**
@@ -51,37 +53,50 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
   /**
    * 获取项目列表
    */
-  const fetchProjects = useCallback(async (page: number = 1, forceRefresh: boolean = false) => {
-    if (!forceRefresh && pageCache.has(page)) {
-      const cachedData = pageCache.get(page)!;
-      setProjects(cachedData);
-      setLoading(false);
-      return;
-    }
+  const fetchProjects = useCallback(
+      async (page: number = 1, forceRefresh: boolean = false) => {
+        if (!forceRefresh && pageCache.has(page)) {
+          const cachedData = pageCache.get(page)!;
+          setProjects(cachedData);
+          setLoading(false);
+          return;
+        }
 
-    setLoading(true);
-    setError('');
+        setLoading(true);
+        setError('');
 
-    const params: ListProjectsRequest = {
-      current: page,
-      size: pageSize,
-    };
+        const params: ListProjectsRequest = {
+          current: page,
+          size: pageSize,
+        };
 
-    const result = await services.project.getMyProjectsSafe(params);
+        const result = await services.project.getMyProjectsSafe(params);
 
-    if (result.success && result.data) {
-      setProjects(result.data.results);
-      setTotal(result.data.total);
+        if (result.success && result.data) {
+          setProjects(result.data.results);
+          setTotal(result.data.total);
 
-      setPageCache((prev) => new Map(prev.set(page, result.data!.results)));
-    } else {
-      setError(result.error || '获取项目列表失败');
-      setProjects([]);
-      setTotal(0);
-    }
+          setPageCache((prev) => new Map(prev.set(page, result.data!.results)));
+        } else {
+          setError(result.error || '获取项目列表失败');
+          setProjects([]);
+          setTotal(0);
+        }
 
-    setLoading(false);
-  }, [pageCache, pageSize]);
+        setLoading(false);
+      },
+      [pageCache, pageSize],
+  );
+
+  /**
+   * 处理项目更新
+   */
+  const handleProjectUpdated = (updatedProject: ProjectListItem) => {
+    setProjects((prev) =>
+      prev.map((p) => (p.id === updatedProject.id ? updatedProject : p)),
+    );
+    setPageCache(new Map());
+  };
 
   /** 删除项目 */
   const handleDeleteProject = async (project: ProjectListItem) => {
@@ -96,7 +111,9 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
     setDeleting(true);
 
     try {
-      const result = await services.project.deleteProjectSafe(projectToDelete.id);
+      const result = await services.project.deleteProjectSafe(
+          projectToDelete.id,
+      );
 
       if (result.success) {
         toast.success('项目删除成功');
@@ -112,22 +129,18 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
         } else if (remainingProjects === 0) {
           fetchProjects(1, true);
         }
+
+        setDeleting(false);
+        setDeleteDialogOpen(false);
+        setProjectToDelete(null);
       } else {
         toast.error(result.error || '删除项目失败');
+        setDeleting(false);
       }
     } catch {
       toast.error('删除项目失败');
-    } finally {
       setDeleting(false);
-      setDeleteDialogOpen(false);
-      setProjectToDelete(null);
     }
-  };
-
-  /** 编辑项目 */
-  const handleEditProject = (project: ProjectListItem) => {
-    toast.info(`编辑功能正在开发中：${project.name}`);
-    console.log('编辑项目:', project);
   };
 
   /** 点击卡片跳转到项目页面 */
@@ -217,20 +230,40 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {projects.map((project) => (
+        {projects.map((project, index) => (
           <ProjectCard
             key={project.id}
             project={project}
             onClick={handleCardClick}
-            onEdit={handleEditProject}
             onDelete={handleDeleteProject}
+            delay={index * 0.05}
+            editButton={
+              <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <EditDialog
+                  project={project}
+                  onProjectUpdated={handleProjectUpdated}
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-white/20 hover:bg-white/30 text-white"
+                  >
+                    <Settings className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                  </Button>
+                </EditDialog>
+              </div>
+            }
           />
         ))}
       </div>
 
       {totalPages > 1 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-
           <div className="text-sm text-muted-foreground order-2 sm:order-1">
             共 {total} 个项目，第 {currentPage} / {totalPages} 页
           </div>
@@ -257,10 +290,13 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
         </div>
       )}
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => {
-        if (deleting && !open) return;
-        setDeleteDialogOpen(open);
-      }}>
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          if (deleting && !open) return;
+          setDeleteDialogOpen(open);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -268,17 +304,22 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
               确认删除项目
             </AlertDialogTitle>
             <AlertDialogDescription>
-              您确定要删除项目 &quot;<span className="font-medium">{projectToDelete?.name}</span>&quot; 吗？
+              您确定要删除项目 &quot;
+              <span className="font-medium">{projectToDelete?.name}</span>&quot;
+              吗？
               <br />
-              <span className="text-red-600 font-medium">此操作无法撤销，项目的所有数据将被永久删除。</span>
+              <span className="text-red-600 font-medium">
+                此操作无法撤销，项目的所有数据将被永久删除。
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>
-              取消
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>取消</AlertDialogCancel>
             <AlertDialogAction
-              onClick={confirmDeleteProject}
+              onClick={(e) => {
+                e.preventDefault(); // 阻止默认的关闭行为
+                confirmDeleteProject();
+              }}
               disabled={deleting}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
