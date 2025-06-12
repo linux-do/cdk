@@ -13,6 +13,7 @@ import {
   ListProjectsRequest,
   ProjectListData,
   ProjectListResponse,
+  ApiRequestParams,
 } from './types';
 import apiClient from '../core/api-client';
 
@@ -36,7 +37,8 @@ export class ProjectService extends BaseService {
     if (response.data.error_msg) {
       throw new Error(response.data.error_msg);
     }
-    return response.data.data as GetProjectResponseData;
+
+    return response.data.data;
   }
 
   /**
@@ -108,7 +110,7 @@ export class ProjectService extends BaseService {
       throw new Error(response.data.error_msg);
     }
 
-    return response.data.data as ReceiveHistoryData;
+    return response.data.data;
   }
 
   /**
@@ -123,10 +125,9 @@ export class ProjectService extends BaseService {
         throw new Error(response.data.error_msg);
       }
 
-      return (response.data.data as string[]) || [];
+      return response.data.data || [];
     } catch (error) {
       console.warn('获取标签列表失败:', error);
-      // 在API失败时返回空数组而不是抛出错误
       return [];
     }
   }
@@ -137,11 +138,19 @@ export class ProjectService extends BaseService {
    * @returns 项目列表数据
    */
   static async getProjects(params: ListProjectsRequest): Promise<ProjectListData> {
+    const requestParams: ApiRequestParams = {
+      current: params.current,
+      size: params.size,
+    };
+
+    if (params.tags && params.tags.length > 0) {
+      requestParams.tags = params.tags;
+    }
+
     const response = await apiClient.get<ProjectListResponse>(`${this.basePath}`, {
-      params: {
-        current: params.current,
-        size: params.size,
-        tags: params.tags,
+      params: requestParams,
+      paramsSerializer: {
+        indexes: null,
       },
     });
 
@@ -149,7 +158,7 @@ export class ProjectService extends BaseService {
       throw new Error(response.data.error_msg);
     }
 
-    return response.data.data as ProjectListData;
+    return response.data.data;
   }
 
   /**
@@ -158,11 +167,19 @@ export class ProjectService extends BaseService {
    * @returns 我的项目列表数据
    */
   static async getMyProjects(params: ListProjectsRequest): Promise<ProjectListData> {
+    const requestParams: ApiRequestParams = {
+      current: params.current,
+      size: params.size,
+    };
+
+    if (params.tags && params.tags.length > 0) {
+      requestParams.tags = params.tags;
+    }
+
     const response = await apiClient.get<ProjectListResponse>(`${this.basePath}/mine`, {
-      params: {
-        current: params.current,
-        size: params.size,
-        tags: params.tags,
+      params: requestParams,
+      paramsSerializer: {
+        indexes: null,
       },
     });
 
@@ -170,7 +187,7 @@ export class ProjectService extends BaseService {
       throw new Error(response.data.error_msg);
     }
 
-    return response.data.data as ProjectListData;
+    return response.data.data;
   }
 
   /**
@@ -191,7 +208,6 @@ export class ProjectService extends BaseService {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取项目详情失败';
-      console.error('获取项目详情失败:', errorMessage);
       return {
         success: false,
         error: errorMessage,
@@ -213,7 +229,6 @@ export class ProjectService extends BaseService {
       return {success: true};
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '创建项目失败';
-      console.error('创建项目失败:', errorMessage);
       return {
         success: false,
         error: errorMessage,
@@ -239,7 +254,6 @@ export class ProjectService extends BaseService {
       return {success: true};
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '更新项目失败';
-      console.error('更新项目失败:', errorMessage);
       return {
         success: false,
         error: errorMessage,
@@ -261,7 +275,6 @@ export class ProjectService extends BaseService {
       return {success: true};
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '删除项目失败';
-      console.error('删除项目失败:', errorMessage);
       return {
         success: false,
         error: errorMessage,
@@ -283,7 +296,6 @@ export class ProjectService extends BaseService {
       return {success: true};
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '领取项目内容失败';
-      console.error('领取项目内容失败:', errorMessage);
       return {
         success: false,
         error: errorMessage,
@@ -309,7 +321,6 @@ export class ProjectService extends BaseService {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取领取历史失败';
-      console.error('获取领取历史失败:', errorMessage);
       return {
         success: false,
         data: {total: 0, results: []},
@@ -335,7 +346,6 @@ export class ProjectService extends BaseService {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取标签失败';
-      console.error('获取标签失败:', errorMessage);
       return {
         success: false,
         tags: [],
@@ -362,7 +372,6 @@ export class ProjectService extends BaseService {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取项目列表失败';
-      console.error('获取项目列表失败:', errorMessage);
       return {
         success: false,
         data: {total: 0, results: []},
@@ -389,7 +398,6 @@ export class ProjectService extends BaseService {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取我的项目列表失败';
-      console.error('获取我的项目列表失败:', errorMessage);
       return {
         success: false,
         data: {total: 0, results: []},

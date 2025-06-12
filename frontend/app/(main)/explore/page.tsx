@@ -1,32 +1,46 @@
-'use client';
+import {Suspense} from 'react';
+import {ExploreMain} from '@/components/common/explore';
+import {Skeleton} from '@/components/ui/skeleton';
 
-import {useAuth} from '@/hooks/use-auth';
-
-export default function ExplorePage() {
-  const {user} = useAuth();
-
+function ExploreFallback() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* 主要内容 */}
-      <main className="container mx-auto py-10">
-        <div className="text-center space-y-6">
-          <h1 className="text-3xl font-bold tracking-tight">🎉 探索页面</h1>
-
-          <p className="text-xl text-muted-foreground">
-            欢迎回来，{user?.nickname || user?.username || '用户'}！
-          </p>
-
-          <div className="mt-6 p-6 bg-card rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-3">用户信息</h2>
-            <div className="text-left max-w-md mx-auto">
-              <p><span className="font-medium">ID:</span> {user?.id}</p>
-              <p><span className="font-medium">用户名:</span> {user?.username}</p>
-              <p><span className="font-medium">昵称:</span> {user?.nickname}</p>
-              <p><span className="font-medium">信任等级:</span> {user?.trust_level}</p>
-            </div>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-lg" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-48" />
           </div>
         </div>
-      </main>
+        <Skeleton className="h-10 w-80" />
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-6 w-18" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        {Array.from({length: 8}).map((_, index) => (
+          <div key={index} className="w-full max-w-sm mx-auto">
+            <Skeleton className="h-40 w-full rounded-2xl" />
+            <div className="space-y-2 mt-3">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <div className="min-h-screen container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <Suspense fallback={<ExploreFallback />}>
+        <ExploreMain />
+      </Suspense>
     </div>
   );
 }

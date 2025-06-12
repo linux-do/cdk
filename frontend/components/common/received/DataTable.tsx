@@ -1,14 +1,14 @@
 'use client';
 
 import React, {useState, useMemo, useEffect} from 'react';
+import {toast} from 'sonner';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
+import {Skeleton} from '@/components/ui/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 import {Search, ExternalLink, Package, Copy, ChevronLeft, ChevronRight} from 'lucide-react';
-import {Skeleton} from '@/components/ui/skeleton';
-import {toast} from 'sonner';
-import {ReceiveHistoryItem} from '@/lib/services/project/types';
 import {formatDateTimeWithSeconds} from '@/lib/utils';
+import {ReceiveHistoryItem} from '@/lib/services/project/types';
 
 const ITEMS_PER_PAGE = 20;
 const MAX_PAGINATION_BUTTONS = 5;
@@ -244,19 +244,19 @@ const DataTableSkeleton = () => (
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[140px]">
+              <Skeleton className="h-4 w-20" />
+            </TableHead>
+            <TableHead className="w-[100px]">
+              <Skeleton className="h-4 w-16" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-20" />
+            </TableHead>
             <TableHead className="w-[120px]">
               <Skeleton className="h-4 w-16" />
             </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-20" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-16" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-20" />
-            </TableHead>
-            <TableHead className="text-right">
+            <TableHead className="text-right w-[60px]">
               <Skeleton className="h-4 w-12 ml-auto" />
             </TableHead>
           </TableRow>
@@ -264,9 +264,6 @@ const DataTableSkeleton = () => (
         <TableBody>
           {Array.from({length: 10}).map((_, i) => (
             <TableRow key={i}>
-              <TableCell>
-                <Skeleton className="h-4 w-24" />
-              </TableCell>
               <TableCell>
                 <div className="space-y-1">
                   <Skeleton className="h-4 w-32" />
@@ -278,6 +275,9 @@ const DataTableSkeleton = () => (
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end space-x-1">
@@ -370,20 +370,12 @@ export function DataTable({data, isLoading}: DataTableProps) {
               <TableHead className="w-[120px]">
                 <button
                   className="font-medium hover:text-primary transition-colors"
-                  onClick={() => handleSort('received_at')}
-                >
-                  领取时间{renderSortIcon('received_at')}
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  className="font-medium hover:text-primary transition-colors"
                   onClick={() => handleSort('project_name')}
                 >
                   项目名称{renderSortIcon('project_name')}
                 </button>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[120px]">
                 <button
                   className="font-medium hover:text-primary transition-colors"
                   onClick={() => handleSort('project_creator_nickname')}
@@ -391,15 +383,23 @@ export function DataTable({data, isLoading}: DataTableProps) {
                   创建者{renderSortIcon('project_creator_nickname')}
                 </button>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-[240px]">
                 <button
                   className="font-medium hover:text-primary transition-colors"
-                  onClick={() => handleSort('project_id')}
+                  onClick={() => handleSort('content')}
                 >
-                  项目ID{renderSortIcon('project_id')}
+                  项目内容{renderSortIcon('content')}
                 </button>
               </TableHead>
-              <TableHead className="text-right">操作</TableHead>
+              <TableHead className="w-[10px]">
+                <button
+                  className="font-medium hover:text-primary transition-colors"
+                  onClick={() => handleSort('received_at')}
+                >
+                  领取时间{renderSortIcon('received_at')}
+                </button>
+              </TableHead>
+              <TableHead className="text-right w-[60px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -408,34 +408,35 @@ export function DataTable({data, isLoading}: DataTableProps) {
             ) : (
               paginatedData.map((item) => (
                 <TableRow key={`${item.project_id}-${item.received_at}`}>
-                  <TableCell className="text-xs text-gray-600 dark:text-gray-400">
-                    {item.received_at ? formatDateTimeWithSeconds(item.received_at) : '-'}
-                  </TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium text-sm">{item.project_name}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">
-                        {item.content || '暂无内容'}
-                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">{item.project_name}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="text-xs text-gray-600 dark:text-gray-400">
                     {item.project_creator_nickname || item.project_creator}
                   </TableCell>
                   <TableCell className="text-xs font-mono text-gray-600 dark:text-gray-400">
-                    {item.project_id}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-1">
+                    <div className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-sm flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        {item.content}
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(item.project_id)}
-                        className="h-6 w-6 p-0"
-                        title="复制项目ID"
+                        onClick={() => copyToClipboard(item.content)}
+                        className="h-5 w-5 p-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                        title="复制项目内容"
                       >
                         <Copy className="h-3 w-3" />
                       </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs text-gray-600 dark:text-gray-400">
+                    {item.received_at ? formatDateTimeWithSeconds(item.received_at) : '-'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end space-x-1">
                       <Button
                         variant="ghost"
                         size="sm"
