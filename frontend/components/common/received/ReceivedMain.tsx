@@ -136,7 +136,7 @@ const DataTableSkeleton = () => (
  */
 export function ReceivedMain() {
   const [data, setData] = useState<ReceiveHistoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [Loading, setLoading] = useState(true);
 
   /**
    * 获取所有领取记录
@@ -151,7 +151,7 @@ export function ReceivedMain() {
       });
 
       if (!firstPageResult.success || !firstPageResult.data) {
-        throw new Error(firstPageResult.error || '获取领取记录失败');
+        throw new Error(firstPageResult.error || '获取数据失败');
       }
 
       const {total, results} = firstPageResult.data;
@@ -179,7 +179,7 @@ export function ReceivedMain() {
 
       setData(allResults);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '获取领取记录失败');
+      toast.error(err instanceof Error ? err.message : '获取数据失败');
     } finally {
       setLoading(false);
     }
@@ -203,7 +203,7 @@ export function ReceivedMain() {
       <Separator className="my-8" />
 
       <div className="space-y-6">
-        {loading ? (
+        {Loading ? (
           <>
             <DataChartSkeleton />
             <Separator className="my-8" />
