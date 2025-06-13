@@ -72,8 +72,7 @@ export function formatDateTimeWithSeconds(dateString: string): string {
 export async function copyToClipboard(text: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
-  } catch (error) {
-    // 如果 clipboard API 不可用，使用传统方法
+  } catch {
     try {
       const textArea = document.createElement('textarea');
       textArea.value = text;

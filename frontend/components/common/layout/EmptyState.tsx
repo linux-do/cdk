@@ -24,7 +24,7 @@ export function EmptyState({
   icon: Icon,
   title,
   description,
-  className = "flex flex-col items-center justify-center text-center p-8 h-full",
+  className = 'flex flex-col items-center justify-center text-center p-8 h-full',
   children,
 }: EmptyStateProps) {
   return (
@@ -41,4 +41,4 @@ export function EmptyState({
       {children}
     </div>
   );
-} 
+}

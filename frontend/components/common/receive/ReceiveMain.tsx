@@ -12,7 +12,6 @@ import services from '@/lib/services';
 import {GetProjectResponseData} from '@/lib/services/project';
 
 
-
 /**
  * 加载骨架屏组件
  */
@@ -94,7 +93,6 @@ export function ReceiveMain() {
       } else {
         setError(result.error || '获取项目详情失败');
       }
-
     } catch {
       setError('获取项目详情失败');
     } finally {
@@ -150,7 +148,6 @@ export function ReceiveMain() {
             project,
             user,
             projectId: projectId || '',
-            onRetry: fetchProject
           }}
         />
       )}

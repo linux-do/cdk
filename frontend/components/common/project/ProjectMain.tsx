@@ -60,42 +60,42 @@ export function ProjectMain() {
   const [error, setError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageCache, setPageCache] = useState<Map<number, ProjectListItem[]>>(new Map());
-  
+
   /**
    * 获取项目列表
    */
   const fetchProjects = useCallback(
-    async (page: number = 1, forceRefresh: boolean = false) => {
-      if (!forceRefresh && pageCache.has(page)) {
-        const cachedData = pageCache.get(page)!;
-        setProjects(cachedData);
+      async (page: number = 1, forceRefresh: boolean = false) => {
+        if (!forceRefresh && pageCache.has(page)) {
+          const cachedData = pageCache.get(page)!;
+          setProjects(cachedData);
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+
+        const params: ListProjectsRequest = {
+          current: page,
+          size: PAGE_SIZE,
+        };
+
+        const result = await services.project.getMyProjectsSafe(params);
+
+        if (result.success && result.data) {
+          setProjects(result.data.results);
+          setTotal(result.data.total);
+          setPageCache((prev) => new Map(prev.set(page, result.data!.results)));
+        } else {
+          setError(result.error || '获取项目列表失败');
+          setProjects([]);
+          setTotal(0);
+        }
+
         setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError('');
-
-      const params: ListProjectsRequest = {
-        current: page,
-        size: PAGE_SIZE,
-      };
-
-      const result = await services.project.getMyProjectsSafe(params);
-
-      if (result.success && result.data) {
-        setProjects(result.data.results);
-        setTotal(result.data.total);
-        setPageCache((prev) => new Map(prev.set(page, result.data!.results)));
-      } else {
-        setError(result.error || '获取项目列表失败');
-        setProjects([]);
-        setTotal(0);
-      }
-
-      setLoading(false);
-    },
-    [pageCache, PAGE_SIZE],
+      },
+      [pageCache],
   );
 
   /**

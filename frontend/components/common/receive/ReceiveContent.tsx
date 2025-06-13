@@ -142,7 +142,6 @@ interface ReceiveContentProps {
     project: GetProjectResponseData;
     user: BasicUserInfo | null;
     projectId: string;
-    onRetry: () => void;
   };
 }
 
@@ -150,7 +149,7 @@ interface ReceiveContentProps {
  * 项目接收内容组件
  */
 export function ReceiveContent({data}: ReceiveContentProps) {
-  const {project, user, projectId, onRetry} = data;
+  const {project, user, projectId} = data;
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isReceiving, setIsReceiving] = useState(false);
@@ -321,4 +320,4 @@ export function ReceiveContent({data}: ReceiveContentProps) {
       </div>
     </div>
   );
-} 
+}

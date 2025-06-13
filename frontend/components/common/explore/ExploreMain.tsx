@@ -50,50 +50,50 @@ export function ExploreMain() {
   const [tagSearchKeyword, setTagSearchKeyword] = useState('');
   const [isTagFilterOpen, setIsTagFilterOpen] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
- 
+
   /**
    * 项目过滤和分类逻辑
    */
   const processedData = useMemo(() => {
     const now = new Date();
-    
+
     // 应用搜索和标签过滤
     let filteredProjects = allProjects;
-    
+
     if (searchKeyword.trim()) {
       filteredProjects = filteredProjects.filter((project) =>
         project.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        (project.description && project.description.toLowerCase().includes(searchKeyword.toLowerCase()))
+        (project.description && project.description.toLowerCase().includes(searchKeyword.toLowerCase())),
       );
     }
-    
+
     // 分类项目
     const activeProjects = filteredProjects.filter((project) => {
       const startTime = new Date(project.start_time);
       const endTime = new Date(project.end_time);
       return now >= startTime && now <= endTime && project.total_items > 0;
     });
-    
+
     const upcomingList = filteredProjects.filter((project) => {
       const startTime = new Date(project.start_time);
       return startTime > now && project.total_items > 0;
     });
-    
+
     // 随机横幅项目
     const randomProjects = [...activeProjects]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 4);
-    
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 4);
+
     // 即将开始项目
     const upcomingProjects = upcomingList
-      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
-      .slice(0, 6);
-    
+        .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+        .slice(0, 6);
+
     return {
       projects: filteredProjects,
       randomProjects,
       upcomingProjects,
-      total: filteredProjects.length
+      total: filteredProjects.length,
     };
   }, [allProjects, searchKeyword]);
 
@@ -116,7 +116,7 @@ export function ExploreMain() {
     }
 
     setLoading(false);
-  }, [currentPage, PAGE_SIZE, selectedTags]);
+  }, [currentPage, selectedTags]);
 
   /**
    * 获取标签列表
@@ -133,9 +133,9 @@ export function ExploreMain() {
    */
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) => {
-      const newTags = tag === '' ? [] : 
+      const newTags = tag === '' ? [] :
         prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
-      
+
       setCurrentPage(1);
       setShowAllTags(false);
       return newTags;

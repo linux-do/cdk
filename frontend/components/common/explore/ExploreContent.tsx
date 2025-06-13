@@ -6,7 +6,7 @@ import {Button} from '@/components/ui/button';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from '@/components/ui/carousel';
 import {InputButton, InputButtonAction, InputButtonProvider, InputButtonSubmit, InputButtonInput} from '@/components/animate-ui/buttons/input';
-import {ChevronLeft, ChevronRight, Search, Compass, Filter, Check, ChevronDown} from 'lucide-react';
+import {ChevronLeft, ChevronRight, Search, Compass, Filter, Check} from 'lucide-react';
 import {ProjectCard} from '@/components/common/project';
 import {ProjectListItem} from '@/lib/services/project/types';
 import {EmptyState} from '@/components/common/layout/EmptyState';
@@ -34,7 +34,7 @@ interface ExploreContentProps {
     onSearchKeywordChange: (keyword: string) => void;
     onTagSearchKeywordChange: (keyword: string) => void;
     onTagFilterOpenChange: (open: boolean) => void;
-    onShowAllTagsChange: (show: boolean) => void;  
+    onShowAllTagsChange: (show: boolean) => void;
   };
   LoadingSkeleton: React.ComponentType;
 }
@@ -66,7 +66,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
 
   // 计算衍生状态
   const filteredTags = tags.filter((tag) =>
-    tag.toLowerCase().includes(tagSearchKeyword.toLowerCase())
+    tag.toLowerCase().includes(tagSearchKeyword.toLowerCase()),
   );
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -76,7 +76,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
   };
 
   const handleSelectAllTags = () => {
-    filteredTags.forEach(tag => {
+    filteredTags.forEach((tag) => {
       if (!selectedTags.includes(tag)) {
         onTagToggle(tag);
       }
@@ -89,10 +89,10 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
 
     const getPageNumbers = () => {
       if (totalPages <= 5) return Array.from({length: totalPages}, (_, i) => i + 1);
-      
+
       if (currentPage <= 3) return [1, 2, 3, 4, 5];
       if (currentPage >= totalPages - 2) return Array.from({length: 5}, (_, i) => totalPages - 4 + i);
-      
+
       return Array.from({length: 5}, (_, i) => currentPage - 2 + i);
     };
 
@@ -167,7 +167,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
           </div>
           <Carousel
             opts={{
-              align: "start",
+              align: 'start',
             }}
             className="w-full"
           >
@@ -206,43 +206,43 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
               <Filter className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="end">
-              <div className="p-3 space-y-3">
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
-                    <Input
-                      placeholder="搜索标签..."
-                      value={tagSearchKeyword}
-                      onChange={(e) => onTagSearchKeywordChange(e.target.value)}
-                      className="pl-7 h-8 text-xs"
-                    />
-                  </div>
-                  
-                  {(selectedTags.length > 0 || filteredTags.length > 1) && (
-                    <div className="flex justify-end gap-3 text-xs">
-                      {filteredTags.length > 1 && (
-                        <button
-                          onClick={handleSelectAllTags}
-                          className="text-primary hover:text-primary/80 font-medium transition-colors"
-                        >
-                          全选
-                        </button>
-                      )}
-                      {selectedTags.length > 0 && (
-                        <button
-                          onClick={handleClearAllTags}
-                          className="text-muted-foreground hover:text-foreground font-medium transition-colors"
-                        >
-                          清除全部
-                        </button>
-                      )}
-                    </div>
-                  )}
+          <PopoverContent className="w-80 p-0" align="end">
+            <div className="p-3 space-y-3">
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
+                  <Input
+                    placeholder="搜索标签..."
+                    value={tagSearchKeyword}
+                    onChange={(e) => onTagSearchKeywordChange(e.target.value)}
+                    className="pl-7 h-8 text-xs"
+                  />
                 </div>
 
-                <div className="max-h-48 overflow-y-auto">
-                  {filteredTags.length > 0 ? (
+                {(selectedTags.length > 0 || filteredTags.length > 1) && (
+                  <div className="flex justify-end gap-3 text-xs">
+                    {filteredTags.length > 1 && (
+                      <button
+                        onClick={handleSelectAllTags}
+                        className="text-primary hover:text-primary/80 font-medium transition-colors"
+                      >
+                          全选
+                      </button>
+                    )}
+                    {selectedTags.length > 0 && (
+                      <button
+                        onClick={handleClearAllTags}
+                        className="text-muted-foreground hover:text-foreground font-medium transition-colors"
+                      >
+                          清除全部
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="max-h-48 overflow-y-auto">
+                {filteredTags.length > 0 ? (
                     <div className="space-y-1">
                       {filteredTags.map((tag) => {
                         const isSelected = selectedTags.includes(tag);
@@ -273,9 +273,9 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
                       </p>
                     </div>
                   )}
-                </div>
               </div>
-            </PopoverContent>
+            </div>
+          </PopoverContent>
         </Popover>
       </div>
 
@@ -310,4 +310,4 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
       )}
     </div>
   );
-} 
+}

@@ -41,7 +41,7 @@ export function MineProject({data}: MineProjectProps) {
     onTotalChange,
     onCacheClear,
   } = data;
-  
+
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<ProjectListItem | null>(null);
@@ -52,7 +52,7 @@ export function MineProject({data}: MineProjectProps) {
    */
   const handleProjectUpdated = (updatedProject: ProjectListItem) => {
     onProjectsChange(
-      projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+        projects.map((p) => (p.id === updatedProject.id ? updatedProject : p)),
     );
     onCacheClear();
   };
