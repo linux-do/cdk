@@ -6,8 +6,9 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/compon
 import {MotionEffect} from '@/components/animate-ui/effects/motion-effect';
 import {DISTRIBUTION_MODE_NAMES, TRUST_LEVEL_CONFIG, getTrustLevelGradient} from '@/components/common/project';
 import {Shield, Clock, Package, Trash2, Calendar, Pencil} from 'lucide-react';
-import {ProjectListItem} from '@/lib/services/project/types';
 import {formatDate, formatDateTimeWithSeconds} from '@/lib/utils';
+import {ProjectListItem} from '@/lib/services/project/types';
+
 
 /** 项目卡片组件属性接口 */
 interface ProjectCardProps {

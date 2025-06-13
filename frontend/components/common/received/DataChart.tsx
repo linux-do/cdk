@@ -5,7 +5,6 @@ import {Area, AreaChart, CartesianGrid, XAxis, YAxis} from 'recharts';
 import {useIsMobile} from '@/hooks/use-mobile';
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from '@/components/ui/chart';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {Skeleton} from '@/components/ui/skeleton';
 import {ReceiveHistoryItem} from '@/lib/services/project/types';
 import {CountingNumber} from '@/components/animate-ui/text/counting-number';
 
@@ -34,8 +33,6 @@ type TimeRange = keyof typeof TIME_RANGE_CONFIG
 interface DataChartProps {
   /** 领取历史数据 */
   data: ReceiveHistoryItem[]
-  /** 是否正在加载 */
-  isLoading?: boolean
 }
 
 /**
@@ -55,56 +52,9 @@ const StatCard = ({title, value, suffix = ''}: {title: string; value: number; su
 };
 
 /**
- * 数据图表骨架屏组件
- */
-const DataChartSkeleton = () => {
-  const chartBarHeights = [60, 35, 50, 25, 30, 55, 45];
-
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {Array.from({length: 4}).map((_, i) => (
-          <div key={i} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <Skeleton className="h-3 w-8 mb-1" />
-            <Skeleton className="h-[18px] w-12" />
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <div className="mb-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-6 w-16" />
-            <Skeleton className="h-8 w-24 rounded-md" />
-          </div>
-        </div>
-
-        <div className="py-2">
-          <div className="h-[300px] w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
-            <div className="w-full max-w-full px-8">
-              <div className="flex items-end justify-between h-48 gap-4">
-                {chartBarHeights.map((height, i) => (
-                  <div key={i} className="flex flex-col items-center space-y-2">
-                    <Skeleton
-                      className="w-8 bg-blue-100 dark:bg-blue-900/20"
-                      style={{height: `${height}px`}}
-                    />
-                    <Skeleton className="h-3 w-8" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/**
  * 数据图表组件
  */
-export function DataChart({data, isLoading}: DataChartProps) {
+export function DataChart({data}: DataChartProps) {
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState<TimeRange>('7d');
 
@@ -215,10 +165,6 @@ export function DataChart({data, isLoading}: DataChartProps) {
       avgDaily,
     };
   }, [data]);
-
-  if (isLoading) {
-    return <DataChartSkeleton />;
-  }
 
   return (
     <div className="space-y-4">

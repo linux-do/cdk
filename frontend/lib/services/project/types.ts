@@ -203,6 +203,18 @@ export interface ListProjectsRequest {
 }
 
 /**
+ * API请求参数类型
+ */
+export interface ApiRequestParams {
+  /** 当前页码 */
+  current: number;
+  /** 每页数量 */
+  size: number;
+  /** 标签数组（可选） */
+  tags?: string[];
+}
+
+/**
  * 项目列表项
  */
 export interface ProjectListItem {

@@ -1,6 +1,6 @@
 {
   "name": "linuxdocdk",
-  "version": "0.1.0",
+  "version": "0.0.2",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -39,6 +39,8 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.511.0",
     "motion": "^12.15.0",
     "next": "15.3.3",
