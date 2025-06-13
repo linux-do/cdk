@@ -575,10 +575,16 @@ const docTemplate = `{
                 "is_completed": {
                     "type": "boolean"
                 },
+                "is_received": {
+                    "type": "boolean"
+                },
                 "minimum_trust_level": {
                     "$ref": "#/definitions/oauth.TrustLevel"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "received_content": {
                     "type": "string"
                 },
                 "risk_level": {
