@@ -178,8 +178,8 @@ export function ReceivedMain() {
       }
 
       setData(allResults);
-    } catch {
-      toast.error('获取领取记录失败');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '获取领取记录失败');
     } finally {
       setLoading(false);
     }

@@ -13,6 +13,8 @@ interface EmptyStateProps {
   description?: string;
   /** 自定义类名 */
   className?: string;
+  /** 自定义按钮或操作 */
+  children?: React.ReactNode;
 }
 
 /**
@@ -23,6 +25,7 @@ export function EmptyState({
   title = '暂无数据',
   description = '当前没有可显示的内容',
   className = 'p-8 h-full flex flex-col items-center justify-center text-center',
+  children,
 }: EmptyStateProps) {
   return (
     <div className={className}>
@@ -30,7 +33,12 @@ export function EmptyState({
         <Icon className="w-8 h-8 text-muted-foreground" />
       </div>
       <div className="mb-2 text-base font-bold">{title}</div>
-      <div className="mb-4 text-xs text-muted-foreground">{description}</div>
+      <div className={`text-xs text-muted-foreground ${children ? 'mb-6' : 'mb-4'}`}>{description}</div>
+      {children && (
+        <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+          {children}
+        </div>
+      )}
     </div>
   );
 } 
