@@ -20,7 +20,7 @@ const eslintConfig = [
       'valid-jsdoc': 'off',
       'require-jsdoc': 'off',
       'max-len': 'off',
-      'linebreak-style': 'off',
+      // 'linebreak-style': 'off',
     },
   },
 ];
