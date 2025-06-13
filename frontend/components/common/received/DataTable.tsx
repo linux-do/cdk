@@ -1,14 +1,13 @@
 'use client';
 
 import React, {useState, useMemo, useEffect} from 'react';
-import {toast} from 'sonner';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
-import {Skeleton} from '@/components/ui/skeleton';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
-import {Search, ExternalLink, Package, Copy, ChevronLeft, ChevronRight} from 'lucide-react';
-import {formatDateTimeWithSeconds} from '@/lib/utils';
+import {Search, ExternalLink, Copy, ChevronLeft, ChevronRight, Package} from 'lucide-react';
+import {formatDateTimeWithSeconds, copyToClipboard} from '@/lib/utils';
 import {ReceiveHistoryItem} from '@/lib/services/project/types';
+import {EmptyState} from '@/components/common/layout/EmptyState';
 
 const ITEMS_PER_PAGE = 20;
 const MAX_PAGINATION_BUTTONS = 5;
@@ -23,24 +22,10 @@ const SORT_DIRECTIONS = {
 interface DataTableProps {
   /** 领取历史数据 */
   data: ReceiveHistoryItem[];
-  /** 加载状态 */
-  isLoading?: boolean;
 }
 
 type SortField = keyof ReceiveHistoryItem;
 type SortDirection = typeof SORT_DIRECTIONS[keyof typeof SORT_DIRECTIONS];
-
-/**
- * 复制文本到剪贴板
- */
-const copyToClipboard = async (text: string): Promise<void> => {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast.success('已复制到剪贴板');
-  } catch {
-    toast.error('复制失败');
-  }
-};
 
 /**
  * 打开项目详情页
@@ -53,11 +38,6 @@ const openProjectDetail = (projectId: string): void => {
 
 /**
  * 数据过滤和排序处理
- *
- * @param data 原始数据
- * @param searchTerm 搜索关键词
- * @param sortField 排序字段
- * @param sortDirection 排序方向
  */
 const processData = (
     data: ReceiveHistoryItem[],
@@ -95,29 +75,6 @@ const processData = (
       (aValue > bValue ? -1 : aValue < bValue ? 1 : 0);
   });
 };
-
-/**
- * 空状态组件
- */
-const EmptyState = ({searchTerm}: { searchTerm: string }) => (
-  <TableRow>
-    <TableCell colSpan={5} className="h-[300px] text-center">
-      {searchTerm ? (
-        <div className="flex flex-col items-center justify-center h-full">
-          <Search className="h-8 w-8 text-gray-400 mb-3" />
-          <h3 className="text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">未找到匹配结果</h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">尝试调整搜索条件</p>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-full">
-          <Package className="h-8 w-8 text-gray-400 mb-3" />
-          <h3 className="text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">暂无领取记录</h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">您还没有领取任何项目内容</p>
-        </div>
-      )}
-    </TableCell>
-  </TableRow>
-);
 
 /**
  * 分页组件
@@ -231,82 +188,9 @@ const Pagination = ({
 };
 
 /**
- * 数据表格骨架屏组件
- */
-const DataTableSkeleton = () => (
-  <div className="space-y-4">
-    <div className="flex items-center justify-between">
-      <Skeleton className="h-4 w-32" />
-      <Skeleton className="h-8 w-48" />
-    </div>
-
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[140px]">
-              <Skeleton className="h-4 w-20" />
-            </TableHead>
-            <TableHead className="w-[100px]">
-              <Skeleton className="h-4 w-16" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-20" />
-            </TableHead>
-            <TableHead className="w-[120px]">
-              <Skeleton className="h-4 w-16" />
-            </TableHead>
-            <TableHead className="text-right w-[60px]">
-              <Skeleton className="h-4 w-12 ml-auto" />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({length: 10}).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell>
-                <div className="space-y-1">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-16" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-20" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-24" />
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end space-x-1">
-                  <Skeleton className="h-6 w-6" />
-                  <Skeleton className="h-6 w-6" />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-
-    <div className="flex items-center justify-between px-2">
-      <Skeleton className="h-4 w-20" />
-      <div className="flex items-center space-x-1">
-        <Skeleton className="h-7 w-7" />
-        <Skeleton className="h-7 w-7" />
-        <Skeleton className="h-7 w-7" />
-        <Skeleton className="h-7 w-7" />
-      </div>
-    </div>
-  </div>
-);
-
-/**
  * 数据表格组件
  */
-export function DataTable({data, isLoading}: DataTableProps) {
+export function DataTable({data}: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('received_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.DESC);
@@ -341,10 +225,6 @@ export function DataTable({data, isLoading}: DataTableProps) {
     if (field !== sortField) return null;
     return sortDirection === SORT_DIRECTIONS.ASC ? ' ↑' : ' ↓';
   };
-
-  if (isLoading) {
-    return <DataTableSkeleton />;
-  }
 
   return (
     <div className="space-y-4">
@@ -404,7 +284,15 @@ export function DataTable({data, isLoading}: DataTableProps) {
           </TableHeader>
           <TableBody>
             {paginatedData.length === 0 ? (
-              <EmptyState searchTerm={searchTerm} />
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <EmptyState
+                    icon={Package}
+                    title="暂无领取记录"
+                    description="您还没有领取任何项目内容"
+                  />
+                </TableCell>
+              </TableRow>
             ) : (
               paginatedData.map((item) => (
                 <TableRow key={`${item.project_id}-${item.received_at}`}>

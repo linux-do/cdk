@@ -25,8 +25,6 @@ export function ExploreMain() {
   const [randomProjects, setRandomProjects] = useState<ProjectListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
-
   const [currentPage, setCurrentPage] = useState(1);
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -76,7 +74,6 @@ export function ExploreMain() {
         }
 
         setLoading(true);
-        setError('');
 
         const result = await services.project.getProjectsSafe({
           current: page,
@@ -97,7 +94,6 @@ export function ExploreMain() {
             total: results.length,
           })));
         } else {
-          setError(result.error || '获取项目列表失败');
           setOriginalProjects([]);
         }
 
@@ -207,28 +203,6 @@ export function ExploreMain() {
         </div>
       ))}
     </div>
-  );
-
-  /**
-   * 空状态组件
-   */
-  const EmptyState = () => (
-    <Card className="border-none shadow-none">
-      <CardContent className="p-12 text-center">
-        <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-          <Compass className="w-10 h-10 text-muted-foreground" />
-        </div>
-        <h3 className="text-base font-semibold mb-2">暂无项目</h3>
-        <p className="text-muted-foreground mb-4 text-xs">
-          {selectedTags.length > 0 || searchKeyword ? '没有找到符合条件的项目' : '还没有任何项目'}
-        </p>
-        {(selectedTags.length > 0 || searchKeyword) && (
-          <Button variant="outline" onClick={clearAllFilters} className="text-xs h-8">
-            清除搜索/筛选条件
-          </Button>
-        )}
-      </CardContent>
-    </Card>
   );
 
   /**
@@ -466,20 +440,23 @@ export function ExploreMain() {
 
       {loading ? (
         <LoadingSkeleton />
-      ) : error ? (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">{error}</p>
-            <Button
-              onClick={() => fetchProjects(currentPage, selectedTags, true)}
-              className="mt-4"
-            >
-              重试
-            </Button>
+      ) : projects.length === 0 ? (
+        <Card className="border-none shadow-none">
+          <CardContent className="p-12 text-center">
+            <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <Compass className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <div className="mb-2 text-xl font-bold">暂无分发项目</div>
+            <div className="mb-4 text-sm text-muted-foreground ">
+              {selectedTags.length > 0 || searchKeyword ? '未找到符合条件的分发项目' : '请前往 我的项目创建 或 尝试刷新页面'}
+            </div>
+            {(selectedTags.length > 0 || searchKeyword) && (
+              <Button variant="outline" onClick={clearAllFilters} className="text-xs h-8">
+                清除搜索/筛选条件
+              </Button>
+            )}
           </CardContent>
         </Card>
-      ) : projects.length === 0 ? (
-        <EmptyState />
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">

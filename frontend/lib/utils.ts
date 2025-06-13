@@ -63,3 +63,29 @@ export function formatDateTimeWithSeconds(dateString: string): string {
     return dateString;
   }
 }
+
+/**
+ * 复制文本到剪贴板
+ * @param text - 要复制的文本
+ * @returns Promise<void>
+ */
+export async function copyToClipboard(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    // 如果 clipboard API 不可用，使用传统方法
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    } catch {
+      throw new Error('复制失败');
+    }
+  }
+}

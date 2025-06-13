@@ -208,20 +208,13 @@ export function MineProject({onProjectCreated}: MineProjectProps = {}) {
 
   if (projects.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center py-12">
-            <div className="text-muted-foreground mb-4">
-              <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
+      <Card className="border-none shadow-none">
+        <CardContent className="p-12 text-center">
+            <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <FolderOpen className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium text-muted-foreground mb-2">
-              暂无项目
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              您还没有创建任何项目，点击下方按钮创建您的第一个项目
-            </p>
-            <CreateDialog onProjectCreated={handleProjectCreated} />
-          </div>
+            <div className="mb-2 text-xl font-bold">暂无分发项目</div>
+            <div className="mb-4 text-sm text-muted-foreground ">点击右上方按钮创建您的第一个分发项目</div>
         </CardContent>
       </Card>
     );
