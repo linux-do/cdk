@@ -582,7 +582,7 @@ export function CreateDialog({
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="mt-1 text-sm bg-gray-100 text-muted-foreground hover:text-destructive hover:bg-transparent rounded-sm"
+                          className="mt-1 text-xs text-muted-foreground hover:text-destructive"
                           onClick={() => setBulkContent('')}
                         >
                           清空

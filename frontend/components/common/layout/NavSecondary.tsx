@@ -1,16 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import type {LucideIcon} from 'lucide-react';
-
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
 import Link from 'next/link';
+import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from '@/components/ui/sidebar';
+import type {LucideIcon} from 'lucide-react';
 
 export function NavSecondary({
   items,
@@ -22,7 +15,6 @@ export function NavSecondary({
     icon: LucideIcon;
   }[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
-  // 判断链接是否为外部链接
   const isExternalLink = (url: string): boolean => {
     return url.startsWith('http://') || url.startsWith('https://');
   };

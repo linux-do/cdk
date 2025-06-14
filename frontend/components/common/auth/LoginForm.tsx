@@ -1,13 +1,12 @@
 'use client';
 
-import {GalleryVerticalEnd, LoaderCircle} from 'lucide-react';
-import {useSearchParams} from 'next/navigation';
 import {useState, useEffect} from 'react';
-
-import {cn} from '@/lib/utils';
+import {useSearchParams} from 'next/navigation';
 import {LiquidButton} from '@/components/animate-ui/buttons/liquid';
+import {GalleryVerticalEnd, LoaderCircle} from 'lucide-react';
 import {LinuxDo} from '@/components/icons/logo';
 import {useAuth} from '@/hooks/use-auth';
+import {cn} from '@/lib/utils';
 
 /**
  * 登录表单组件属性
@@ -16,7 +15,6 @@ export type LoginFormProps = React.ComponentProps<'div'>;
 
 /**
  * 登录表单组件
- * 提供Linux Do OAuth2登录功能
  */
 export function LoginForm({
   className,
@@ -27,7 +25,6 @@ export function LoginForm({
   const {login, error, clearError} = useAuth();
   const searchParams = useSearchParams();
 
-  // 检测是否是从登出操作重定向过来的
   useEffect(() => {
     const isLoggedOut = searchParams.get('logout') === 'true';
     if (isLoggedOut) {

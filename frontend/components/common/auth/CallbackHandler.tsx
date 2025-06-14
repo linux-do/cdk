@@ -14,7 +14,6 @@ export type CallbackHandlerProps = React.ComponentProps<'div'>;
 
 /**
  * OAuth回调处理组件
- * 处理Linux Do OAuth认证后的回调，完成登录流程
  */
 export function CallbackHandler({
   className,
@@ -35,45 +34,32 @@ export function CallbackHandler({
         const code = searchParams.get('code');
         const errorParam = searchParams.get('error');
 
-        // 检查是否有OAuth错误
         if (errorParam) {
           throw new Error(`OAuth认证失败: ${errorParam}`);
         }
 
-        // 检查必要参数
         if (!state || !code) {
           throw new Error('缺少必要的认证参数');
         }
 
-        // 调用后端回调接口
         await services.auth.handleCallback({state, code});
 
-        // 从sessionStorage获取重定向信息
         const redirectTo = sessionStorage.getItem('oauth_redirect_to');
         const targetPath = redirectTo || '/explore';
 
-        // 设置成功状态
         setStatus('success');
 
-        // 登录成功，立即跳转到指定页面
-        console.log('登录成功，准备跳转到:', targetPath);
-
-        // 清除存储的重定向路径
         sessionStorage.removeItem('oauth_redirect_to');
 
-        // 设置一个短暂延迟，确保UI更新
         setTimeout(() => {
-          // 直接使用location进行导航，绕过Next.js路由系统的潜在问题
           window.location.href = targetPath;
         }, 500);
       } catch (err) {
         console.error('回调处理错误:', err);
 
-        // 处理特定错误类型
         let errorMessage = '登录处理失败';
 
         if (err instanceof Error) {
-          // 特别处理Redis相关错误
           if (err.message.includes('redis: nil')) {
             errorMessage = '登录会话已过期，请重新登录';
           } else {

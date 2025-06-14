@@ -1,24 +1,9 @@
 'use client';
 
-import {MoreHorizontal, Folder, Share2, Trash2, type LucideIcon} from 'lucide-react';
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar';
 import Link from 'next/link';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+import {SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, useSidebar} from '@/components/ui/sidebar';
+import {MoreHorizontal, Folder, Share2, Trash2, type LucideIcon} from 'lucide-react';
 
 export function NavDocuments({
   items,

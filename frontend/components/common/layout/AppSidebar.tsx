@@ -1,33 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import {
-  SquareArrowUpRight,
-  BarChartIcon,
-  FolderIcon,
-  LayoutDashboardIcon,
-  ShoppingBag,
-  SettingsIcon,
-  FileIcon,
-  MessageCircleIcon,
-  SendIcon,
-} from 'lucide-react';
-
-import {NavDocuments} from '@/components/common/layout/nav-documents';
-import {NavMain} from '@/components/common/layout/nav-main';
-import {NavSecondary} from '@/components/common/layout/nav-secondary';
-import {NavUser} from '@/components/common/layout/nav-user';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import {RollingText} from '@/components/animate-ui/text/rolling';
 import Link from 'next/link';
+import {RollingText} from '@/components/animate-ui/text/rolling';
+import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from '@/components/ui/sidebar';
+import {SquareArrowUpRight, BarChartIcon, FolderIcon, LayoutDashboardIcon, ShoppingBag, FileIcon, MessageCircleIcon, SendIcon, House} from 'lucide-react';
+import {NavDocuments} from '@/components/common/layout/NavDocuments';
+import {NavMain} from '@/components/common/layout/NavMain';
+import {NavSecondary} from '@/components/common/layout/NavSecondary';
+import {NavUser} from '@/components/common/layout/NavUser';
 import {useAuth} from '@/hooks/use-auth';
 
 /**
@@ -61,9 +42,9 @@ const navMain = [
  */
 const navSecondary = [
   {
-    title: '账户设置',
-    url: '/settings',
-    icon: SettingsIcon,
+    title: '前往社区',
+    url: 'https://linux.do/',
+    icon: House,
   },
   {
     title: '需求反馈',
@@ -135,11 +116,11 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         {isLoading && (
           <NavUser
             user={{
-              id: 0,
+              id: 1,
               username: 'Loading...',
               nickname: 'Loading...',
               trust_level: 0,
-              avatar: 'Loading...',
+              avatar: '/LinuxDo.png',
             }}
           />
         )}
@@ -157,11 +138,11 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         {!isLoading && !user && (
           <NavUser
             user={{
-              id: 0,
+              id: 1,
               username: 'Unknown',
               nickname: 'Unknown',
               trust_level: 0,
-              avatar: 'Unknown',
+              avatar: '/LinuxDo.png',
             }}
           />
         )}

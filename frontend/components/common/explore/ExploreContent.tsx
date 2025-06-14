@@ -143,7 +143,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
           <InputButton>
             <InputButtonAction className="flex items-center">
               <Search className="h-4 w-4 mr-2" />
-              <span className="text-xs">搜索...</span>
+              <span className="text-xs">搜索项目</span>
             </InputButtonAction>
             <InputButtonSubmit onClick={onSearchSubmit}>搜索</InputButtonSubmit>
           </InputButton>
