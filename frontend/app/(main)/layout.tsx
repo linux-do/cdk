@@ -1,7 +1,7 @@
 'use client';
 
 import {AppSidebar} from '@/components/common/layout/AppSidebar';
-import {SiteHeader} from '@/components/common/layout/SiteHeader';
+import {ManagementBar} from '@/components/common/layout/ManagementBar';
 import {SidebarInset, SidebarProvider} from '@/components/ui/sidebar';
 
 export default function ProjectLayout({
@@ -20,7 +20,7 @@ export default function ProjectLayout({
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <ManagementBar />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 px-6 py-6 md:gap-6 ">

@@ -4,10 +4,9 @@ import * as React from 'react';
 import Link from 'next/link';
 import {RollingText} from '@/components/animate-ui/text/rolling';
 import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from '@/components/ui/sidebar';
-import {SquareArrowUpRight, BarChartIcon, FolderIcon, LayoutDashboardIcon, ShoppingBag, FileIcon, MessageCircleIcon, SendIcon, House} from 'lucide-react';
+import {SquareArrowUpRight, BarChartIcon, FolderIcon, LayoutDashboardIcon, ShoppingBag, FileIcon} from 'lucide-react';
 import {NavDocuments} from '@/components/common/layout/NavDocuments';
 import {NavMain} from '@/components/common/layout/NavMain';
-import {NavSecondary} from '@/components/common/layout/NavSecondary';
 import {NavUser} from '@/components/common/layout/NavUser';
 import {useAuth} from '@/hooks/use-auth';
 
@@ -34,27 +33,6 @@ const navMain = [
     title: '我的领取',
     url: '/received',
     icon: ShoppingBag,
-  },
-];
-
-/**
- * 次导航栏
- */
-const navSecondary = [
-  {
-    title: '前往社区',
-    url: 'https://linux.do/',
-    icon: House,
-  },
-  {
-    title: '需求反馈',
-    url: 'https://rcnocajpmmaw.feishu.cn/share/base/form/shrcnQnuZp9op9LhOAMI3kVBe2e',
-    icon: MessageCircleIcon,
-  },
-  {
-    title: '群组交流',
-    url: 'https://t.me/linuxdocdk',
-    icon: SendIcon,
   },
 ];
 
@@ -110,7 +88,6 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent className="hide-scrollbar">
         <NavMain items={navMain} />
         <NavDocuments items={navDocuments} />
-        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         {isLoading && (
