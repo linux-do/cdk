@@ -88,7 +88,7 @@ const ReceiveButton = ({
   if (now < startTime) {
     const timeRemaining = getTimeRemainingText(startTime, now);
     return (
-      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed">
+      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400">
         <Clock className="w-4 h-4 mr-2" />
         时间未到 {timeRemaining ? `(${timeRemaining})` : ''}
       </Button>
@@ -97,7 +97,7 @@ const ReceiveButton = ({
 
   if (now > endTime) {
     return (
-      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed">
+      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400">
         <AlertCircle className="w-4 h-4 mr-2" />
         项目已结束
       </Button>
@@ -106,7 +106,7 @@ const ReceiveButton = ({
 
   if (project.available_items_count <= 0) {
     return (
-      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed">
+      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400">
         <Package className="w-4 h-4 mr-2" />
         库存已空
       </Button>
@@ -115,7 +115,7 @@ const ReceiveButton = ({
 
   if (!user || user.trust_level < project.minimum_trust_level) {
     return (
-      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed">
+      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400">
         <AlertCircle className="w-4 h-4 mr-2" />
         信任等级不足
       </Button>
@@ -126,7 +126,7 @@ const ReceiveButton = ({
     <Button
       onClick={onReceive}
       disabled={isReceiving}
-      className="w-full bg-black text-white hover:bg-gray-800 disabled:bg-gray-100 disabled:text-gray-400"
+      className="w-full bg-black text-white disabled:bg-gray-100 disabled:text-gray-400 dark:bg-gray-800 dark:text-gray-400 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:hover:bg-gray-700"
     >
       <Gift className="w-4 h-4 mr-2" />
       {isReceiving ? '领取中...' : '立即领取'}
@@ -220,7 +220,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
 
       <div className="flex items-start justify-between gap-4">
         <div className="text-left space-y-4">
-          <div className="text-4xl font-bold text-black">{currentProject.name}</div>
+          <div className="text-4xl font-bold">{currentProject.name}</div>
           <div className="flex flex-wrap gap-2">
             {currentProject.tags && currentProject.tags.length > 0 ? (
               currentProject.tags.slice(0, 10).map((tag) => (
@@ -243,7 +243,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
 
         <div className="text-right space-y-2">
           <div className="text-sm text-muted-foreground">剩余名额</div>
-          <div className="text-3xl font-bold text-black">{currentProject.available_items_count}</div>
+          <div className="text-3xl font-bold">{currentProject.available_items_count}</div>
           <div className="text-sm text-muted-foreground">共 {currentProject.total_items} 个</div>
         </div>
       </div>
@@ -251,7 +251,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">发布人</div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{currentProject.creator_nickname}</div>
+          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{currentProject.creator_nickname || currentProject.creator_username}</div>
         </div>
         <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">风险等级</div>

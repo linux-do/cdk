@@ -1,33 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import {
-  SquareArrowUpRight,
-  BarChartIcon,
-  FolderIcon,
-  LayoutDashboardIcon,
-  ShoppingBag,
-  SettingsIcon,
-  FileIcon,
-  MessageCircleIcon,
-  SendIcon,
-} from 'lucide-react';
-
-import {NavDocuments} from '@/components/common/layout/nav-documents';
-import {NavMain} from '@/components/common/layout/nav-main';
-import {NavSecondary} from '@/components/common/layout/nav-secondary';
-import {NavUser} from '@/components/common/layout/nav-user';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import {RollingText} from '@/components/animate-ui/text/rolling';
 import Link from 'next/link';
+import {RollingText} from '@/components/animate-ui/text/rolling';
+import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from '@/components/ui/sidebar';
+import {SquareArrowUpRight, BarChartIcon, FolderIcon, LayoutDashboardIcon, ShoppingBag, FileIcon} from 'lucide-react';
+import {NavDocuments} from '@/components/common/layout/NavDocuments';
+import {NavMain} from '@/components/common/layout/NavMain';
+import {NavUser} from '@/components/common/layout/NavUser';
 import {useAuth} from '@/hooks/use-auth';
 
 /**
@@ -53,27 +33,6 @@ const navMain = [
     title: '我的领取',
     url: '/received',
     icon: ShoppingBag,
-  },
-];
-
-/**
- * 次导航栏
- */
-const navSecondary = [
-  {
-    title: '账户设置',
-    url: '/settings',
-    icon: SettingsIcon,
-  },
-  {
-    title: '需求反馈',
-    url: 'https://rcnocajpmmaw.feishu.cn/share/base/form/shrcnQnuZp9op9LhOAMI3kVBe2e',
-    icon: MessageCircleIcon,
-  },
-  {
-    title: '群组交流',
-    url: 'https://t.me/linuxdocdk',
-    icon: SendIcon,
   },
 ];
 
@@ -129,17 +88,16 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent className="hide-scrollbar">
         <NavMain items={navMain} />
         <NavDocuments items={navDocuments} />
-        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         {isLoading && (
           <NavUser
             user={{
-              id: 0,
+              id: 1,
               username: 'Loading...',
               nickname: 'Loading...',
               trust_level: 0,
-              avatar: 'Loading...',
+              avatar: '/LinuxDo.png',
             }}
           />
         )}
@@ -157,11 +115,11 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         {!isLoading && !user && (
           <NavUser
             user={{
-              id: 0,
+              id: 1,
               username: 'Unknown',
               nickname: 'Unknown',
               trust_level: 0,
-              avatar: 'Unknown',
+              avatar: '/LinuxDo.png',
             }}
           />
         )}

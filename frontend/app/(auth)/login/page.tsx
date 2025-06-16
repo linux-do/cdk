@@ -1,5 +1,5 @@
 import {Suspense} from 'react';
-import {LoginForm} from '@/components/common/auth/login-form';
+import {LoginForm} from '@/components/common/auth/LoginForm';
 
 export default function LoginPage() {
   return (

@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 // eslint-disable-next-line camelcase
 import {Inter, Noto_Sans_SC} from 'next/font/google';
 import {Toaster} from '@/components/ui/sonner';
+import {ThemeProvider} from '@/components/common/layout/ThemeProvider';
 import './globals.css';
 
 // eslint-disable-next-line new-cap
@@ -38,8 +39,15 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${notoSansSC.variable} hide-scrollbar font-sans antialiased`}
       >
-        {children}
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

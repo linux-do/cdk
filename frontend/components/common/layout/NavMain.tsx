@@ -1,16 +1,9 @@
 'use client';
 
-import {Github, PlusCircle, type LucideIcon} from 'lucide-react';
-
-import {Button} from '@/components/ui/button';
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
 import Link from 'next/link';
+import {Button} from '@/components/ui/button';
+import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from '@/components/ui/sidebar';
+import {Github, PlusCircle, type LucideIcon} from 'lucide-react';
 import {CreateDialog} from '@/components/common/project/CreateDialog';
 
 export function NavMain({

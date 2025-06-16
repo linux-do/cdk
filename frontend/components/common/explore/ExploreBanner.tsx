@@ -138,8 +138,8 @@ export function ExploreBanner({
           ))}
         </CarouselContent>
 
-        <CarouselPrevious className="left-4" />
-        <CarouselNext className="right-4" />
+        <CarouselPrevious className="left-4 bg-accent/60 border-none" />
+        <CarouselNext className="right-4 bg-accent/60 border-none" />
       </Carousel>
 
 
