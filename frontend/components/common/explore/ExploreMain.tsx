@@ -8,7 +8,7 @@ import {ExploreBanner} from './ExploreBanner';
 import services from '@/lib/services';
 import {ProjectListItem} from '@/lib/services/project/types';
 
-const PAGE_SIZE = 96;
+const PAGE_SIZE = 4;
 
 
 /**
@@ -42,6 +42,7 @@ const LoadingSkeleton = () => (
 export function ExploreMain() {
   const router = useRouter();
   const [allProjects, setAllProjects] = useState<ProjectListItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -93,9 +94,9 @@ export function ExploreMain() {
       projects: filteredProjects,
       randomProjects,
       upcomingProjects,
-      total: filteredProjects.length,
+      total: totalCount,
     };
-  }, [allProjects, searchKeyword]);
+  }, [allProjects, searchKeyword, totalCount]);
 
   /**
    * 获取项目列表
@@ -111,8 +112,10 @@ export function ExploreMain() {
 
     if (result.success && result.data) {
       setAllProjects(result.data.results);
+      setTotalCount(result.data.total);
     } else {
       setAllProjects([]);
+      setTotalCount(0);
     }
 
     setLoading(false);

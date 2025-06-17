@@ -87,50 +87,43 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
   const Pagination = () => {
     if (totalPages <= 1) return null;
 
-    const getPageNumbers = () => {
-      if (totalPages <= 5) return Array.from({length: totalPages}, (_, i) => i + 1);
+    const handlePrevPage = () => {
+      if (currentPage > 1) {
+        onPageChange(currentPage - 1);
+      }
+    };
 
-      if (currentPage <= 3) return [1, 2, 3, 4, 5];
-      if (currentPage >= totalPages - 2) return Array.from({length: 5}, (_, i) => totalPages - 4 + i);
-
-      return Array.from({length: 5}, (_, i) => currentPage - 2 + i);
+    const handleNextPage = () => {
+      if (currentPage < totalPages) {
+        onPageChange(currentPage + 1);
+      }
     };
 
     return (
-      <div className="flex items-center justify-center gap-2 pt-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage <= 1}
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          上一页
-        </Button>
-
-        <div className="flex items-center gap-1">
-          {getPageNumbers().map((pageNum) => (
-            <Button
-              key={pageNum}
-              variant={currentPage === pageNum ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onPageChange(pageNum)}
-              className="w-8 h-8 p-0"
-            >
-              {pageNum}
-            </Button>
-          ))}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
+        <div className="text-sm text-muted-foreground order-2 sm:order-1">
+          共 {total} 个项目，第 {currentPage} / {totalPages} 页
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages}
-        >
-          下一页
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
+        <div className="flex items-center space-x-2 order-1 sm:order-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            上一页
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            下一页
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
       </div>
     );
   };

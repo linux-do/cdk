@@ -5,6 +5,8 @@ import {
   ReceiveHistoryRequest,
   ReceiveHistoryData,
   ProjectResponse,
+  CreateProjectResponse,
+  CreateProjectResponseData,
   ReceiveHistoryResponse,
   TagsResponse,
   ReceiveProjectResponse,
@@ -44,13 +46,14 @@ export class ProjectService extends BaseService {
   /**
    * 创建项目
    * @param projectData - 项目创建数据
-   * @returns 创建结果
+   * @returns 创建结果，包含项目ID
    */
-  static async createProject(projectData: CreateProjectRequest): Promise<void> {
-    const response = await apiClient.post<ProjectResponse>(`${this.basePath}`, projectData);
+  static async createProject(projectData: CreateProjectRequest): Promise<CreateProjectResponseData> {
+    const response = await apiClient.post<CreateProjectResponse>(`${this.basePath}`, projectData);
     if (response.data.error_msg) {
       throw new Error(response.data.error_msg);
     }
+    return response.data.data;
   }
 
   /**
@@ -218,15 +221,16 @@ export class ProjectService extends BaseService {
   /**
    * 创建项目（带错误处理）
    * @param projectData - 项目创建数据
-   * @returns 创建结果，包含成功状态和错误信息
+   * @returns 创建结果，包含成功状态、项目数据和错误信息
    */
   static async createProjectSafe(projectData: CreateProjectRequest): Promise<{
     success: boolean;
+    data?: CreateProjectResponseData;
     error?: string;
   }> {
     try {
-      await this.createProject(projectData);
-      return {success: true};
+      const data = await this.createProject(projectData);
+      return {success: true, data};
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '创建项目失败';
       return {
