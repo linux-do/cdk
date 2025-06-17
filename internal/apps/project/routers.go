@@ -138,7 +138,9 @@ func CreateProject(c *gin.Context) {
 	}
 
 	// response
-	c.JSON(http.StatusOK, ProjectResponse{})
+	c.JSON(http.StatusOK, ProjectResponse{
+		Data: map[string]interface{}{"projectId": project.ID},
+	})
 }
 
 type UpdateProjectRequestBody struct {
@@ -338,7 +340,9 @@ func ReceiveProject(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, ProjectResponse{})
+	c.JSON(http.StatusOK, ProjectResponse{
+		Data: map[string]interface{}{"itemContent": item.Content},
+	})
 }
 
 type ListReceiveHistoryRequest struct {
