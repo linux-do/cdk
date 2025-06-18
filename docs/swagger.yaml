@@ -1,4 +1,115 @@
 definitions:
+  dashboard.ApplyStatus:
+    properties:
+      approved:
+        type: integer
+      pending:
+        type: integer
+      rejected:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dashboard.CreatorInfo:
+    properties:
+      avatar:
+        type: string
+      name:
+        type: string
+      projectCount:
+        type: integer
+    type: object
+  dashboard.DashboardData:
+    properties:
+      activeCreators:
+        items:
+          $ref: '#/definitions/dashboard.CreatorInfo'
+        type: array
+      activeReceivers:
+        items:
+          $ref: '#/definitions/dashboard.ReceiverInfo'
+        type: array
+      activityData:
+        items:
+          $ref: '#/definitions/dashboard.DateValue'
+        type: array
+      applyStatus:
+        $ref: '#/definitions/dashboard.ApplyStatus'
+      distributeModes:
+        items:
+          $ref: '#/definitions/dashboard.NameValue'
+        type: array
+      hotProjects:
+        items:
+          $ref: '#/definitions/dashboard.ProjectInfo'
+        type: array
+      projectTags:
+        items:
+          $ref: '#/definitions/dashboard.NameValue'
+        type: array
+      summary:
+        $ref: '#/definitions/dashboard.DashboardSummary'
+      userGrowth:
+        items:
+          $ref: '#/definitions/dashboard.DateValue'
+        type: array
+    type: object
+  dashboard.DashboardDataResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dashboard.DashboardData'
+      error_msg:
+        type: string
+    type: object
+  dashboard.DashboardSummary:
+    properties:
+      activeProjects:
+        type: integer
+      newUsers:
+        type: integer
+      recentReceived:
+        type: integer
+      successRate:
+        type: string
+      totalProjects:
+        type: integer
+      totalReceived:
+        type: integer
+      totalUsers:
+        type: integer
+    type: object
+  dashboard.DateValue:
+    properties:
+      date:
+        type: string
+      value:
+        type: integer
+    type: object
+  dashboard.NameValue:
+    properties:
+      name:
+        type: string
+      value:
+        type: integer
+    type: object
+  dashboard.ProjectInfo:
+    properties:
+      name:
+        type: string
+      receiveCount:
+        type: integer
+      tag:
+        type: string
+    type: object
+  dashboard.ReceiverInfo:
+    properties:
+      avatar:
+        type: string
+      name:
+        type: string
+      receiveCount:
+        type: integer
+    type: object
   health.HealthResponse:
     properties:
       data: {}
@@ -300,6 +411,18 @@ info:
   title: Linux Do CDK
   version: 0.1.0
 paths:
+  /api/v1/dashboard/stats/all:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.DashboardDataResponse'
+      summary: Get Dashboard Stats
+      tags:
+      - Dashboard
   /api/v1/health:
     get:
       produces:

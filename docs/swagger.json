@@ -6,6 +6,25 @@
         "version": "0.1.0"
     },
     "paths": {
+        "/api/v1/dashboard/stats/all": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get Dashboard Stats",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dashboard.DashboardDataResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/health": {
             "get": {
                 "produces": [
@@ -350,6 +369,177 @@
         }
     },
     "definitions": {
+        "dashboard.ApplyStatus": {
+            "type": "object",
+            "properties": {
+                "approved": {
+                    "type": "integer"
+                },
+                "pending": {
+                    "type": "integer"
+                },
+                "rejected": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dashboard.CreatorInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "projectCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dashboard.DashboardData": {
+            "type": "object",
+            "properties": {
+                "activeCreators": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.CreatorInfo"
+                    }
+                },
+                "activeReceivers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.ReceiverInfo"
+                    }
+                },
+                "activityData": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.DateValue"
+                    }
+                },
+                "applyStatus": {
+                    "$ref": "#/definitions/dashboard.ApplyStatus"
+                },
+                "distributeModes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.NameValue"
+                    }
+                },
+                "hotProjects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.ProjectInfo"
+                    }
+                },
+                "projectTags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.NameValue"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/dashboard.DashboardSummary"
+                },
+                "userGrowth": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.DateValue"
+                    }
+                }
+            }
+        },
+        "dashboard.DashboardDataResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dashboard.DashboardData"
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.DashboardSummary": {
+            "type": "object",
+            "properties": {
+                "activeProjects": {
+                    "type": "integer"
+                },
+                "newUsers": {
+                    "type": "integer"
+                },
+                "recentReceived": {
+                    "type": "integer"
+                },
+                "successRate": {
+                    "type": "string"
+                },
+                "totalProjects": {
+                    "type": "integer"
+                },
+                "totalReceived": {
+                    "type": "integer"
+                },
+                "totalUsers": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dashboard.DateValue": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dashboard.NameValue": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dashboard.ProjectInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "receiveCount": {
+                    "type": "integer"
+                },
+                "tag": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.ReceiverInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "receiveCount": {
+                    "type": "integer"
+                }
+            }
+        },
         "health.HealthResponse": {
             "type": "object",
             "properties": {
