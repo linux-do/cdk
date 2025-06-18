@@ -420,7 +420,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dashboard.DashboardDataResponse'
-      summary: Get Dashboard Stats
       tags:
       - Dashboard
   /api/v1/health:

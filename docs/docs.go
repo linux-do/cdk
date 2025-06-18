@@ -23,7 +23,6 @@ const docTemplate = `{
                 "tags": [
                     "Dashboard"
                 ],
-                "summary": "Get Dashboard Stats",
                 "responses": {
                     "200": {
                         "description": "OK",
