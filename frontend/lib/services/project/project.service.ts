@@ -16,6 +16,7 @@ import {
   ProjectListData,
   ProjectListResponse,
   ApiRequestParams,
+  ReceiveProjectData,
 } from './types';
 import apiClient from '../core/api-client';
 
@@ -87,13 +88,14 @@ export class ProjectService extends BaseService {
   /**
    * 领取项目内容
    * @param projectId - 项目ID
-   * @returns 领取结果
+   * @returns 领取结果，包含领取内容
    */
-  static async receiveProject(projectId: string): Promise<void> {
+  static async receiveProject(projectId: string): Promise<ReceiveProjectData> {
     const response = await apiClient.post<ReceiveProjectResponse>(`${this.basePath}/${projectId}/receive`);
     if (response.data.error_msg) {
       throw new Error(response.data.error_msg);
     }
+    return response.data.data;
   }
 
   /**
@@ -289,15 +291,16 @@ export class ProjectService extends BaseService {
   /**
    * 领取项目内容（带错误处理）
    * @param projectId - 项目ID
-   * @returns 领取结果，包含成功状态和错误信息
+   * @returns 领取结果，包含成功状态、领取内容和错误信息
    */
   static async receiveProjectSafe(projectId: string): Promise<{
     success: boolean;
+    data?: ReceiveProjectData;
     error?: string;
   }> {
     try {
-      await this.receiveProject(projectId);
-      return {success: true};
+      const data = await this.receiveProject(projectId);
+      return {success: true, data};
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '领取项目内容失败';
       return {

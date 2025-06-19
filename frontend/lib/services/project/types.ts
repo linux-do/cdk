@@ -175,9 +175,12 @@ export interface ReceiveHistoryRequest {
 export type ReceiveHistoryResponse = BackendResponse<ReceiveHistoryData>;
 
 /**
- * 领取项目成功时的响应数据类型 (通常为null)
+ * 领取项目成功时的响应数据类型
  */
-export type ReceiveProjectData = null;
+export interface ReceiveProjectData {
+  /** 领取的内容 */
+  itemContent: string;
+}
 
 /**
  * 领取项目响应类型

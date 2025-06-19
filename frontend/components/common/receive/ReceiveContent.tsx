@@ -55,27 +55,23 @@ const ReceiveButton = ({
 }) => {
   if (hasReceived && receivedContent) {
     return (
-      <div className="space-y-4">
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-medium">您的兑换码：</p>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={async () => {
-                try {
-                  await copyToClipboard(receivedContent);
-                  toast.success('复制成功');
-                } catch {
-                  toast.error('复制失败');
-                }
-              }}
-              className="h-8 px-2"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-          <code className="block font-mono text-lg">{receivedContent}</code>
+      <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg -mt-4">
+        <div className="text-xs text-muted-foreground mb-2">分发内容</div>
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+          <code className="block text-sm font-bold text-gray-900 dark:text-gray-100 break-all">
+            {receivedContent}
+          </code>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-3 flex-shrink-0 h-7 w-7 p-0"
+            onClick={() => {
+              copyToClipboard(receivedContent);
+              toast.success('复制成功');
+            }}
+          >
+            <Copy className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          </Button>
         </div>
       </div>
     );
@@ -126,7 +122,7 @@ const ReceiveButton = ({
     <Button
       onClick={onReceive}
       disabled={isReceiving}
-      className="w-full bg-black text-white disabled:bg-gray-100 disabled:text-gray-400 dark:bg-gray-800 dark:text-gray-400 dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:hover:bg-gray-700"
+      className="w-full bg-gray-900 hover:bg-gray-800 text-white disabled:bg-gray-100 disabled:text-gray-400 dark:bg-gray-800 dark:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-400 dark:hover:bg-gray-700"
     >
       <Gift className="w-4 h-4 mr-2" />
       {isReceiving ? '领取中...' : '立即领取'}
@@ -174,7 +170,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
           available_items_count: prev.available_items_count - 1,
         }));
 
-        const content = '您的兑换码';
+        const content = result.data?.itemContent || '领取成功，但未获取到兑换内容';
         setHasReceived(true);
         setReceivedContent(content);
         toast.success('领取成功！');
@@ -205,13 +201,13 @@ export function ReceiveContent({data}: ReceiveContentProps) {
   const trustLevelConfig = TRUST_LEVEL_OPTIONS.find((option) => option.value === currentProject.minimum_trust_level);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleGoBack}
-          className="text-muted-foreground -ml-2"
+          className="text-muted-foreground -ml-2 -mt-8"
         >
           <ArrowLeftIcon className="h-4 w-4" />
           返回
@@ -243,7 +239,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
 
         <div className="text-right space-y-2">
           <div className="text-sm text-muted-foreground">剩余名额</div>
-          <div className="text-3xl font-bold">{currentProject.available_items_count}</div>
+          <div className="text-4xl font-bold">{currentProject.available_items_count}</div>
           <div className="text-sm text-muted-foreground">共 {currentProject.total_items} 个</div>
         </div>
       </div>
