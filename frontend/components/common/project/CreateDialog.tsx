@@ -188,9 +188,12 @@ export function CreateDialog({
         return;
       }
 
-      const projectId =
-        (result as { data?: { id?: string } })?.data?.id ||
-        `project_${Date.now()}`;
+      if (!result.data?.projectId) {
+        toast.error('创建项目失败：未获取到项目ID');
+        return;
+      }
+
+      const projectId = result.data.projectId;
       const newProject = {
         id: projectId,
         name: formData.name.trim(),

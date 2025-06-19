@@ -44,7 +44,7 @@ export function ManagementBar() {
   ];
 
   return (
-    <div className="fixed bottom-4 ml-2 z-50 flex">
+    <div className="fixed bottom-3 ml-2 z-50 flex">
       <SidebarTrigger className="hidden" data-sidebar="trigger" />
 
       <div className="flex justify-center">

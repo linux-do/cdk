@@ -10,7 +10,6 @@ import {ProjectListItem} from '@/lib/services/project/types';
 
 const PAGE_SIZE = 96;
 
-
 /**
  * 加载骨架屏组件
  */
@@ -42,6 +41,7 @@ const LoadingSkeleton = () => (
 export function ExploreMain() {
   const router = useRouter();
   const [allProjects, setAllProjects] = useState<ProjectListItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -57,7 +57,7 @@ export function ExploreMain() {
   const processedData = useMemo(() => {
     const now = new Date();
 
-    // 应用搜索和标签过滤
+    /** 应用搜索和标签过滤 */
     let filteredProjects = allProjects;
 
     if (searchKeyword.trim()) {
@@ -67,7 +67,7 @@ export function ExploreMain() {
       );
     }
 
-    // 分类项目
+    /** 分类项目 */
     const activeProjects = filteredProjects.filter((project) => {
       const startTime = new Date(project.start_time);
       const endTime = new Date(project.end_time);
@@ -79,12 +79,12 @@ export function ExploreMain() {
       return startTime > now && project.total_items > 0;
     });
 
-    // 随机横幅项目
+    /** 随机横幅项目 */
     const randomProjects = [...activeProjects]
         .sort(() => Math.random() - 0.5)
-        .slice(0, 4);
+        .slice(0, 5);
 
-    // 即将开始项目
+    /** 即将开始项目 */
     const upcomingProjects = upcomingList
         .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
         .slice(0, 6);
@@ -93,9 +93,9 @@ export function ExploreMain() {
       projects: filteredProjects,
       randomProjects,
       upcomingProjects,
-      total: filteredProjects.length,
+      total: totalCount,
     };
-  }, [allProjects, searchKeyword]);
+  }, [allProjects, searchKeyword, totalCount]);
 
   /**
    * 获取项目列表
@@ -111,8 +111,10 @@ export function ExploreMain() {
 
     if (result.success && result.data) {
       setAllProjects(result.data.results);
+      setTotalCount(result.data.total);
     } else {
       setAllProjects([]);
+      setTotalCount(0);
     }
 
     setLoading(false);
@@ -166,7 +168,7 @@ export function ExploreMain() {
     setShowAllTags(false);
   };
 
-  // 数据获取
+  /** 数据获取 */
   useEffect(() => {
     fetchTags();
   }, [fetchTags]);

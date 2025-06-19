@@ -6,7 +6,7 @@ import {Button} from '@/components/ui/button';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from '@/components/ui/carousel';
 import {InputButton, InputButtonAction, InputButtonProvider, InputButtonSubmit, InputButtonInput} from '@/components/animate-ui/buttons/input';
-import {ChevronLeft, ChevronRight, Search, Compass, Filter, Check} from 'lucide-react';
+import {ChevronLeft, ChevronRight, Search, Compass, Filter, Check, X} from 'lucide-react';
 import {ProjectCard} from '@/components/common/project';
 import {ProjectListItem} from '@/lib/services/project/types';
 import {EmptyState} from '@/components/common/layout/EmptyState';
@@ -64,13 +64,13 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
     onTagFilterOpenChange,
   } = data;
 
-  // 计算衍生状态
+  /** 计算衍生状态 */
   const filteredTags = tags.filter((tag) =>
     tag.toLowerCase().includes(tagSearchKeyword.toLowerCase()),
   );
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  // 快捷操作
+  /** 快捷操作 */
   const handleClearAllTags = () => {
     selectedTags.forEach(onTagToggle);
   };
@@ -83,54 +83,47 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
     });
   };
 
-  // 分页组件
+  /** 分页组件 */
   const Pagination = () => {
     if (totalPages <= 1) return null;
 
-    const getPageNumbers = () => {
-      if (totalPages <= 5) return Array.from({length: totalPages}, (_, i) => i + 1);
+    const handlePrevPage = () => {
+      if (currentPage > 1) {
+        onPageChange(currentPage - 1);
+      }
+    };
 
-      if (currentPage <= 3) return [1, 2, 3, 4, 5];
-      if (currentPage >= totalPages - 2) return Array.from({length: 5}, (_, i) => totalPages - 4 + i);
-
-      return Array.from({length: 5}, (_, i) => currentPage - 2 + i);
+    const handleNextPage = () => {
+      if (currentPage < totalPages) {
+        onPageChange(currentPage + 1);
+      }
     };
 
     return (
-      <div className="flex items-center justify-center gap-2 pt-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage <= 1}
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          上一页
-        </Button>
-
-        <div className="flex items-center gap-1">
-          {getPageNumbers().map((pageNum) => (
-            <Button
-              key={pageNum}
-              variant={currentPage === pageNum ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onPageChange(pageNum)}
-              className="w-8 h-8 p-0"
-            >
-              {pageNum}
-            </Button>
-          ))}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
+        <div className="text-sm text-muted-foreground order-2 sm:order-1">
+          共 {total} 个项目，第 {currentPage} / {totalPages} 页
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages}
-        >
-          下一页
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
+        <div className="flex items-center space-x-2 order-1 sm:order-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            上一页
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            下一页
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
       </div>
     );
   };
@@ -138,7 +131,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
   return (
     <div className="space-y-6">
       {/* 搜索区域 */}
-      <div className="flex justify-center">
+      <div className="flex items-center justify-center">
         <InputButtonProvider>
           <InputButton>
             <InputButtonAction className="flex items-center">
@@ -154,61 +147,35 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
             onKeyDown={(e) => e.key === 'Enter' && onSearchSubmit()}
           />
         </InputButtonProvider>
-      </div>
 
-      {/* 即将开始 */}
-      {upcomingProjects.length > 0 && (
-        <div className="space-y-6 relative">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">即将开始</h2>
-            <Badge variant="secondary" className="text-xs font-bold">
-              {upcomingProjects.length}
-            </Badge>
-          </div>
-          <Carousel
-            opts={{
-              align: 'start',
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-2 md:-ml-4">
-              {upcomingProjects.map((project) => (
-                <CarouselItem key={project.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                  <ProjectCard
-                    project={project}
-                    onClick={() => onCardClick(project)}
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="-top-12 right-12 left-auto translate-y-0" />
-            <CarouselNext className="-top-12 right-2 left-auto translate-y-0" />
-          </Carousel>
-        </div>
-      )}
-
-      {/* 所有项目 */}
-      <div className="flex items-center justify-between mt-12">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">所有项目</h2>
-          <Badge variant="secondary" className="text-xs font-bold">
-            {total}
-          </Badge>
-        </div>
-
+        {/* 标签筛选器 */}
         <Popover open={isTagFilterOpen} onOpenChange={onTagFilterOpenChange}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               size="sm"
-              className="rounded-full w-8 h-8 mr-1.5"
+              className="rounded-full w-10 h-10 ml-2"
             >
               <Filter className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="end">
             <div className="p-3 space-y-3">
-              <div className="space-y-2">
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">标签筛选</span>
+                  {selectedTags.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
+                      onClick={handleClearAllTags}
+                    >
+                      清除全部
+                    </Button>
+                  )}
+                </div>
+
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
                   <Input
@@ -218,32 +185,28 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
                     className="pl-7 h-8 text-xs"
                   />
                 </div>
-
-                {(selectedTags.length > 0 || filteredTags.length > 1) && (
-                  <div className="flex justify-end gap-3 text-xs">
-                    {filteredTags.length > 1 && (
-                      <button
-                        onClick={handleSelectAllTags}
-                        className="text-primary hover:text-primary/80 font-medium transition-colors"
-                      >
-                          全选
-                      </button>
-                    )}
-                    {selectedTags.length > 0 && (
-                      <button
-                        onClick={handleClearAllTags}
-                        className="text-muted-foreground hover:text-foreground font-medium transition-colors"
-                      >
-                          清除全部
-                      </button>
-                    )}
-                  </div>
-                )}
               </div>
 
-              <div className="max-h-48 overflow-y-auto">
+              <div className="max-h-[220px] overflow-y-auto">
                 {filteredTags.length > 0 ? (
-                    <div className="space-y-1">
+                  <>
+                    <div className="flex items-center justify-between mb-2 px-1">
+                      <span className="text-xs text-muted-foreground">
+                        {`${filteredTags.length} 个标签${tagSearchKeyword ? '匹配' : ''}`}
+                      </span>
+                      {filteredTags.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-primary"
+                          onClick={handleSelectAllTags}
+                        >
+                          全选
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="space-y-1 mt-1">
                       {filteredTags.map((tag) => {
                         const isSelected = selectedTags.includes(tag);
                         return (
@@ -266,17 +229,89 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
                         );
                       })}
                     </div>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-xs text-muted-foreground">
-                        {tagSearchKeyword ? '未找到匹配的标签' : '暂无标签'}
-                      </p>
-                    </div>
-                  )}
+                  </>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-xs text-muted-foreground">
+                      {tagSearchKeyword ? '未找到匹配的标签' : '暂无标签'}
+                    </p>
+                  </div>
+                )}
               </div>
+
+              {selectedTags.length > 0 && (
+                <div className="pt-2 border-t">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium">已选择的标签</span>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedTags.length} 个标签
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {selectedTags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="px-2 py-0 h-6 bg-primary/5 text-xs text-primary border-primary/20 flex items-center gap-1"
+                      >
+                        {tag}
+                        <X
+                          className="h-3 w-3 cursor-pointer hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTagToggle(tag);
+                          }}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </PopoverContent>
         </Popover>
+      </div>
+
+      {/* 即将开始 */}
+      {upcomingProjects.length > 0 && (
+        <div className="space-y-6 relative">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">即将开始</h2>
+            <Badge variant="secondary" className="text-xs font-bold">
+              {upcomingProjects.length}
+            </Badge>
+          </div>
+          <Carousel
+            opts={{
+              align: 'start',
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {upcomingProjects.map((project, index) => (
+                <CarouselItem key={project.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                  <ProjectCard
+                    project={project}
+                    delay={index * 0.05}
+                    onClick={() => onCardClick(project)}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="-top-12 right-12 left-auto translate-y-0" />
+            <CarouselNext className="-top-12 right-2 left-auto translate-y-0" />
+          </Carousel>
+        </div>
+      )}
+
+      {/* 所有项目 */}
+      <div className="flex items-center justify-between mt-12">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold">所有项目</h2>
+          <Badge variant="secondary" className="text-xs font-bold">
+            {total}
+          </Badge>
+        </div>
       </div>
 
       {loading ? (
@@ -297,10 +332,11 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {projects.map((project) => (
+            {projects.map((project, index) => (
               <ProjectCard
                 key={project.id}
                 project={project}
+                delay={index * 0.05}
                 onClick={() => onCardClick(project)}
               />
             ))}
