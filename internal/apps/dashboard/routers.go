@@ -21,7 +21,7 @@ type DashboardDataResponse struct {
 func GetAllStats(c *gin.Context) {
 	daysStr := c.DefaultQuery("days", "14")
 	days, err := strconv.Atoi(daysStr)
-	if err != nil || days <= 0 {
+	if err != nil || days <= 0 || days > 30 {
 		days = 14
 	}
 	data, err := GetAllDashboardData(c.Request.Context(), days)
