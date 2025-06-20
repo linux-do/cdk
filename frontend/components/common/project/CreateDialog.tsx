@@ -11,12 +11,13 @@ import {Textarea} from '@/components/ui/textarea';
 import {TagSelector} from '@/components/ui/tag-selector';
 import {DateTimePicker} from '@/components/ui/DateTimePicker';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {Checkbox} from '@/components/animate-ui/radix/checkbox';
 import {Counter} from '@/components/animate-ui/components/counter';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
-import {FORM_LIMITS, DEFAULT_FORM_VALUES, TRUST_LEVEL_OPTIONS, handleBulkImportContent, validateProjectForm} from '@/components/common/project';
-import {X, Plus, User, Lock, Copy, ExternalLink, CheckCircle} from 'lucide-react';
+import {FORM_LIMITS, DEFAULT_FORM_VALUES, TRUST_LEVEL_OPTIONS, handleBulkImportContentWithFilter, validateProjectForm} from '@/components/common/project';
+import {X, Plus, User, Lock, Copy, ExternalLink, CheckCircle, Filter} from 'lucide-react';
 import services from '@/lib/services';
 import {TrustLevel} from '@/lib/services/core/types';
 import {DistributionType, ProjectListItem} from '@/lib/services/project/types';
@@ -60,6 +61,7 @@ export function CreateDialog({
   const [items, setItems] = useState<string[]>([]);
   const [bulkContent, setBulkContent] = useState('');
   const [activeTab, setActiveTab] = useState('basic');
+  const [allowDuplicates, setAllowDuplicates] = useState(false);
 
   /**
    * 获取可用标签列表
@@ -103,6 +105,7 @@ export function CreateDialog({
     setItems([]);
     setActiveTab('basic');
     setBulkContent('');
+    setAllowDuplicates(false);
     setCreateSuccess(false);
     setCreatedProject(null);
   };
@@ -115,16 +118,17 @@ export function CreateDialog({
    * 批量导入分发内容
    */
   const handleBulkImport = () => {
-    handleBulkImportContent(
+    handleBulkImportContentWithFilter(
         bulkContent,
         items,
-        (newItems, importedCount, skippedInfo) => {
+        allowDuplicates,
+        (newItems: string[], importedCount: number, skippedInfo?: string) => {
           setItems(newItems);
           setBulkContent('');
           const message = `成功导入 ${importedCount} 个内容${skippedInfo || ''}`;
           toast.success(message);
         },
-        (errorMessage) => {
+        (errorMessage: string) => {
           toast.error(errorMessage);
         },
     );
@@ -559,9 +563,38 @@ export function CreateDialog({
                     <div className="flex items-center">
                       <div className="flex items-center justify-between w-full gap-2">
                         <div className="text-sm font-medium">导入分发内容</div>
-                        <Badge variant="secondary" className="bg-muted">
-                          已添加: {items.length}个
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant="secondary"
+                                  className={`cursor-pointer ${
+                                    !allowDuplicates ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' : 'bg-muted hover:bg-muted/80'
+                                  }`}
+                                  onClick={() => setAllowDuplicates(!allowDuplicates)}
+                                >
+                                  <Filter className="h-3 w-3 mr-1" />
+                                  {!allowDuplicates ? '已开启过滤' : '辅助过滤'}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <p className="text-xs">
+                                  {!allowDuplicates ? 
+                                    '已开启：自动过滤重复内容' : 
+                                    '已关闭：允许导入重复内容'
+                                  }
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  点击切换过滤模式
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <Badge variant="secondary" className="bg-muted">
+                            已添加: {items.length}个
+                          </Badge>
+                        </div>
                       </div>
                     </div>
 
