@@ -128,7 +128,7 @@ export function ReceiveMain() {
       {Loading ? (
         <LoadingSkeleton />
       ) : error || !project ? (
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-4xl mx-auto">
           <div className="flex items-center justify-start">
             <Button
               variant="ghost"

@@ -71,7 +71,7 @@ export function ProjectMain() {
   const fetchTags = useCallback(async () => {
     const result = await services.project.getTagsSafe();
     if (result.success) {
-      setTags(result.tags);
+      setTags(result.tags || []);
     }
   }, []);
 
@@ -83,9 +83,9 @@ export function ProjectMain() {
         const cacheKey = `${page}-${selectedTags.join(',')}`;
 
         if (!forceRefresh && pageCache.has(cacheKey) &&
-            !selectedTags.length) {
+            !(selectedTags || []).length) {
           const cachedData = pageCache.get(cacheKey)!;
-          setProjects(cachedData);
+          setProjects(cachedData || []);
           setLoading(false);
           return;
         }
@@ -96,16 +96,16 @@ export function ProjectMain() {
         const params: ListProjectsRequest = {
           current: page,
           size: PAGE_SIZE,
-          tags: selectedTags.length > 0 ? selectedTags : undefined,
+          tags: (selectedTags || []).length > 0 ? selectedTags : undefined,
         };
 
         const result = await services.project.getMyProjectsSafe(params);
 
         if (result.success && result.data) {
-          setProjects(result.data.results);
-          setTotal(result.data.total);
-          if (!selectedTags.length) {
-            setPageCache((prev) => new Map(prev.set(cacheKey, result.data!.results)));
+          setProjects(result.data.results || []);
+          setTotal(result.data.total || 0);
+          if (!(selectedTags || []).length) {
+            setPageCache((prev) => new Map(prev.set(cacheKey, result.data!.results || [])));
           }
         } else {
           setError(result.error || '获取项目列表失败');
@@ -123,8 +123,9 @@ export function ProjectMain() {
    */
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) => {
+      const prevTags = prev || [];
       const newTags = tag === '' ? [] :
-        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
+        prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag];
 
       setCurrentPage(1);
       return newTags;
@@ -143,15 +144,16 @@ export function ProjectMain() {
    * 处理新项目创建
    */
   const handleProjectCreated = (newProject: ProjectListItem) => {
-    setProjects((prev) => [newProject, ...prev]);
+    setProjects((prev) => [newProject, ...(prev || [])]);
     setTotal((prev) => prev + 1);
     setPageCache(new Map());
 
     setProjects((prev) => {
-      if (prev.length > PAGE_SIZE) {
-        return prev.slice(0, PAGE_SIZE);
+      const projects = prev || [];
+      if (projects.length > PAGE_SIZE) {
+        return projects.slice(0, PAGE_SIZE);
       }
-      return prev;
+      return projects;
     });
   };
 
