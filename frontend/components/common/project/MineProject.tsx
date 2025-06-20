@@ -143,7 +143,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
   };
 
   /** 标签过滤相关逻辑 */
-  const filteredTags = tags.filter((tag) =>
+  const filteredTags = (tags || []).filter((tag) =>
     tag.toLowerCase().includes(tagSearchKeyword.toLowerCase()),
   );
 
