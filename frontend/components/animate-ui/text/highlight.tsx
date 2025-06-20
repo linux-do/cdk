@@ -9,7 +9,7 @@ import {
   type UseInViewOptions,
 } from 'motion/react';
 
-import { cn } from '@/lib/utils';
+import {cn} from '@/lib/utils';
 
 type HighlightTextProps = HTMLMotionProps<'span'> & {
   text: string;
@@ -25,7 +25,7 @@ function HighlightText({
   className,
   inView = false,
   inViewMargin = '0px',
-  transition = { duration: 2, ease: 'easeInOut' },
+  transition = {duration: 2, ease: 'easeInOut'},
   ...props
 }: HighlightTextProps) {
   const localRef = React.useRef<HTMLSpanElement>(null);
@@ -44,7 +44,7 @@ function HighlightText({
       initial={{
         backgroundSize: '0% 100%',
       }}
-      animate={isInView ? { backgroundSize: '100% 100%' } : undefined}
+      animate={isInView ? {backgroundSize: '100% 100%'} : undefined}
       transition={transition}
       style={{
         backgroundRepeat: 'no-repeat',
@@ -52,8 +52,8 @@ function HighlightText({
         display: 'inline',
       }}
       className={cn(
-        `relative inline-block px-2 py-1 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-500 dark:to-purple-500`,
-        className,
+          `relative inline-block px-2 py-1 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-500 dark:to-purple-500`,
+          className,
       )}
       {...props}
     >
@@ -62,4 +62,4 @@ function HighlightText({
   );
 }
 
-export { HighlightText, type HighlightTextProps };
+export {HighlightText, type HighlightTextProps};

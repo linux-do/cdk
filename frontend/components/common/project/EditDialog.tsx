@@ -421,38 +421,38 @@ export function EditDialog({
                       <div className="text-sm font-medium">
                         导入新的分发内容
                       </div>
-                                             <div className="flex items-center gap-2">
-                         <TooltipProvider>
-                           <Tooltip>
-                             <TooltipTrigger asChild>
-                               <Badge
-                                 variant="secondary"
-                                 className={`cursor-pointer ${
+                      <div className="flex items-center gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge
+                                variant="secondary"
+                                className={`cursor-pointer ${
                                    !allowDuplicates ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' : 'bg-muted hover:bg-muted/80'
-                                 }`}
-                                 onClick={() => setAllowDuplicates(!allowDuplicates)}
-                               >
-                                 <Filter className="h-3 w-3 mr-1" />
-                                 {!allowDuplicates ? '已开启过滤' : '辅助过滤'}
-                               </Badge>
-                             </TooltipTrigger>
-                             <TooltipContent side="bottom">
-                               <p className="text-xs">
-                                 {!allowDuplicates ? 
-                                   '已开启：自动过滤重复内容' : 
+                                }`}
+                                onClick={() => setAllowDuplicates(!allowDuplicates)}
+                              >
+                                <Filter className="h-3 w-3 mr-1" />
+                                {!allowDuplicates ? '已开启过滤' : '辅助过滤'}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p className="text-xs">
+                                {!allowDuplicates ?
+                                   '已开启：自动过滤重复内容' :
                                    '已关闭：允许导入重复内容'
-                                 }
-                               </p>
-                               <p className="text-xs text-muted-foreground mt-1">
+                                }
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
                                  点击切换过滤模式
-                               </p>
-                             </TooltipContent>
-                           </Tooltip>
-                         </TooltipProvider>
-                         <Badge variant="secondary" className="bg-muted">
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <Badge variant="secondary" className="bg-muted">
                            待添加: {newItems.length}个
-                         </Badge>
-                       </div>
+                        </Badge>
+                      </div>
                     </div>
                   </div>
 

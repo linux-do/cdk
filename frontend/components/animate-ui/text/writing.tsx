@@ -24,7 +24,7 @@ function WritingText({
   inViewOnce = true,
   spacing = 5,
   text,
-  transition = { type: 'spring', bounce: 0, duration: 2, delay: 0.5 },
+  transition = {type: 'spring', bounce: 0, duration: 2, delay: 0.5},
   ...props
 }: WritingTextProps) {
   const localRef = React.useRef<HTMLSpanElement>(null);
@@ -44,9 +44,9 @@ function WritingText({
         <motion.span
           key={index}
           className="inline-block will-change-transform will-change-opacity"
-          style={{ marginRight: spacing }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={isInView ? { opacity: 1, y: 0 } : undefined}
+          style={{marginRight: spacing}}
+          initial={{opacity: 0, y: 10}}
+          animate={isInView ? {opacity: 1, y: 0} : undefined}
           transition={{
             ...transition,
             delay: index * (transition?.delay ?? 0),
@@ -59,4 +59,4 @@ function WritingText({
   );
 }
 
-export { WritingText, type WritingTextProps };
+export {WritingText, type WritingTextProps};

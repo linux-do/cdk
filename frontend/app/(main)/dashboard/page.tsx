@@ -1,6 +1,5 @@
 import {GradientText} from '@/components/animate-ui/text/gradient';
 import {HighlightText} from '@/components/animate-ui/text/highlight';
-import {Button} from '@/components/ui/button';
 
 export default function DashboardPage() {
   return (

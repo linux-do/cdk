@@ -580,8 +580,8 @@ export function CreateDialog({
                               </TooltipTrigger>
                               <TooltipContent side="bottom">
                                 <p className="text-xs">
-                                  {!allowDuplicates ? 
-                                    '已开启：自动过滤重复内容' : 
+                                  {!allowDuplicates ?
+                                    '已开启：自动过滤重复内容' :
                                     '已关闭：允许导入重复内容'
                                   }
                                 </p>
