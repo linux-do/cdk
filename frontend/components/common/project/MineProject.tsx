@@ -74,7 +74,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
    */
   const handleProjectUpdated = (updatedProject: ProjectListItem) => {
     onProjectsChange(
-        projects.map((p) => (p.id === updatedProject.id ? updatedProject : p)),
+        (projects || []).map((p) => (p.id === updatedProject.id ? updatedProject : p)),
     );
     onCacheClear();
   };
@@ -100,10 +100,10 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
         toast.success('项目删除成功');
 
         onCacheClear();
-        onProjectsChange(projects.filter((p) => p.id !== projectToDelete.id));
+        onProjectsChange((projects || []).filter((p) => p.id !== projectToDelete.id));
         onTotalChange(total - 1);
 
-        const remainingProjects = projects.length - 1;
+        const remainingProjects = (projects || []).length - 1;
         if (remainingProjects === 0 && currentPage > 1) {
           onPageChange(currentPage - 1);
         } else if (remainingProjects === 0) {
@@ -149,12 +149,12 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
 
   /** 快捷操作 */
   const handleClearAllTags = () => {
-    selectedTags.forEach(onTagToggle);
+    (selectedTags || []).forEach(onTagToggle);
   };
 
   const handleSelectAllTags = () => {
     filteredTags.forEach((tag) => {
-      if (!selectedTags.includes(tag)) {
+      if (!(selectedTags || []).includes(tag)) {
         onTagToggle(tag);
       }
     });
@@ -162,17 +162,17 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
 
   /** 渲染内容 */
   const renderContent = () => {
-    if ((!projects.length && !loading) || error) {
+    if ((!(projects || []).length && !loading) || error) {
       return (
         <Card className="border-none shadow-none">
           <CardContent className="p-12 text-center">
             <EmptyState
               icon={FolderOpen}
               title="暂无分发项目"
-              description={selectedTags.length > 0 ? '未找到符合条件的分发项目' : '点击右上方按钮创建您的第一个分发项目'}
+              description={(selectedTags || []).length > 0 ? '未找到符合条件的分发项目' : '点击右上方按钮创建您的第一个分发项目'}
               className="p-12 text-center"
             >
-              {selectedTags.length > 0 && (
+              {(selectedTags || []).length > 0 && (
                 <Button variant="outline" onClick={onClearAllFilters} className="text-xs h-8">
                   清除筛选条件
                 </Button>
@@ -190,7 +190,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {projects.map((project, index) => (
+          {(projects || []).map((project, index) => (
             <ProjectCard
               key={project.id}
               project={project}
@@ -225,7 +225,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
         {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-muted-foreground order-2 sm:order-1">
-              共 {total} 个项目，第 {currentPage} / {totalPages} 页
+            共 {total} 个项目，第 {currentPage} / {totalPages} 页
             </div>
             <div className="flex items-center space-x-2 order-1 sm:order-2">
               <Button
@@ -235,7 +235,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                上一页
+              上一页
               </Button>
               <Button
                 variant="outline"
@@ -243,7 +243,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
               >
-                下一页
+              下一页
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
@@ -280,7 +280,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">标签筛选</span>
-                  {selectedTags.length > 0 && (
+                  {(selectedTags || []).length > 0 && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -324,7 +324,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
 
                     <div className="space-y-1 mt-1">
                       {filteredTags.map((tag) => {
-                        const isSelected = selectedTags.includes(tag);
+                        const isSelected = (selectedTags || []).includes(tag);
                         return (
                           <div
                             key={tag}
@@ -355,16 +355,16 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                 )}
               </div>
 
-              {selectedTags.length > 0 && (
+              {(selectedTags || []).length > 0 && (
                 <div className="pt-2 border-t">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium">已选择的标签</span>
                     <span className="text-xs text-muted-foreground">
-                      {selectedTags.length} 个标签
+                      {(selectedTags || []).length} 个标签
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {selectedTags.map((tag) => (
+                    {(selectedTags || []).map((tag) => (
                       <Badge
                         key={tag}
                         variant="outline"
@@ -389,10 +389,10 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
       </div>
 
       {/* 当前选择的标签展示 */}
-      {selectedTags.length > 0 && (
+      {(selectedTags || []).length > 0 && (
         <div className="flex items-center flex-wrap gap-2">
           <span className="text-xs text-muted-foreground">筛选条件:</span>
-          {selectedTags.map((tag) => (
+          {(selectedTags || []).map((tag) => (
             <Badge
               key={tag}
               variant="outline"

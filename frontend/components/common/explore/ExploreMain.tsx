@@ -58,7 +58,7 @@ export function ExploreMain() {
     const now = new Date();
 
     /** 应用搜索和标签过滤 */
-    let filteredProjects = allProjects;
+    let filteredProjects = allProjects || [];
 
     if (searchKeyword.trim()) {
       filteredProjects = filteredProjects.filter((project) =>
@@ -106,12 +106,12 @@ export function ExploreMain() {
     const result = await services.project.getProjectsSafe({
       current: currentPage,
       size: PAGE_SIZE,
-      tags: selectedTags.length > 0 ? selectedTags : undefined,
+      tags: (selectedTags || []).length > 0 ? selectedTags : undefined,
     });
 
     if (result.success && result.data) {
-      setAllProjects(result.data.results);
-      setTotalCount(result.data.total);
+      setAllProjects(result.data.results || []);
+      setTotalCount(result.data.total || 0);
     } else {
       setAllProjects([]);
       setTotalCount(0);
@@ -135,8 +135,9 @@ export function ExploreMain() {
    */
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) => {
+      const prevTags = prev || [];
       const newTags = tag === '' ? [] :
-        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
+        prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag];
 
       setCurrentPage(1);
       setShowAllTags(false);
