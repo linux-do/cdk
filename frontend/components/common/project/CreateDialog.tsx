@@ -366,7 +366,7 @@ export function CreateDialog({
                     onChange={(e) =>
                       setFormData({...formData, description: e.target.value})
                     }
-                    className="resize-none h-48"
+                    className="resize-none h-48 break-all overflow-x-auto whitespace-pre-wrap"
                     maxLength={FORM_LIMITS.DESCRIPTION_MAX_LENGTH}
                     rows={4}
                   />
@@ -570,7 +570,7 @@ export function CreateDialog({
                         placeholder="请输入分发内容，支持以 逗号分隔（中英文逗号均可）或 每行一个内容 的格式批量导入"
                         value={bulkContent}
                         onChange={(e) => setBulkContent(e.target.value)}
-                        className="h-[100px]"
+                        className="h-[100px] break-all overflow-x-auto whitespace-pre-wrap"
                       />
                       <div className="flex items-center gap-2">
                         <Button
@@ -612,7 +612,7 @@ export function CreateDialog({
                       </div>
 
                       {items.length > 0 ? (
-                        <div className="space-y-2 h-[150px] overflow-y-auto border rounded-md p-2">
+                        <div className="space-y-2 h-[150px] overflow-y-auto overflow-x-auto border rounded-md p-2">
                           {items.map((item, index) => (
                             <div
                               key={index}
@@ -621,7 +621,7 @@ export function CreateDialog({
                               <div className="w-6 h-6 flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs">
                                 {index + 1}
                               </div>
-                              <div className="flex-1 truncate">{item}</div>
+                              <div className="flex-1 min-w-0 break-all overflow-x-auto text-sm">{item}</div>
                               <Button
                                 type="button"
                                 variant="ghost"
