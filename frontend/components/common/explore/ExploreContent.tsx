@@ -72,12 +72,12 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
 
   /** 快捷操作 */
   const handleClearAllTags = () => {
-    selectedTags.forEach(onTagToggle);
+    (selectedTags || []).forEach(onTagToggle);
   };
 
   const handleSelectAllTags = () => {
     filteredTags.forEach((tag) => {
-      if (!selectedTags.includes(tag)) {
+      if (!(selectedTags || []).includes(tag)) {
         onTagToggle(tag);
       }
     });
@@ -112,7 +112,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
             disabled={currentPage === 1}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            上一页
+          上一页
           </Button>
           <Button
             variant="outline"
@@ -120,7 +120,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
           >
-            下一页
+          下一页
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
@@ -164,7 +164,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">标签筛选</span>
-                  {selectedTags.length > 0 && (
+                  {(selectedTags || []).length > 0 && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -208,7 +208,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
 
                     <div className="space-y-1 mt-1">
                       {filteredTags.map((tag) => {
-                        const isSelected = selectedTags.includes(tag);
+                        const isSelected = (selectedTags || []).includes(tag);
                         return (
                           <div
                             key={tag}
@@ -230,25 +230,25 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
                       })}
                     </div>
                   </>
-                ) : (
+                  ) : (
                   <div className="text-center py-6">
                     <p className="text-xs text-muted-foreground">
                       {tagSearchKeyword ? '未找到匹配的标签' : '暂无标签'}
                     </p>
                   </div>
-                )}
+                  )}
               </div>
 
-              {selectedTags.length > 0 && (
+              {(selectedTags || []).length > 0 && (
                 <div className="pt-2 border-t">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium">已选择的标签</span>
                     <span className="text-xs text-muted-foreground">
-                      {selectedTags.length} 个标签
+                      {(selectedTags || []).length} 个标签
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {selectedTags.map((tag) => (
+                    {(selectedTags || []).map((tag) => (
                       <Badge
                         key={tag}
                         variant="outline"
@@ -320,10 +320,10 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
         <EmptyState
           icon={Compass}
           title="暂无分发项目"
-          description={selectedTags.length > 0 || searchKeyword ? '未找到符合条件的分发项目' : '请前往 我的项目创建 或 尝试刷新页面'}
+          description={(selectedTags || []).length > 0 || searchKeyword ? '未找到符合条件的分发项目' : '请前往 我的项目创建 或 尝试刷新页面'}
           className="p-12 text-center"
         >
-          {(selectedTags.length > 0 || searchKeyword) && (
+          {((selectedTags || []).length > 0 || searchKeyword) && (
             <Button variant="outline" onClick={onClearAllFilters} className="text-xs h-8">
               清除搜索/筛选条件
             </Button>
