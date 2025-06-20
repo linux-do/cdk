@@ -1,37 +1,13 @@
-'use client';
+import {GradientText} from '@/components/animate-ui/text/gradient';
+import {HighlightText} from '@/components/animate-ui/text/highlight';
 
-import {useAuth} from '@/hooks/use-auth';
-import {LoaderCircle} from 'lucide-react';
-
-export default function ExplorePage() {
-  const {isLoading} = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <LoaderCircle className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground">加载中...</p>
-        </div>
-      </div>
-    );
-  }
-
+export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-background">
-
-
-      {/* 主要内容 */}
-      <main className="container mx-auto py-10">
-        <div className="text-center space-y-6">
-          <h1 className="text-3xl font-bold tracking-tight">🎉 探索页面</h1>
-
-          <p className="text-xl text-muted-foreground">
-            测试登陆成功
-          </p>
-
-        </div>
-      </main>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <GradientText className="text-6xl font-bold" text="敬请期待" />
+        <HighlightText className="text-lg" text="该功能正在开发中" />
+      </div>
     </div>
   );
-}
+};
