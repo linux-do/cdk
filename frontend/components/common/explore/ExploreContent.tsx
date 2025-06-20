@@ -65,7 +65,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
   } = data;
 
   /** 计算衍生状态 */
-  const filteredTags = tags.filter((tag) =>
+  const filteredTags = (tags || []).filter((tag) =>
     tag.toLowerCase().includes(tagSearchKeyword.toLowerCase()),
   );
   const totalPages = Math.ceil(total / PAGE_SIZE);

@@ -126,7 +126,7 @@ export function ExploreMain() {
   const fetchTags = useCallback(async () => {
     const result = await services.project.getTagsSafe();
     if (result.success) {
-      setTags(result.tags);
+      setTags(result.tags || []);
     }
   }, []);
 
