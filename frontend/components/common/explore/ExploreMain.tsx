@@ -146,6 +146,15 @@ export function ExploreMain() {
   };
 
   /**
+   * 处理页面变化
+   */
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  /**
    * 处理搜索提交
    */
   const handleSearchSubmit = () => {
@@ -198,7 +207,7 @@ export function ExploreMain() {
             isTagFilterOpen,
             showAllTags,
             loading,
-            onPageChange: setCurrentPage,
+            onPageChange: handlePageChange,
             onTagToggle: handleTagToggle,
             onSearchSubmit: handleSearchSubmit,
             onCardClick: handleCardClick,
