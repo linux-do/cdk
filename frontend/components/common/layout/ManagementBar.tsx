@@ -15,7 +15,7 @@ export function ManagementBar() {
   const dockItems = [
     {
       title: '侧边栏',
-      icon: <MenuIcon className="size-4" />,
+      icon: <MenuIcon className="h-3 w-3" />,
       onClick: () => {
         const trigger = document.querySelector('[data-sidebar="trigger"]') as HTMLButtonElement;
         trigger?.click();
@@ -23,22 +23,22 @@ export function ManagementBar() {
     },
     {
       title: '主页',
-      icon: <HomeIcon className="size-4" />,
+      icon: <HomeIcon className="h-3 w-3" />,
       href: '/explore',
     },
     {
       title: mounted ? (theme === 'dark' ? '切换浅色模式' : '切换深色模式') : '主题切换',
-      icon: mounted ? (theme === 'dark' ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />) : <SunIcon className="size-4" />,
+      icon: mounted ? (theme === 'dark' ? <SunIcon className="h-3 w-3" /> : <MoonIcon className="h-3 w-3" />) : <SunIcon className="h-3 w-3" />,
       onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
     },
     {
       title: '需求反馈',
-      icon: <MessageCircleIcon className="size-4" />,
+      icon: <MessageCircleIcon className="h-3 w-3" />,
       href: 'https://rcnocajpmmaw.feishu.cn/share/base/form/shrcnQnuZp9op9LhOAMI3kVBe2e',
     },
     {
       title: '群组交流',
-      icon: <SendIcon className="size-4" />,
+      icon: <SendIcon className="h-3 w-3" />,
       href: 'https://t.me/linuxdocdk',
     },
   ];
