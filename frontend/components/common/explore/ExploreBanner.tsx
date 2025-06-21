@@ -114,18 +114,58 @@ export function ExploreBanner({
     );
   };
 
+  const containerVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const carouselVariants = {
+    hidden: {opacity: 0, scale: 0.95},
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {duration: 0.7, ease: 'easeOut'},
+    },
+  };
+
+  const indicatorsVariants = {
+    hidden: {opacity: 0, y: 10},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.05,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const indicatorVariants = {
+    hidden: {opacity: 0, scale: 0.8},
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {duration: 0.3, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <motion.div 
+    <motion.div
       className="mb-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
-      >
+      <motion.div variants={carouselVariants}>
         <Carousel
           setApi={setApi}
           className="w-full"
@@ -154,11 +194,9 @@ export function ExploreBanner({
         </Carousel>
       </motion.div>
 
-      <motion.div 
+      <motion.div
         className="flex justify-center mt-4 gap-1.5"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+        variants={indicatorsVariants}
       >
         {Array.from({length: totalPages}).map((_, index) => (
           <motion.button
@@ -170,9 +208,7 @@ export function ExploreBanner({
             }`}
             onClick={() => api?.scrollTo(index)}
             aria-label={`切换到第 ${index + 1} 页`}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, ease: "easeOut", delay: 0.4 + index * 0.05 }}
+            variants={indicatorVariants}
           />
         ))}
       </motion.div>

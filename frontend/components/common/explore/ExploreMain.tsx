@@ -152,7 +152,7 @@ export function ExploreMain() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // 滚动到页面顶部
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({top: 0, behavior: 'smooth'});
   };
 
   /**
@@ -188,18 +188,35 @@ export function ExploreMain() {
     fetchProjects();
   }, [fetchProjects]);
 
+  const containerVariants = {
+    hidden: {opacity: 0},
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const contentVariants = {
+    hidden: {opacity: 0, y: 30},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.8, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <motion.div 
+    <motion.div
       className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-      >
+      <motion.div variants={contentVariants}>
         <ExploreBanner
           randomProjects={processedData.randomProjects}
           onProjectClick={handleCardClick}

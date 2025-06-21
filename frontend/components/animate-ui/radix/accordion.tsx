@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Accordion as AccordionPrimitive } from 'radix-ui';
-import { ChevronDown } from 'lucide-react';
+import {Accordion as AccordionPrimitive} from 'radix-ui';
+import {ChevronDown} from 'lucide-react';
 import {
   motion,
   AnimatePresence,
@@ -10,7 +10,7 @@ import {
   type HTMLMotionProps,
 } from 'motion/react';
 
-import { cn } from '@/lib/utils';
+import {cn} from '@/lib/utils';
 
 type AccordionItemContextType = {
   isOpen: boolean;
@@ -41,11 +41,11 @@ type AccordionItemProps = React.ComponentProps<
   children: React.ReactNode;
 };
 
-function AccordionItem({ className, children, ...props }: AccordionItemProps) {
+function AccordionItem({className, children, ...props}: AccordionItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
-    <AccordionItemContext.Provider value={{ isOpen, setIsOpen }}>
+    <AccordionItemContext.Provider value={{isOpen, setIsOpen}}>
       <AccordionPrimitive.Item
         data-slot="accordion-item"
         className={cn('border-b', className)}
@@ -68,13 +68,13 @@ function AccordionTrigger({
   ref,
   className,
   children,
-  transition = { type: 'spring', stiffness: 150, damping: 22 },
+  transition = {type: 'spring', stiffness: 150, damping: 22},
   chevron = true,
   ...props
 }: AccordionTriggerProps) {
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
   React.useImperativeHandle(ref, () => triggerRef.current as HTMLButtonElement);
-  const { isOpen, setIsOpen } = useAccordionItem();
+  const {isOpen, setIsOpen} = useAccordionItem();
 
   React.useEffect(() => {
     const node = triggerRef.current;
@@ -105,8 +105,8 @@ function AccordionTrigger({
         ref={triggerRef}
         data-slot="accordion-trigger"
         className={cn(
-          'flex flex-1 text-start items-center justify-between py-4 font-medium hover:underline',
-          className,
+            'flex flex-1 text-start items-center justify-between py-4 font-medium hover:underline',
+            className,
         )}
         {...props}
       >
@@ -115,7 +115,7 @@ function AccordionTrigger({
         {chevron && (
           <motion.div
             data-slot="accordion-trigger-chevron"
-            animate={{ rotate: isOpen ? 180 : 0 }}
+            animate={{rotate: isOpen ? 180 : 0}}
             transition={transition}
           >
             <ChevronDown className="size-5 shrink-0" />
@@ -136,10 +136,10 @@ type AccordionContentProps = React.ComponentProps<
 function AccordionContent({
   className,
   children,
-  transition = { type: 'spring', stiffness: 150, damping: 22 },
+  transition = {type: 'spring', stiffness: 150, damping: 22},
   ...props
 }: AccordionContentProps) {
-  const { isOpen } = useAccordionItem();
+  const {isOpen} = useAccordionItem();
 
   return (
     <AnimatePresence>
@@ -148,9 +148,9 @@ function AccordionContent({
           <motion.div
             key="accordion-content"
             data-slot="accordion-content"
-            initial={{ height: 0, opacity: 0, '--mask-stop': '0%' }}
-            animate={{ height: 'auto', opacity: 1, '--mask-stop': '100%' }}
-            exit={{ height: 0, opacity: 0, '--mask-stop': '0%' }}
+            initial={{'height': 0, 'opacity': 0, '--mask-stop': '0%'}}
+            animate={{'height': 'auto', 'opacity': 1, '--mask-stop': '100%'}}
+            exit={{'height': 0, 'opacity': 0, '--mask-stop': '0%'}}
             transition={transition}
             style={{
               maskImage:

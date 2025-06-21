@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
-import {BackgroundLines} from "@/components/ui/background-lines";
+import {BackgroundLines} from '@/components/ui/background-lines';
 import {LiquidButton} from '@/components/animate-ui/buttons/liquid';
 import {GalleryVerticalEnd, CheckCircle2, AlertCircle} from 'lucide-react';
 import services from '@/lib/services';

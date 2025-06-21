@@ -129,19 +129,39 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
     );
   };
 
+  const containerVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: {opacity: 0, y: 15},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.5, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <motion.div 
+    <motion.div
       className="space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
     >
       {/* 搜索区域 */}
-      <motion.div 
+      <motion.div
         className="flex items-center justify-center"
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+        variants={itemVariants}
       >
         <InputButtonProvider>
           <InputButton>
@@ -285,11 +305,9 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
 
       {/* 即将开始 */}
       {upcomingProjects.length > 0 && (
-        <motion.div 
+        <motion.div
           className="space-y-6 relative"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+          variants={itemVariants}
         >
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">即将开始</h2>
@@ -321,11 +339,9 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
       )}
 
       {/* 所有项目 */}
-      <motion.div 
+      <motion.div
         className="flex items-center justify-between mt-12"
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+        variants={itemVariants}
       >
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">所有项目</h2>
@@ -335,12 +351,8 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
-      >
-      {loading ? (
+      <motion.div variants={itemVariants}>
+        {loading ? (
         <LoadingSkeleton />
       ) : projects.length === 0 ? (
         <EmptyState

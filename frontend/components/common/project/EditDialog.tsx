@@ -8,6 +8,7 @@ import {Label} from '@/components/ui/label';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
+import MarkdownEditor from '@/components/common/markdown/Editor';
 import {TagSelector} from '@/components/ui/tag-selector';
 import {DateTimePicker} from '@/components/ui/DateTimePicker';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
@@ -280,16 +281,14 @@ export function EditDialog({
 
                 <div className="space-y-2">
                   <Label htmlFor="description">项目描述</Label>
-                  <Textarea
-                    id="description"
-                    placeholder={`请输入项目描述，支持Markdown格式（${FORM_LIMITS.DESCRIPTION_MAX_LENGTH}字符以内）`}
+                  <MarkdownEditor
                     value={formData.description}
-                    onChange={(e) =>
-                      setFormData({...formData, description: e.target.value})
+                    onChange={(value) =>
+                      setFormData({...formData, description: value})
                     }
-                    className="resize-none h-48 break-all overflow-x-auto whitespace-pre-wrap"
+                    placeholder={`请输入项目描述，支持Markdown格式（${FORM_LIMITS.DESCRIPTION_MAX_LENGTH}字符以内）`}
                     maxLength={FORM_LIMITS.DESCRIPTION_MAX_LENGTH}
-                    rows={4}
+                    className="w-full"
                   />
                 </div>
 
