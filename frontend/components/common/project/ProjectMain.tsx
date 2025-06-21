@@ -133,6 +133,15 @@ export function ProjectMain() {
   };
 
   /**
+   * 处理页面变化
+   */
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  /**
    * 清除所有筛选条件
    */
   const clearAllFilters = () => {
@@ -204,7 +213,7 @@ export function ProjectMain() {
           onTagFilterOpenChange: setIsTagFilterOpen,
           onTagSearchKeywordChange: setTagSearchKeyword,
           onClearAllFilters: clearAllFilters,
-          onPageChange: setCurrentPage,
+          onPageChange: handlePageChange,
           onProjectCreated: handleProjectCreated,
           onRetry: handleRetry,
           onProjectsChange: setProjects,

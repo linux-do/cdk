@@ -7,6 +7,7 @@ import {ExploreContent} from './ExploreContent';
 import {ExploreBanner} from './ExploreBanner';
 import services from '@/lib/services';
 import {ProjectListItem} from '@/lib/services/project/types';
+import {motion} from 'motion/react';
 
 const PAGE_SIZE = 96;
 
@@ -188,8 +189,17 @@ export function ExploreMain() {
   }, [fetchProjects]);
 
   return (
-    <div className="space-y-6">
-      <div>
+    <motion.div 
+      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+      >
         <ExploreBanner
           randomProjects={processedData.randomProjects}
           onProjectClick={handleCardClick}
@@ -219,7 +229,7 @@ export function ExploreMain() {
           }}
           LoadingSkeleton={LoadingSkeleton}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
