@@ -8,6 +8,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/c
 import {DataChart, DataTable} from '@/components/common/received';
 import services from '@/lib/services';
 import {ReceiveHistoryItem} from '@/lib/services/project/types';
+import {motion} from 'motion/react';
 
 const PAGE_SIZE = 100;
 
@@ -189,20 +190,48 @@ export function ReceivedMain() {
     fetchAllReceiveHistory();
   }, []);
 
+  const containerVariants = {
+    hidden: {opacity: 0},
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.6, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div className="flex items-center justify-between" variants={itemVariants}>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">我的领取</h1>
           <p className="text-muted-foreground mt-1">
             查看您已领取的分发项目信息和内容
           </p>
         </div>
-      </div>
+      </motion.div>
 
-      <Separator className="my-8" />
+      <motion.div variants={itemVariants}>
+        <Separator className="my-8" />
+      </motion.div>
 
-      <div className="space-y-6">
+      <motion.div className="space-y-6" variants={itemVariants}>
         {Loading ? (
           <>
             <DataChartSkeleton />
@@ -216,7 +245,7 @@ export function ReceivedMain() {
             <DataTable data={data} />
           </>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -10,6 +10,7 @@ import {ChevronLeft, ChevronRight, Search, Compass, Filter, Check, X} from 'luci
 import {ProjectCard} from '@/components/common/project';
 import {ProjectListItem} from '@/lib/services/project/types';
 import {EmptyState} from '@/components/common/layout/EmptyState';
+import {motion} from 'motion/react';
 
 const PAGE_SIZE = 96;
 
@@ -128,10 +129,40 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
     );
   };
 
+  const containerVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: {opacity: 0, y: 15},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.5, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* 搜索区域 */}
-      <div className="flex items-center justify-center">
+      <motion.div
+        className="flex items-center justify-center"
+        variants={itemVariants}
+      >
         <InputButtonProvider>
           <InputButton>
             <InputButtonAction className="flex items-center">
@@ -270,11 +301,14 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
             </div>
           </PopoverContent>
         </Popover>
-      </div>
+      </motion.div>
 
       {/* 即将开始 */}
       {upcomingProjects.length > 0 && (
-        <div className="space-y-6 relative">
+        <motion.div
+          className="space-y-6 relative"
+          variants={itemVariants}
+        >
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">即将开始</h2>
             <Badge variant="secondary" className="text-xs font-bold">
@@ -301,20 +335,24 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
             <CarouselPrevious className="-top-12 right-12 left-auto translate-y-0" />
             <CarouselNext className="-top-12 right-2 left-auto translate-y-0" />
           </Carousel>
-        </div>
+        </motion.div>
       )}
 
       {/* 所有项目 */}
-      <div className="flex items-center justify-between mt-12">
+      <motion.div
+        className="flex items-center justify-between mt-12"
+        variants={itemVariants}
+      >
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">所有项目</h2>
           <Badge variant="secondary" className="text-xs font-bold">
             {total}
           </Badge>
         </div>
-      </div>
+      </motion.div>
 
-      {loading ? (
+      <motion.div variants={itemVariants}>
+        {loading ? (
         <LoadingSkeleton />
       ) : projects.length === 0 ? (
         <EmptyState
@@ -344,6 +382,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
           <Pagination />
         </>
       )}
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

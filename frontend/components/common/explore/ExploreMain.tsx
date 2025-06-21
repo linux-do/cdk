@@ -7,6 +7,7 @@ import {ExploreContent} from './ExploreContent';
 import {ExploreBanner} from './ExploreBanner';
 import services from '@/lib/services';
 import {ProjectListItem} from '@/lib/services/project/types';
+import {motion} from 'motion/react';
 
 const PAGE_SIZE = 96;
 
@@ -146,6 +147,15 @@ export function ExploreMain() {
   };
 
   /**
+   * 处理页面变化
+   */
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滚动到页面顶部
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  };
+
+  /**
    * 处理搜索提交
    */
   const handleSearchSubmit = () => {
@@ -178,9 +188,35 @@ export function ExploreMain() {
     fetchProjects();
   }, [fetchProjects]);
 
+  const containerVariants = {
+    hidden: {opacity: 0},
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const contentVariants = {
+    hidden: {opacity: 0, y: 30},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.8, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div variants={contentVariants}>
         <ExploreBanner
           randomProjects={processedData.randomProjects}
           onProjectClick={handleCardClick}
@@ -198,7 +234,7 @@ export function ExploreMain() {
             isTagFilterOpen,
             showAllTags,
             loading,
-            onPageChange: setCurrentPage,
+            onPageChange: handlePageChange,
             onTagToggle: handleTagToggle,
             onSearchSubmit: handleSearchSubmit,
             onCardClick: handleCardClick,
@@ -210,7 +246,7 @@ export function ExploreMain() {
           }}
           LoadingSkeleton={LoadingSkeleton}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

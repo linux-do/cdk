@@ -10,6 +10,7 @@ import {ReceiveContent} from '@/components/common/receive';
 import {EmptyState} from '@/components/common/layout/EmptyState';
 import services from '@/lib/services';
 import {GetProjectResponseData} from '@/lib/services/project';
+import {motion} from 'motion/react';
 
 
 /**
@@ -123,12 +124,43 @@ export function ReceiveMain() {
     }
   }, [projectId, fetchProject]);
 
+  const containerVariants = {
+    hidden: {opacity: 0},
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const contentVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: 'easeOut',
+      },
+    },
+  };
+
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {Loading ? (
-        <LoadingSkeleton />
+        <motion.div variants={contentVariants}>
+          <LoadingSkeleton />
+        </motion.div>
       ) : error || !project ? (
-        <div className="space-y-4 max-w-4xl mx-auto">
+        <motion.div className="space-y-4 max-w-4xl mx-auto" variants={contentVariants}>
           <div className="flex items-center justify-start">
             <Button
               variant="ghost"
@@ -155,16 +187,18 @@ export function ReceiveMain() {
               重试
             </Button>
           </EmptyState>
-        </div>
+        </motion.div>
       ) : (
-        <ReceiveContent
-          data={{
-            project,
-            user,
-            projectId: projectId || '',
-          }}
-        />
+        <motion.div variants={contentVariants}>
+          <ReceiveContent
+            data={{
+              project,
+              user,
+              projectId: projectId || '',
+            }}
+          />
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

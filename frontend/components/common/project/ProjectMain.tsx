@@ -6,6 +6,7 @@ import {Separator} from '@/components/ui/separator';
 import {CreateDialog, MineProject} from '@/components/common/project';
 import services from '@/lib/services';
 import {ProjectListItem, ListProjectsRequest} from '@/lib/services/project/types';
+import {motion} from 'motion/react';
 
 const PAGE_SIZE = 12;
 
@@ -133,6 +134,15 @@ export function ProjectMain() {
   };
 
   /**
+   * 处理页面变化
+   */
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滚动到页面顶部
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  };
+
+  /**
    * 清除所有筛选条件
    */
   const clearAllFilters = () => {
@@ -174,9 +184,44 @@ export function ProjectMain() {
     fetchProjects(currentPage);
   }, [currentPage, fetchProjects, selectedTags]);
 
+  const containerVariants = {
+    hidden: {opacity: 0},
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.6, ease: 'easeOut'},
+    },
+  };
+
+  const separatorVariants = {
+    hidden: {opacity: 0, scaleX: 0},
+    visible: {
+      opacity: 1,
+      scaleX: 1,
+      transition: {duration: 0.4, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div className="flex items-center justify-between" variants={itemVariants}>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">我的项目</h1>
           <p className="text-muted-foreground mt-1">管理您的项目和分发内容</p>
@@ -184,35 +229,39 @@ export function ProjectMain() {
         <div>
           <CreateDialog onProjectCreated={handleProjectCreated} />
         </div>
-      </div>
+      </motion.div>
 
-      <Separator className="my-8" />
+      <motion.div variants={separatorVariants}>
+        <Separator className="my-8" />
+      </motion.div>
 
-      <MineProject
-        data={{
-          projects,
-          total,
-          currentPage,
-          pageSize: PAGE_SIZE,
-          error,
-          tags,
-          selectedTags,
-          tagSearchKeyword,
-          isTagFilterOpen,
-          loading,
-          onTagToggle: handleTagToggle,
-          onTagFilterOpenChange: setIsTagFilterOpen,
-          onTagSearchKeywordChange: setTagSearchKeyword,
-          onClearAllFilters: clearAllFilters,
-          onPageChange: setCurrentPage,
-          onProjectCreated: handleProjectCreated,
-          onRetry: handleRetry,
-          onProjectsChange: setProjects,
-          onTotalChange: setTotal,
-          onCacheClear: () => setPageCache(new Map()),
-        }}
-        LoadingSkeleton={LoadingSkeleton}
-      />
-    </div>
+      <motion.div variants={itemVariants}>
+        <MineProject
+          data={{
+            projects,
+            total,
+            currentPage,
+            pageSize: PAGE_SIZE,
+            error,
+            tags,
+            selectedTags,
+            tagSearchKeyword,
+            isTagFilterOpen,
+            loading,
+            onTagToggle: handleTagToggle,
+            onTagFilterOpenChange: setIsTagFilterOpen,
+            onTagSearchKeywordChange: setTagSearchKeyword,
+            onClearAllFilters: clearAllFilters,
+            onPageChange: handlePageChange,
+            onProjectCreated: handleProjectCreated,
+            onRetry: handleRetry,
+            onProjectsChange: setProjects,
+            onTotalChange: setTotal,
+            onCacheClear: () => setPageCache(new Map()),
+          }}
+          LoadingSkeleton={LoadingSkeleton}
+        />
+      </motion.div>
+    </motion.div>
   );
 }

@@ -14,6 +14,7 @@ import {EditDialog, ProjectCard} from '@/components/common/project';
 import {EmptyState} from '@/components/common/layout/EmptyState';
 import services from '@/lib/services';
 import {ProjectListItem} from '@/lib/services/project/types';
+import {motion} from 'motion/react';
 
 interface MineProjectProps {
   data: {
@@ -253,10 +254,37 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
     );
   };
 
+  const containerVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: {opacity: 0, y: 15},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.5, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* 标题和标签过滤器 */}
-      <div className="flex items-center justify-between">
+      <motion.div className="flex items-center justify-between" variants={itemVariants}>
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">所有项目</h2>
           <Badge variant="secondary" className="text-xs font-bold">
@@ -386,11 +414,14 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
             </div>
           </PopoverContent>
         </Popover>
-      </div>
+      </motion.div>
 
       {/* 当前选择的标签展示 */}
       {(selectedTags || []).length > 0 && (
-        <div className="flex items-center flex-wrap gap-2">
+        <motion.div
+          className="flex items-center flex-wrap gap-2"
+          variants={itemVariants}
+        >
           <span className="text-xs text-muted-foreground">筛选条件:</span>
           {(selectedTags || []).map((tag) => (
             <Badge
@@ -411,11 +442,13 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
           >
             清除全部
           </Button>
-        </div>
+        </motion.div>
       )}
 
       {/* 内容区域 */}
-      {renderContent()}
+      <motion.div variants={itemVariants}>
+        {renderContent()}
+      </motion.div>
 
       <AlertDialog
         open={deleteDialogOpen}
@@ -455,6 +488,6 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 }
