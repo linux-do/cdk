@@ -129,3 +129,9 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@keyframes slide {
+  0% { left: -33%; }
+  50% { left: 100%; }
+  100% { left: -33%; }
+}
