@@ -8,7 +8,7 @@ import {Label} from '@/components/ui/label';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
-import MarkdownEditor from '@/components/common/markdown/Editor';
+import {FileUpload} from '@/components/ui/file-upload';
 import {TagSelector} from '@/components/ui/tag-selector';
 import {DateTimePicker} from '@/components/ui/DateTimePicker';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
@@ -18,6 +18,7 @@ import {Counter} from '@/components/animate-ui/components/counter';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
 import {FORM_LIMITS, TRUST_LEVEL_OPTIONS, handleBulkImportContentWithFilter, validateProjectForm} from '@/components/common/project';
+import MarkdownEditor from '@/components/common/markdown/Editor';
 import {X, Pencil, CheckCircle, Filter} from 'lucide-react';
 import services from '@/lib/services';
 import {TrustLevel} from '@/lib/services/core/types';
@@ -41,6 +42,7 @@ export function EditDialog({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [fileUploadOpen, setFileUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: project.name,
@@ -96,6 +98,7 @@ export function EditDialog({
     setBulkContent('');
     setAllowDuplicates(false);
     setUpdateSuccess(false);
+    setFileUploadOpen(false);
   }, [project]);
 
   useEffect(() => {
@@ -127,6 +130,66 @@ export function EditDialog({
           toast.error(errorMessage);
         },
     );
+  };
+
+  /**
+   * 处理文件上传
+   */
+  const handleFileUpload = (files: File[]) => {
+    if (files.length === 0) return;
+
+    const file = files[0];
+
+    // 检查文件类型
+    if (!file.name.toLowerCase().endsWith('.txt')) {
+      toast.error('仅支持上传 .txt 格式的文件');
+      return;
+    }
+
+    // 检查文件大小 (最大5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('文件大小不能超过 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content) {
+        // 按行分割并过滤空行
+        const lines = content
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0);
+
+        if (lines.length === 0) {
+          toast.error('文件内容为空');
+          return;
+        }
+
+        // 执行导入
+        handleBulkImportContentWithFilter(
+            lines.join('\n'),
+            newItems,
+            allowDuplicates,
+            (updatedItems: string[], importedCount: number, skippedInfo?: string) => {
+              setNewItems(updatedItems);
+              const message = `从文件成功导入 ${importedCount} 个内容${skippedInfo || ''}`;
+              toast.success(message);
+              setFileUploadOpen(false);
+            },
+            (errorMessage: string) => {
+              toast.error(errorMessage);
+            },
+        );
+      }
+    };
+
+    reader.onerror = () => {
+      toast.error('文件读取失败');
+    };
+
+    reader.readAsText(file, 'UTF-8');
   };
 
   /**
@@ -448,6 +511,13 @@ export function EditDialog({
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
+                        <Badge
+                          variant="secondary"
+                          className="text-xs cursor-pointer hover:bg-gray-300"
+                          onClick={() => setFileUploadOpen(true)}
+                        >
+                          TXT导入
+                        </Badge>
                         <Badge variant="secondary" className="bg-muted">
                            待添加: {newItems.length}个
                         </Badge>
@@ -555,6 +625,30 @@ export function EditDialog({
             </Button>
           )}
         </DialogFooter>
+
+        {/* 文件上传对话框 */}
+        <Dialog open={fileUploadOpen} onOpenChange={setFileUploadOpen}>
+          <DialogContent className={`${isMobile ? 'max-w-[90vw] max-h-[80vh]' : 'max-w-lg'}`}>
+            <DialogHeader>
+              <DialogTitle>文件导入分发内容</DialogTitle>
+              <DialogDescription className="text-xs">
+                支持 .txt 格式• 每行一个邀请码或 • 空行自动忽略 • 大小限制：5MB
+              </DialogDescription>
+            </DialogHeader>
+
+            <FileUpload onChange={handleFileUpload} />
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setFileUploadOpen(false)}
+                className="w-full"
+              >
+                取消
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );

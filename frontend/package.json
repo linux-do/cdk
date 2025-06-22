@@ -51,6 +51,7 @@
     "react": "^19.0.0",
     "react-day-picker": "^9.7.0",
     "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.8",
     "react-markdown": "^10.1.0",
     "react-use-measure": "^2.1.7",
     "recharts": "^2.15.3",
