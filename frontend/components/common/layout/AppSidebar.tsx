@@ -41,18 +41,13 @@ const navMain = [
  */
 const navDocuments = [
   {
-    name: '测试数据1',
-    url: '#',
+    name: '使用说明',
+    url: '/docs/usage',
     icon: FileIcon,
   },
   {
-    name: '测试数据2',
-    url: '#',
-    icon: FileIcon,
-  },
-  {
-    name: '测试数据3',
-    url: '#',
+    name: '更新日志',
+    url: '/docs/changelog',
     icon: FileIcon,
   },
 ];
@@ -87,9 +82,9 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent className="hide-scrollbar">
         <NavMain items={navMain} />
-        <NavDocuments items={navDocuments} />
       </SidebarContent>
       <SidebarFooter>
+        <NavDocuments items={navDocuments} />
         {isLoading && (
           <NavUser
             user={{
