@@ -8,6 +8,7 @@ import {Search, ExternalLink, Copy, ChevronLeft, ChevronRight, Package} from 'lu
 import {formatDateTimeWithSeconds, copyToClipboard} from '@/lib/utils';
 import {ReceiveHistoryItem} from '@/lib/services/project/types';
 import {EmptyState} from '@/components/common/layout/EmptyState';
+import {motion} from 'motion/react';
 
 const ITEMS_PER_PAGE = 20;
 const MAX_PAGINATION_BUTTONS = 5;
@@ -226,9 +227,36 @@ export function DataTable({data}: DataTableProps) {
     return sortDirection === SORT_DIRECTIONS.ASC ? ' ↑' : ' ↓';
   };
 
+  const containerVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: {opacity: 0, y: 15},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.5, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <motion.div
+      className="space-y-4"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div className="flex items-center justify-between" variants={itemVariants}>
         <h2 className="text-base font-semibold">
           详细记录
         </h2>
@@ -241,9 +269,9 @@ export function DataTable({data}: DataTableProps) {
             className="pl-8 w-48"
           />
         </div>
-      </div>
+      </motion.div>
 
-      <div className="rounded-md border">
+      <motion.div className="rounded-md border" variants={itemVariants}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -341,14 +369,16 @@ export function DataTable({data}: DataTableProps) {
             )}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        dataLength={sortedAndFilteredData.length}
-        onPageChange={setCurrentPage}
-      />
-    </div>
+      <motion.div variants={itemVariants}>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          dataLength={sortedAndFilteredData.length}
+          onPageChange={setCurrentPage}
+        />
+      </motion.div>
+    </motion.div>
   );
 }

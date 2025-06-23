@@ -1,4 +1,10 @@
 definitions:
+  dashboard.DashboardDataResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
   health.HealthResponse:
     properties:
       data: {}
@@ -300,6 +306,17 @@ info:
   title: Linux Do CDK
   version: 0.1.0
 paths:
+  /api/v1/dashboard/stats/all:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.DashboardDataResponse'
+      tags:
+      - Dashboard
   /api/v1/health:
     get:
       produces:

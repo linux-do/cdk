@@ -74,7 +74,7 @@ const FloatingDockMobile = ({
                     className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900"
                     {...(item.href.startsWith('https://') ? {target: '_blank', rel: 'noopener noreferrer'} : {})}
                   >
-                    <div className="h-3 w-3">{item.icon}</div>
+                    <div className="flex items-center justify-center">{item.icon}</div>
                   </a>
                 ) : (
                   <button
@@ -82,7 +82,7 @@ const FloatingDockMobile = ({
                     key={item.title}
                     className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900"
                   >
-                    <div className="h-3 w-3">{item.icon}</div>
+                    <div className="flex items-center justify-center">{item.icon}</div>
                   </button>
                 )}
               </motion.div>

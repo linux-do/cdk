@@ -100,7 +100,7 @@ export function ProjectCard({
             </div>
 
             {(onEdit || onDelete || editButton) && (
-              <div className="absolute right-1.5 top-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute right-1.5 top-1.5 flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                 {editButton ||
                   (onEdit && (
                     <Button

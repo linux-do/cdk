@@ -77,11 +77,12 @@ export const parseImportContent = (content: string): string[] => {
 };
 
 /**
- * 批量导入分发内容的通用逻辑
+ * 批量导入分发内容的通用逻辑（带过滤开关）
  */
-export const handleBulkImportContent = (
+export const handleBulkImportContentWithFilter = (
     bulkContent: string,
     currentItems: string[],
+    allowDuplicates: boolean,
     onSuccess: (
     newItems: string[],
     importedCount: number,
@@ -101,6 +102,14 @@ export const handleBulkImportContent = (
     return;
   }
 
+  if (allowDuplicates) {
+    // 不过滤重复内容，直接添加所有内容
+    const updatedItems = [...currentItems, ...rawItems];
+    onSuccess(updatedItems, rawItems.length);
+    return;
+  }
+
+  // 过滤重复内容（原有逻辑）
   const uniqueNewItems = [...new Set(rawItems)];
   const selfDuplicateCount = rawItems.length - uniqueNewItems.length;
 
@@ -130,6 +139,22 @@ export const handleBulkImportContent = (
   }
 
   onSuccess(updatedItems, finalItems.length, skippedInfo);
+};
+
+/**
+ * 批量导入分发内容的通用逻辑（保持向后兼容）
+ */
+export const handleBulkImportContent = (
+    bulkContent: string,
+    currentItems: string[],
+    onSuccess: (
+    newItems: string[],
+    importedCount: number,
+    skippedInfo?: string,
+  ) => void,
+    onError: (message: string) => void,
+) => {
+  handleBulkImportContentWithFilter(bulkContent, currentItems, false, onSuccess, onError);
 };
 
 /**

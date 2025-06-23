@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
+	"github.com/linux-do/cdk/internal/utils"
 	"gorm.io/gorm"
 	"net/http"
 	"time"
@@ -138,7 +139,9 @@ func CreateProject(c *gin.Context) {
 	}
 
 	// response
-	c.JSON(http.StatusOK, ProjectResponse{})
+	c.JSON(http.StatusOK, ProjectResponse{
+		Data: map[string]interface{}{"projectId": project.ID},
+	})
 }
 
 type UpdateProjectRequestBody struct {
@@ -338,7 +341,9 @@ func ReceiveProject(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, ProjectResponse{})
+	c.JSON(http.StatusOK, ProjectResponse{
+		Data: map[string]interface{}{"itemContent": item.Content},
+	})
 }
 
 type ListReceiveHistoryRequest struct {
@@ -448,23 +453,23 @@ type ListProjectsRequest struct {
 }
 
 type ListProjectsResponseDataResult struct {
-	ID                string           `json:"id"`
-	Name              string           `json:"name"`
-	Description       string           `json:"description"`
-	DistributionType  DistributionType `json:"distribution_type"`
-	TotalItems        int64            `json:"total_items"`
-	StartTime         time.Time        `json:"start_time"`
-	EndTime           time.Time        `json:"end_time"`
-	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level"`
-	AllowSameIP       bool             `json:"allow_same_ip"`
-	RiskLevel         int8             `json:"risk_level"`
-	Tags              []string         `json:"tags"`
-	CreatedAt         time.Time        `json:"created_at"`
+	ID                string            `json:"id"`
+	Name              string            `json:"name"`
+	Description       string            `json:"description"`
+	DistributionType  DistributionType  `json:"distribution_type"`
+	TotalItems        int64             `json:"total_items"`
+	StartTime         time.Time         `json:"start_time"`
+	EndTime           time.Time         `json:"end_time"`
+	MinimumTrustLevel oauth.TrustLevel  `json:"minimum_trust_level"`
+	AllowSameIP       bool              `json:"allow_same_ip"`
+	RiskLevel         int8              `json:"risk_level"`
+	Tags              utils.StringArray `json:"tags"`
+	CreatedAt         time.Time         `json:"created_at"`
 }
 
 type ListProjectsResponseData struct {
-	Total   int64                            `json:"total"`
-	Results []ListProjectsResponseDataResult `json:"results"`
+	Total   int64                             `json:"total"`
+	Results *[]ListProjectsResponseDataResult `json:"results"`
 }
 
 type ListProjectsResponse struct {

@@ -7,9 +7,9 @@ import {ExploreContent} from './ExploreContent';
 import {ExploreBanner} from './ExploreBanner';
 import services from '@/lib/services';
 import {ProjectListItem} from '@/lib/services/project/types';
+import {motion} from 'motion/react';
 
 const PAGE_SIZE = 96;
-
 
 /**
  * 加载骨架屏组件
@@ -42,6 +42,7 @@ const LoadingSkeleton = () => (
 export function ExploreMain() {
   const router = useRouter();
   const [allProjects, setAllProjects] = useState<ProjectListItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -57,8 +58,8 @@ export function ExploreMain() {
   const processedData = useMemo(() => {
     const now = new Date();
 
-    // 应用搜索和标签过滤
-    let filteredProjects = allProjects;
+    /** 应用搜索和标签过滤 */
+    let filteredProjects = allProjects || [];
 
     if (searchKeyword.trim()) {
       filteredProjects = filteredProjects.filter((project) =>
@@ -67,7 +68,7 @@ export function ExploreMain() {
       );
     }
 
-    // 分类项目
+    /** 分类项目 */
     const activeProjects = filteredProjects.filter((project) => {
       const startTime = new Date(project.start_time);
       const endTime = new Date(project.end_time);
@@ -79,12 +80,12 @@ export function ExploreMain() {
       return startTime > now && project.total_items > 0;
     });
 
-    // 随机横幅项目
+    /** 随机横幅项目 */
     const randomProjects = [...activeProjects]
         .sort(() => Math.random() - 0.5)
-        .slice(0, 4);
+        .slice(0, 5);
 
-    // 即将开始项目
+    /** 即将开始项目 */
     const upcomingProjects = upcomingList
         .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
         .slice(0, 6);
@@ -93,9 +94,9 @@ export function ExploreMain() {
       projects: filteredProjects,
       randomProjects,
       upcomingProjects,
-      total: filteredProjects.length,
+      total: totalCount,
     };
-  }, [allProjects, searchKeyword]);
+  }, [allProjects, searchKeyword, totalCount]);
 
   /**
    * 获取项目列表
@@ -106,13 +107,15 @@ export function ExploreMain() {
     const result = await services.project.getProjectsSafe({
       current: currentPage,
       size: PAGE_SIZE,
-      tags: selectedTags.length > 0 ? selectedTags : undefined,
+      tags: (selectedTags || []).length > 0 ? selectedTags : undefined,
     });
 
     if (result.success && result.data) {
-      setAllProjects(result.data.results);
+      setAllProjects(result.data.results || []);
+      setTotalCount(result.data.total || 0);
     } else {
       setAllProjects([]);
+      setTotalCount(0);
     }
 
     setLoading(false);
@@ -124,7 +127,7 @@ export function ExploreMain() {
   const fetchTags = useCallback(async () => {
     const result = await services.project.getTagsSafe();
     if (result.success) {
-      setTags(result.tags);
+      setTags(result.tags || []);
     }
   }, []);
 
@@ -133,13 +136,23 @@ export function ExploreMain() {
    */
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) => {
+      const prevTags = prev || [];
       const newTags = tag === '' ? [] :
-        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
+        prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag];
 
       setCurrentPage(1);
       setShowAllTags(false);
       return newTags;
     });
+  };
+
+  /**
+   * 处理页面变化
+   */
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滚动到页面顶部
+    window.scrollTo({top: 0, behavior: 'smooth'});
   };
 
   /**
@@ -166,7 +179,7 @@ export function ExploreMain() {
     setShowAllTags(false);
   };
 
-  // 数据获取
+  /** 数据获取 */
   useEffect(() => {
     fetchTags();
   }, [fetchTags]);
@@ -175,9 +188,35 @@ export function ExploreMain() {
     fetchProjects();
   }, [fetchProjects]);
 
+  const containerVariants = {
+    hidden: {opacity: 0},
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const contentVariants = {
+    hidden: {opacity: 0, y: 30},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.8, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div variants={contentVariants}>
         <ExploreBanner
           randomProjects={processedData.randomProjects}
           onProjectClick={handleCardClick}
@@ -195,7 +234,7 @@ export function ExploreMain() {
             isTagFilterOpen,
             showAllTags,
             loading,
-            onPageChange: setCurrentPage,
+            onPageChange: handlePageChange,
             onTagToggle: handleTagToggle,
             onSearchSubmit: handleSearchSubmit,
             onCardClick: handleCardClick,
@@ -207,7 +246,7 @@ export function ExploreMain() {
           }}
           LoadingSkeleton={LoadingSkeleton}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
