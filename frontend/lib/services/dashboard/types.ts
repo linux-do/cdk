@@ -65,7 +65,7 @@ export interface HotProjectData {
   /** 项目标签 */
   tag:  string;
   /** 领取数 */
-  receive_count: number;
+  receiveCount: number;
   /** 项目ID */
   id?: string;
   /** 项目创建者 */
@@ -87,7 +87,7 @@ export interface UserActivityData {
  */
 export interface ActiveCreatorData extends UserActivityData {
   /** 创建的项目数量 */
-  project_count: number;
+  projectCount: number;
 }
 
 /**
@@ -95,7 +95,7 @@ export interface ActiveCreatorData extends UserActivityData {
  */
 export interface ActiveReceiverData extends UserActivityData {
   /** 领取次数 */
-  receive_count: number;
+  receiveCount: number;
 }
 
 /**
@@ -128,25 +128,25 @@ export interface ApplyStatusData {
  */
 export interface StatsSummary {
   /** 总用户数 */
-  total_users: number;
+  totalUsers: number;
   /** 新增用户数 */
-  new_users: number;
+  newUsers: number;
   /** 活跃项目数 */
-  active_projects: number;
+  activeProjects: number;
   /** 总项目数 */
-  total_projects: number;
+  totalProjects: number;
   /** 总领取数 */
-  total_received: number;
+  totalReceived: number;
   /** 最近领取数 */
-  recent_received: number;
+  recentReceived: number;
   /** 成功率 */
-  success_rate: string;
+  successRate: string;
 }
 
 /**
  * 仪表盘数据 
  */
-export interface DashboardData {
+export interface DashboardResponse {
   /** 用户增长趋势数据 */
   userGrowth: UserGrowthData[];
   /** 活动趋势数据 */

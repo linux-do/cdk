@@ -96,12 +96,12 @@ export function CardList({ title, iconBg, icon, list, type }: CardListProps) {
                 )}
                 {type === 'creator' && (
                   <p className="text-xs text-muted-foreground">
-                    {item.project_count} 个项目
+                    {item.projectCount} 个项目
                   </p>
                 )}
                 {type === 'receiver' && (
                   <p className="text-xs text-muted-foreground">
-                    {item.receive_count} 次领取
+                    {item.receiveCount} 次领取
                   </p>
                 )}
               </div>
@@ -110,12 +110,12 @@ export function CardList({ title, iconBg, icon, list, type }: CardListProps) {
                   type === 'project' ? 'group-hover:border-blue-200 dark:group-hover:border-blue-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 transition-all' : ''
                 }`}
                 title={
-                  type === 'project' ? `领取数: ${item.receive_count}` :
+                  type === 'project' ? `领取数: ${item.receiveCount}` :
                   type === 'creator' ? `排名: ${idx + 1}` : 
                   type === 'receiver' ? `排名: ${idx + 1}` : ''
                 }
               >
-                {type === 'project' && item.receive_count}
+                {type === 'project' && item.receiveCount}
                 {type === 'creator' && idx + 1} 
                 {type === 'receiver' && idx + 1}
               </div>

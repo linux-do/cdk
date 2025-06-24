@@ -45,43 +45,91 @@ export interface DistributeModeChartProps {
 
 // 时间范围
 const generateTimeRangeChartData = (data: { date: string; value: number }[] | undefined, range: number = 7) => {
-  if (!data || data.length === 0) {
-    // 空数据处理
-    const today = new Date();
-    const chartData = [];
-    for (let i = range - 1; i >= 0; i--) {
-      const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateKey = `${month}/${day}`;
+  // 生成完整的日期范围
+  const today = new Date();
+  const fullDateRange = [];
+  
+  for (let i = range - 1; i >= 0; i--) {
+    const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateKey = `${month}/${day}`;
 
-      chartData.push({
-        date: dateKey,
-        value: 0,
-      });
-    }
-    return chartData;
+    fullDateRange.push({
+      date: dateKey,
+      value: 0,
+      originalDate: date
+    });
   }
 
-  // 数据格式处理
-  return data.map(item => {
-    let formattedDate = item.date;
-    
-    // 日期格式处理
-    if (item.date.includes('-')) {
+  // 如果没有数据，返回全零数据
+  if (!data || data.length === 0) {
+    return fullDateRange.map(({ date, value }) => ({ date, value }));
+  }
+
+  // 创建数据映射，支持多种日期格式
+  const dataMap = new Map();
+  
+  data.forEach(item => {
+    let normalizedDate = '';
+    // 处理不同的日期格式
+    if (item.date.includes('月') && item.date.includes('日')) {
+      // 格式: "06月24日"
+      const match = item.date.match(/(\d{1,2})月(\d{1,2})日/);
+      if (match) {
+        const month = match[1].padStart(2, '0');
+        const day = match[2].padStart(2, '0');
+        normalizedDate = `${month}/${day}`;
+      }
+    } else if (item.date.includes('-')) {
+      // 格式: "2024-06-24" 或 "06-24"
       const dateParts = item.date.split('-');
       if (dateParts.length >= 2) {
-        const month = dateParts[1];
-        const day = dateParts[2] || '01';
-        formattedDate = `${month}/${day}`;
+        const month = dateParts[dateParts.length - 2].padStart(2, '0');
+        const day = dateParts[dateParts.length - 1].padStart(2, '0');
+        normalizedDate = `${month}/${day}`;
       }
+    } else if (item.date.includes('/')) {
+      // 格式: "06/24"
+      normalizedDate = item.date;
     }
     
-    return {
-      date: formattedDate,
-      value: item.value || 0
-    };
+    if (normalizedDate) {
+      dataMap.set(normalizedDate, item.value || 0);
+    }
   });
+
+  // 用实际数据替换默认值
+  return fullDateRange.map(({ date, value }) => ({
+    date,
+    value: dataMap.has(date) ? dataMap.get(date) : value
+  }));
+};
+
+// 动画配置
+const ANIMATION_CONFIG = {
+  // 基础动画配置
+  base: {
+    isAnimationActive: true,
+    animationEasing: "ease-in-out" as const,
+  },
+  // 不同图表类型的动画时序
+  area: {
+    animationBegin: 0,
+    animationDuration: 800,
+  },
+  line: {
+    animationBegin: 100,
+    animationDuration: 800,
+  },
+  pie: {
+    animationBegin: 200,
+    animationDuration: 1000,
+  },
+  bar: {
+    animationBegin: 300,
+    animationDuration: 900,
+  }
 };
 
 // 配色方案
@@ -226,7 +274,7 @@ export function UserGrowthChart({ data, isLoading, icon, range = 7 }: UserGrowth
 
   return (
     <ChartContainer title="用户增长趋势" icon={icon} iconBg="bg-card" isLoading={isLoading}>
-      <div className="h-[320px]">
+      <div className="h-[320px] transition-all duration-300 ease-in-out" key={`user-growth-${range}-${data?.length || 0}`}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <defs>
@@ -267,8 +315,8 @@ export function UserGrowthChart({ data, isLoading, icon, range = 7 }: UserGrowth
                 fill: '#ffffff',
                 filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
               }}
-              animationDuration={2000}
-              animationEasing="ease-out"
+              {...ANIMATION_CONFIG.base}
+              {...ANIMATION_CONFIG.area}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -283,7 +331,7 @@ export function ActivityChart({ data, isLoading, icon, range = 7 }: ActivityChar
 
   return (
     <ChartContainer title="领取活动趋势" icon={icon} iconBg="bg-card" isLoading={isLoading}>
-      <div className="h-[320px]">
+      <div className="h-[320px] transition-all duration-300 ease-in-out" key={`activity-${range}-${data?.length || 0}`}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <XAxis 
@@ -317,8 +365,8 @@ export function ActivityChart({ data, isLoading, icon, range = 7 }: ActivityChar
                 fill: '#ffffff',
                 filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
               }}
-              animationDuration={2000}
-              animationEasing="ease-out"
+              {...ANIMATION_CONFIG.base}
+              {...ANIMATION_CONFIG.line}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -352,7 +400,7 @@ export function CategoryChart({ data, isLoading, icon }: CategoryChartProps) {
 
   return (
     <ChartContainer title="项目标签分布" icon={icon} iconBg="bg-card" isLoading={isLoading}>
-      <div className="h-[320px] w-full">
+      <div className="h-[320px] w-full transition-all duration-300 ease-in-out" key={`category-${data?.length || 0}`}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
             <Pie
@@ -365,8 +413,8 @@ export function CategoryChart({ data, isLoading, icon }: CategoryChartProps) {
               innerRadius={45}
               paddingAngle={2}
               label={false} 
-              animationDuration={2000}
-              animationEasing="ease-out"
+              {...ANIMATION_CONFIG.base}
+              {...ANIMATION_CONFIG.pie}
             >
               {enhancedData?.map((entry, index) => (
                 <Cell 
@@ -446,7 +494,7 @@ export function DistributeModeChart({ data, isLoading, icon }: DistributeModeCha
 
   return (
     <ChartContainer title="分发模式统计" icon={icon} iconBg="bg-card" isLoading={isLoading}>
-      <div className="h-[320px] w-full">
+      <div className="h-[320px] w-full transition-all duration-300 ease-in-out" key={`distribute-${data?.length || 0}`}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={enhancedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <XAxis 
@@ -470,8 +518,8 @@ export function DistributeModeChart({ data, isLoading, icon }: DistributeModeCha
               dataKey="value" 
               radius={[8, 8, 0, 0]}
               maxBarSize={80}
-              animationDuration={2000}
-              animationEasing="ease-out"
+              {...ANIMATION_CONFIG.base}
+              {...ANIMATION_CONFIG.bar}
             >
               {enhancedData.map((entry, index) => (
                 <Cell 

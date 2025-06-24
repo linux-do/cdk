@@ -12,7 +12,7 @@ import {
 export function DashboardMain() {
   const [range, setRange] = useState(7);
   const [cooldown, setCooldown] = useState(0);
-  const { data, isLoading, lastUpdate, refresh } = useDashboard(range, true);
+  const { data, isLoading, lastUpdate, refresh } = useDashboard(range, false);
 
 
   // 防抖刷新函数
@@ -101,31 +101,31 @@ export function DashboardMain() {
         </div>
 
         {/* 统计卡片 */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8 transition-all duration-300 ease-in-out">
           <StatCard
             title="总用户数"
-            value={data?.summary.total_users}
+            value={data?.summary?.totalUsers}
             icon={<UsersIcon className="h-5 w-5 text-foreground" />}
-            desc={`+${data?.summary.new_users || 0} 新用户`}
+            desc={`+${data?.summary?.newUsers || 0} 新用户`}
             descColor="text-green-600 dark:text-green-400"
           />
           <StatCard
             title="活跃项目"
-            value={data?.summary.active_projects}
+            value={data?.summary?.activeProjects}
             icon={<GalleryVerticalEndIcon className="h-5 w-5 text-foreground" />}
-            desc={`总计 ${data?.summary.total_projects || 0} 个`}
+            desc={`总计 ${data?.summary?.totalProjects || 0} 个`}
             descColor="text-muted-foreground"
           />
           <StatCard
             title="总领取数"
-            value={data?.summary.total_received}
+            value={data?.summary?.totalReceived}
             icon={<DownloadIcon className="h-5 w-5 text-foreground" />}
-            desc={`+${data?.summary.recent_received || 0} 近期`}
+            desc={`+${data?.summary?.recentReceived || 0} 近期`}
             descColor="text-green-600 dark:text-green-400"
           />
           <StatCard
             title="领取成功率"
-            value={data?.summary.success_rate}
+            value={data?.summary?.successRate}
             icon={<TargetIcon className="h-5 w-5 text-foreground" />}
           />
         </div>

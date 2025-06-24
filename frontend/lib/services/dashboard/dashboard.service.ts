@@ -25,11 +25,45 @@ export class DashboardService extends BaseService {
       if (response.data.error_msg) {
         throw new Error(response.data.error_msg);
       }
-      return response.data; 
+      
+      // 处理后端可能返回的字符串字段，确保正确解析
+      const data = response.data.data || response.data;
+      const normalizedData = this.normalizeData(data, days);
+      
+      return normalizedData; 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取数据失败';
       throw new Error(errorMessage); 
     }
+  }
+
+  /**
+   * 标准化数据格式，处理可能的字符串字段
+   * @param data - 原始数据
+   * @param days - 天数范围，用于补全时间序列数据
+   */
+  private static normalizeData(data: any, days: number): DashboardResponse {
+    const normalized: any = {};
+    
+    const jsonFields = ['userGrowth', 'activityData', 'projectTags', 'distributeModes', 'hotProjects', 'activeCreators', 'activeReceivers', 'summary', 'applyStatus'];
+    
+    for (const field of jsonFields) {
+      if (data[field]) {
+        if (typeof data[field] === 'string') {
+          try {
+            normalized[field] = JSON.parse(data[field]);
+          } catch (e) {
+            console.warn(`Failed to parse ${field}:`, data[field]);
+            normalized[field] = field === 'summary' ? {} : [];
+          }
+        } else {
+          normalized[field] = data[field];
+        }
+      } else {
+        normalized[field] = field === 'summary' ? {} : [];
+      }
+    }
+    return normalized as DashboardResponse;
   }
 
   /**
@@ -103,23 +137,23 @@ export class DashboardService extends BaseService {
         { name: DistributionType.INVITE, value: 8 },
       ],
       hotProjects: [
-        { name: '1313', tag: '人工智能',  receive_count: 1 },
-        { name: 'test', tag: '其他', receive_count: 1 },
-        { name: '123', tag: '人工智能', receive_count: 1 },
-        { name: '测试数据3', tag: '软件工具', receive_count: 1 },
-        { name: '测试数据2', tag: '软件工具', receive_count: 1 },
+        { name: '1313', tag: '人工智能',  receiveCount: 1 },
+        { name: 'test', tag: '其他', receiveCount: 1 },
+        { name: '123', tag: '人工智能', receiveCount: 1 },
+        { name: '测试数据3', tag: '软件工具', receiveCount: 1 },
+        { name: '测试数据2', tag: '软件工具', receiveCount: 1 },
       ],
       activeCreators: [
-        { avatar: 'https://linux.do/user_avatar/linux.do/chenyme/48/156695_2.png', name: 'Chenyme', project_count: 13 },
-        { avatar: 'https://linux.do/user_avatar/linux.do/chenyme/48/156695_2.png', name: 'Throttle', project_count: 2 },
-        { avatar: 'https://linux.do/user_avatar/linux.do/neuroplexus/48/156695_2.png', name: 'Neuroplexus', project_count: 3 },
-        { avatar: 'https://linux.do/user_avatar/linux.do/lurk/48/156695_2.png', name: 'lurk', project_count: 2 },
-        { avatar: 'https://linux.do/user_avatar/linux.do/jiu/48/156695_2.png', name: 'JiuRanYa', project_count: 2 },
+        { avatar: 'https://linux.do/user_avatar/linux.do/chenyme/48/156695_2.png', name: 'Chenyme', projectCount: 13 },
+        { avatar: 'https://linux.do/user_avatar/linux.do/chenyme/48/156695_2.png', name: 'Throttle', projectCount: 2 },
+        { avatar: 'https://linux.do/user_avatar/linux.do/neuroplexus/48/156695_2.png', name: 'Neuroplexus', projectCount: 3 },
+        { avatar: 'https://linux.do/user_avatar/linux.do/lurk/48/156695_2.png', name: 'lurk', projectCount: 2 },
+        { avatar: 'https://linux.do/user_avatar/linux.do/jiu/48/156695_2.png', name: 'JiuRanYa', projectCount: 2 },
       ],
       activeReceivers: [
-        { avatar: 'https://linux.do/user_avatar/linux.do/chenyme/48/156695_2.png', name: 'Chenyme', receive_count: 13 },
-        { avatar: 'https://linux.do/user_avatar/linux.do/kevin/48/156695_2.png', name: 'kevin', receive_count: 1 },
-        { avatar: 'https://linux.do/user_avatar/linux.do/lurk/48/156695_2.png', name: 'lurk', receive_count: 1 },
+        { avatar: 'https://linux.do/user_avatar/linux.do/chenyme/48/156695_2.png', name: 'Chenyme', receiveCount: 13 },
+        { avatar: 'https://linux.do/user_avatar/linux.do/kevin/48/156695_2.png', name: 'kevin', receiveCount: 1 },
+        { avatar: 'https://linux.do/user_avatar/linux.do/lurk/48/156695_2.png', name: 'lurk', receiveCount: 1 },
       ],
       applyStatus: {
         total: 23,
@@ -128,13 +162,13 @@ export class DashboardService extends BaseService {
         rejected: 3,
       },
       summary: {
-        total_users: 12,
-        new_users: 12,
-        active_projects: 22,
-        total_projects: 23,
-        total_received: 15,
-        recent_received: 15,
-        success_rate: '12.2%',
+        totalUsers: 12,
+        newUsers: 12,
+        activeProjects: 22,
+        totalProjects: 23,
+        totalReceived: 15,
+        recentReceived: 15,
+        successRate: '12.2%',
       },
     };
   }
