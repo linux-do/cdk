@@ -30,4 +30,5 @@ EXPOSE 8000
 VOLUME ["/app/config.yaml"]
 
 # 设置容器启动命令
-ENTRYPOINT ["./cdk-server", "api"]
+ENTRYPOINT ["./cdk-server"]
+CMD ["api"]
