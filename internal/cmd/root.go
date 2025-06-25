@@ -19,6 +19,10 @@ var rootCmd = &cobra.Command{
 		switch appMode {
 		case "api":
 			apiCmd.Run(apiCmd, args)
+		case "scheduler":
+			schedulerCmd.Run(schedulerCmd, args)
+		case "worker":
+			workerCmd.Run(workerCmd, args)
 		default:
 			log.Fatal("[CMD] unknown app mode\n")
 		}
