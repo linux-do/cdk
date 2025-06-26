@@ -1,9 +1,8 @@
-package task
+package schedule
 
 import (
-	"context"
 	"fmt"
-	"github.com/linux-do/cdk/internal/task/handlers"
+	"github.com/linux-do/cdk/internal/task"
 	"sync"
 	"time"
 
@@ -33,6 +32,7 @@ func init() {
 func StartScheduler() error {
 	var err error
 	schedulerOnce.Do(func() {
+		location, _ := time.LoadLocation("Asia/Shanghai")
 		scheduler = asynq.NewScheduler(
 			asynq.RedisClientOpt{
 				Addr:     fmt.Sprintf("%s:%d", config.Config.Redis.Host, config.Config.Redis.Port),
@@ -42,12 +42,11 @@ func StartScheduler() error {
 				PoolSize: config.Config.Redis.PoolSize,
 			},
 			&asynq.SchedulerOpts{
-				Location: time.Local,
-				//Logger: logger,
+				Location: location,
 			},
 		)
 
-		if _, err = scheduler.Register("0/1 * * * *", asynq.NewTask(handlers.UpdateUserBadgeScores, nil)); err != nil {
+		if _, err = scheduler.Register("0 2 * * *", asynq.NewTask(task.UpdateUserBadgeScoresTask, nil)); err != nil {
 			return
 		}
 
@@ -58,6 +57,6 @@ func StartScheduler() error {
 }
 
 // EnqueueTask 通用的任务入队函数
-func EnqueueTask(ctx context.Context, taskType string, payload []byte, opts ...asynq.Option) (*asynq.TaskInfo, error) {
-	return AsynqClient.EnqueueContext(ctx, asynq.NewTask(taskType, payload), opts...)
+func EnqueueTask(taskType string, payload []byte, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	return AsynqClient.Enqueue(asynq.NewTask(taskType, payload))
 }

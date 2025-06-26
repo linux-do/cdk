@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/linux-do/cdk/internal/logger"
+	"github.com/linux-do/cdk/internal/task"
+	"github.com/linux-do/cdk/internal/task/schedule"
 	"io"
 	"time"
 
@@ -97,22 +100,17 @@ func doOAuth(ctx context.Context, code string) (*User, error) {
 				span.SetStatus(codes.Error, tx.Error.Error())
 				return nil, tx.Error
 			}
+			// 为新注册用户下发计算徽章分数的任务
+			payload, _ := json.Marshal(map[string]interface{}{
+				"user_id":  user.ID,
+				"username": user.Username,
+			})
 
-			//// 为新注册用户下发计算徽章分数的任务
-			//go func() {
-			//	taskCtx, taskSpan := otel_trace.Start(ctx, "UpdateSingleUserBadgeScore")
-			//	defer taskSpan.End()
-			//	payload, _ := json.Marshal(map[string]interface{}{
-			//		"user_id":  user.ID,
-			//		"username": user.Username,
-			//	})
-			//
-			//	if _, err := task.EnqueueTask(taskCtx, handlers.UpdateSingleUserBadgeScore, payload); err != nil {
-			//		logger.ErrorF(taskCtx, "下发用户[%s]徽章分数计算任务失败: %v", user.Username, err)
-			//	} else {
-			//		logger.InfoF(taskCtx, "下发用户[%s]徽章分数计算任务成功", user.Username)
-			//	}
-			//}()
+			if _, errTask := schedule.EnqueueTask(task.UpdateSingleUserBadgeScoreTask, payload); errTask != nil {
+				logger.ErrorF(ctx, "下发用户[%s]徽章分数计算任务失败: %v", user.Username, errTask)
+			} else {
+				logger.InfoF(ctx, "下发用户[%s]徽章分数计算任务成功", user.Username)
+			}
 		} else {
 			// response failed
 			span.SetStatus(codes.Error, tx.Error.Error())

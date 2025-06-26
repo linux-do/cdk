@@ -1,16 +1,17 @@
-package task
+package worker
 
 import (
 	"fmt"
+	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/task"
 	"time"
 
 	"github.com/hibiken/asynq"
 	"github.com/linux-do/cdk/internal/config"
-	"github.com/linux-do/cdk/internal/task/handlers"
 )
 
 var (
-	AsynqServer *asynq.Server
+	asynqServer *asynq.Server
 )
 
 func init() {
@@ -21,12 +22,11 @@ func init() {
 		DB:       config.Config.Redis.DB,
 		PoolSize: config.Config.Redis.PoolSize,
 	}
-	AsynqServer = asynq.NewServer(
+	asynqServer = asynq.NewServer(
 		redisOpt,
 		asynq.Config{
-			Concurrency: 50, // 提高并发处理数
-			//Logger:          logger,
-			ShutdownTimeout: 10 * time.Second, // 优雅关闭超时
+			Concurrency:     50,
+			ShutdownTimeout: 10 * time.Second,
 			Queues: map[string]int{
 				"critical": 10,
 				"default":  5,
@@ -42,8 +42,8 @@ func StartWorker() error {
 	// 注册任务处理器
 	mux := asynq.NewServeMux()
 	mux.Use(taskLoggingMiddleware)
-	mux.HandleFunc(handlers.UpdateUserBadgeScores, handlers.HandleUpdateUserBadgeScores)
-	mux.HandleFunc(handlers.UpdateSingleUserBadgeScore, handlers.HandleUpdateSingleUserBadgeScore)
+	mux.HandleFunc(task.UpdateUserBadgeScoresTask, oauth.HandleUpdateUserBadgeScores)
+	mux.HandleFunc(task.UpdateSingleUserBadgeScoreTask, oauth.HandleUpdateSingleUserBadgeScore)
 	// 启动服务器
-	return AsynqServer.Start(mux)
+	return asynqServer.Start(mux)
 }
