@@ -1,3 +1,3 @@
-export * from './Cards';
-export * from './Charts';
+export * from './DataCards';
+export * from './DataCharts';
 export {DashboardMain} from './DashboardMain';

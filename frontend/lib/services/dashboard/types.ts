@@ -1,4 +1,7 @@
-import { DistributionType } from '../project/types';
+import {DistributionType} from '../project/types';
+import {ApiResponse} from '../core/types';
+import {ReactNode} from 'react';
+import {NameType, ValueType} from 'recharts/types/component/DefaultTooltipContent';
 
 /**
  * 时间序列数据
@@ -12,9 +15,7 @@ export interface TimeSeriesData {
  * 用户增长数据
  */
 export interface UserGrowthData extends TimeSeriesData {
-  /** 日期，格式如 "5/27" */
   date: string;
-  /** 新增用户数量 */
   value: number;
 }
 
@@ -22,9 +23,7 @@ export interface UserGrowthData extends TimeSeriesData {
  * 活动数据
  */
 export interface ActivityData extends TimeSeriesData {
-  /** 日期，格式如 "5/27" */
   date: string;
-  /** 活动数量 */
   value: number;
 }
 
@@ -40,9 +39,7 @@ export interface ChartDataItem {
  * 项目分类数据
  */
 export interface ProjectTagsData extends ChartDataItem {
-  /** 分类名称 */
   name: string;
-  /** 项目数量 */
   value: number;
 }
 
@@ -50,9 +47,7 @@ export interface ProjectTagsData extends ChartDataItem {
  * 分发模式数据
  */
 export interface DistributeModeData extends ChartDataItem {
-  /** 分发模式名称 */
   name: DistributionType;
-  /** 使用该模式的项目数量 */
   value: number;
 }
 
@@ -60,41 +55,34 @@ export interface DistributeModeData extends ChartDataItem {
  * 热门项目数据
  */
 export interface HotProjectData {
-  /** 项目名称 */
   name: string;
-  /** 项目标签 */
-  tag:  string;
-  /** 领取数 */
+  tags: string[]; // 后端返回的是标签数组
   receiveCount: number;
-  /** 项目ID */
-  id?: string;
-  /** 项目创建者 */
-  creator?: string;
 }
 
 /**
  * 用户活跃度数据
  */
 export interface UserActivityData {
-  /** 用户名称 */
   name: string;
-  /** 用户头像 */
   avatar?: string;
 }
 
 /**
  * 活跃创建者数据
  */
-export interface ActiveCreatorData extends UserActivityData {
-  /** 创建的项目数量 */
+export interface ActiveCreatorData {
+  avatar: string | null;
+  name: string;
   projectCount: number;
 }
 
 /**
  * 活跃领取者数据
  */
-export interface ActiveReceiverData extends UserActivityData {
-  /** 领取次数 */
+export interface ActiveReceiverData {
+  avatar: string | null;
+  name: string;
   receiveCount: number;
 }
 
@@ -102,68 +90,158 @@ export interface ActiveReceiverData extends UserActivityData {
  * 热门标签数据
  */
 export interface HotTagData {
-  /** 标签名称 */
   name: string;
-  /** 使用该标签的项目数量 */
   count: number;
-}
-
-
-/**
- * 申请状态数据
- */
-export interface ApplyStatusData {
-  /** 总申请数 */
-  total: number;
-  /** 待处理申请数 */
-  pending: number;
-  /** 已通过申请数 */
-  approved: number;
-  /** 已拒绝申请数 */
-  rejected: number;
 }
 
 /**
  * 统计数据
  */
 export interface StatsSummary {
-  /** 总用户数 */
   totalUsers: number;
-  /** 新增用户数 */
   newUsers: number;
-  /** 活跃项目数 */
-  activeProjects: number;
-  /** 总项目数 */
   totalProjects: number;
-  /** 总领取数 */
   totalReceived: number;
-  /** 最近领取数 */
   recentReceived: number;
-  /** 成功率 */
-  successRate: string;
 }
 
 /**
- * 仪表盘数据 
+ * 后端原始数据结构
+ */
+export interface RawDashboardData {
+  userGrowth: string | UserGrowthData[];
+  activityData: string | ActivityData[];
+  projectTags: string | ProjectTagsData[];
+  distributeModes: string | DistributeModeData[];
+  hotProjects: string | HotProjectData[];
+  activeCreators: string | ActiveCreatorData[];
+  activeReceivers: string | ActiveReceiverData[];
+  summary: string | StatsSummary;
+  [key: string]: unknown;
+}
+
+/**
+ * 仪表盘数据响应
  */
 export interface DashboardResponse {
-  /** 用户增长趋势数据 */
   userGrowth: UserGrowthData[];
-  /** 活动趋势数据 */
   activityData: ActivityData[];
-  /** 项目标签统计 */
-    projectTags: ProjectTagsData[];
-  /** 分发模式统计 */
+  projectTags: ProjectTagsData[];
   distributeModes: DistributeModeData[];
-  /** 热门项目排行 */
   hotProjects: HotProjectData[];
-  /** 活跃创建者排行 */
   activeCreators: ActiveCreatorData[];
-  /** 活跃领取者排行 */
   activeReceivers: ActiveReceiverData[];
-  /** 申请状态统计 */
-  applyStatus: ApplyStatusData;
-  /** 统计概览 */
   summary: StatsSummary;
+}
+
+/**
+ * 后端API响应类型
+ */
+export type DashboardApiResponse = ApiResponse<RawDashboardData>;
+
+// ==================== 组件相关类型定义 ====================
+
+/**
+ * 统计卡片组件属性
+ */
+export interface StatCardProps {
+  title: string;
+  value?: number | string;
+  icon: ReactNode;
+  desc?: string;
+  descColor?: string;
+}
+
+/**
+ * 列表项数据类型（支持所有列表类型）
+ */
+export type ListItemData = HotProjectData | ActiveCreatorData | ActiveReceiverData;
+
+/**
+ * 卡片列表组件属性
+ */
+export interface CardListProps {
+  title: string;
+  iconBg: string;
+  icon: ReactNode;
+  list: ListItemData[];
+  type: 'project' | 'creator' | 'receiver';
+}
+
+/**
+ * 标签展示组件属性
+ */
+export interface TagsDisplayProps {
+  title: string;
+  iconBg: string;
+  tags?: {name: string; count: number}[];
+  icon?: ReactNode;
+}
+
+// ==================== 图表组件相关类型定义 ====================
+
+/**
+ * 图表容器组件属性
+ */
+export interface ChartContainerProps {
+  title: string;
+  icon?: ReactNode;
+  iconBg?: string;
+  isLoading: boolean;
+  children: ReactNode;
+}
+
+/**
+ * 用户增长图表组件属性
+ */
+export interface UserGrowthChartProps {
+  data?: UserGrowthData[];
+  isLoading: boolean;
+  icon?: ReactNode;
+  range?: number;
+}
+
+/**
+ * 活动趋势图表组件属性
+ */
+export interface ActivityChartProps {
+  data?: ActivityData[];
+  isLoading: boolean;
+  icon?: ReactNode;
+  range?: number;
+}
+
+/**
+ * 项目分类图表组件属性
+ */
+export interface CategoryChartProps {
+  data?: ProjectTagsData[];
+  isLoading: boolean;
+  icon?: ReactNode;
+}
+
+/**
+ * 分发模式图表组件属性
+ */
+export interface DistributeModeChartProps {
+  data?: DistributeModeData[];
+  isLoading: boolean;
+  icon?: ReactNode;
+}
+
+/**
+ * 自定义工具提示属性
+ */
+export interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: ValueType;
+    name?: NameType;
+    dataKey?: string;
+    color?: string;
+    payload?: Record<string, unknown>;
+  }>;
+  label?: string;
+  labelFormatter?: (label: string, payload?: Record<string, unknown>[]) => ReactNode;
 }
 
