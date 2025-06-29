@@ -147,6 +147,7 @@ func HandleUpdateUserBadgeScores(ctx context.Context, t *asynq.Task) error {
 				logger.InfoF(ctx, "下发用户[%s]徽章分数计算任务成功", user.Username)
 			}
 		}
+		page++
 	}
 	return nil
 }
