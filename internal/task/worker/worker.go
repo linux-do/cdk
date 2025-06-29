@@ -1,13 +1,12 @@
 package worker
 
 import (
-	"fmt"
 	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/task"
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/linux-do/cdk/internal/config"
 )
 
 var (
@@ -15,18 +14,11 @@ var (
 )
 
 func init() {
-	redisOpt := asynq.RedisClientOpt{
-		Addr:     fmt.Sprintf("%s:%d", config.Config.Redis.Host, config.Config.Redis.Port),
-		Username: config.Config.Redis.Username,
-		Password: config.Config.Redis.Password,
-		DB:       config.Config.Redis.DB,
-		PoolSize: config.Config.Redis.PoolSize,
-	}
 	asynqServer = asynq.NewServer(
-		redisOpt,
+		task.RedisOpt,
 		asynq.Config{
-			Concurrency:     50,
-			ShutdownTimeout: 10 * time.Second,
+			Concurrency:     config.Config.Worker.Concurrency,
+			ShutdownTimeout: 3 * time.Minute,
 			Queues: map[string]int{
 				"critical": 10,
 				"default":  5,
@@ -45,5 +37,5 @@ func StartWorker() error {
 	mux.HandleFunc(task.UpdateUserBadgeScoresTask, oauth.HandleUpdateUserBadgeScores)
 	mux.HandleFunc(task.UpdateSingleUserBadgeScoreTask, oauth.HandleUpdateSingleUserBadgeScore)
 	// 启动服务器
-	return asynqServer.Start(mux)
+	return asynqServer.Run(mux)
 }

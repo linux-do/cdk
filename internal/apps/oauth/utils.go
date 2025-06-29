@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/hibiken/asynq"
 	"github.com/linux-do/cdk/internal/logger"
 	"github.com/linux-do/cdk/internal/task"
 	"github.com/linux-do/cdk/internal/task/schedule"
@@ -102,11 +103,10 @@ func doOAuth(ctx context.Context, code string) (*User, error) {
 			}
 			// 为新注册用户下发计算徽章分数的任务
 			payload, _ := json.Marshal(map[string]interface{}{
-				"user_id":  user.ID,
-				"username": user.Username,
+				"user_id": user.ID,
 			})
 
-			if _, errTask := schedule.EnqueueTask(task.UpdateSingleUserBadgeScoreTask, payload); errTask != nil {
+			if _, errTask := schedule.AsynqClient.Enqueue(asynq.NewTask(task.UpdateSingleUserBadgeScoreTask, payload)); errTask != nil {
 				logger.ErrorF(ctx, "下发用户[%s]徽章分数计算任务失败: %v", user.Username, errTask)
 			} else {
 				logger.InfoF(ctx, "下发用户[%s]徽章分数计算任务成功", user.Username)

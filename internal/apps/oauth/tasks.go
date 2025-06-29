@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/linux-do/cdk/internal/task"
+	"github.com/linux-do/cdk/internal/task/schedule"
 	"net/http"
 	"time"
 
@@ -113,22 +115,15 @@ func updateUserScore(ctx context.Context, user *User, newScore int) error {
 
 // HandleUpdateUserBadgeScores 处理所有用户徽章分数更新任务
 func HandleUpdateUserBadgeScores(ctx context.Context, t *asynq.Task) error {
-	// 加载所有徽章分数
-	badgeScores, err := loadBadgeScores(ctx)
-	if err != nil {
-		return err
-	}
 
 	// 分页处理用户
 	pageSize := 200
 	page := 0
-	totalProcessed := 0
-	totalUpdated := 0
 
 	for {
 		var users []User
 		if err := db.DB(ctx).Where("is_active = ?", true).
-			Select("id, username, score").
+			Select("id, username").
 			Offset(page * pageSize).Limit(pageSize).
 			Find(&users).Error; err != nil {
 			logger.ErrorF(ctx, "查询用户失败: %v", err)
@@ -141,30 +136,18 @@ func HandleUpdateUserBadgeScores(ctx context.Context, t *asynq.Task) error {
 		}
 
 		for _, user := range users {
-			// 获取用户徽章
-			response, err := getUserBadges(ctx, user.Username)
-			if err != nil {
-				logger.ErrorF(ctx, "处理用户[%s]失败: %v", user.Username, err)
-				continue
-			}
+			payload, _ := json.Marshal(map[string]interface{}{
+				"user_id": user.ID,
+			})
 
-			// 计算用户分数
-			totalScore := calculateUserScore(response.Badges, badgeScores)
-
-			// 更新用户分数
-			if err := updateUserScore(ctx, &user, totalScore); err != nil {
-				logger.ErrorF(ctx, "%v", err)
-				continue
-			} else if int(user.Score) != totalScore {
-				totalUpdated++
+			if _, errTask := schedule.AsynqClient.Enqueue(asynq.NewTask(task.UpdateSingleUserBadgeScoreTask, payload)); errTask != nil {
+				logger.ErrorF(ctx, "下发用户[%s]徽章分数计算任务失败: %v", user.Username, errTask)
+				return errTask
+			} else {
+				logger.InfoF(ctx, "下发用户[%s]徽章分数计算任务成功", user.Username)
 			}
 		}
-
-		totalProcessed += len(users)
-		page++
 	}
-
-	logger.InfoF(ctx, "用户徽章分数更新完成，处理用户: %d，更新用户: %d", totalProcessed, totalUpdated)
 	return nil
 }
 

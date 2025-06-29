@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/linux-do/cdk/internal/config"
 )
 
 var (
@@ -17,30 +16,20 @@ var (
 )
 
 func init() {
-	redisOpt := asynq.RedisClientOpt{
-		Addr:     fmt.Sprintf("%s:%d", config.Config.Redis.Host, config.Config.Redis.Port),
-		Username: config.Config.Redis.Username,
-		Password: config.Config.Redis.Password,
-		DB:       config.Config.Redis.DB,
-		PoolSize: config.Config.Redis.PoolSize,
-	}
-
-	AsynqClient = asynq.NewClient(redisOpt)
+	AsynqClient = asynq.NewClient(task.RedisOpt)
 }
 
 // StartScheduler 启动调度器
 func StartScheduler() error {
 	var err error
 	schedulerOnce.Do(func() {
-		location, _ := time.LoadLocation("Asia/Shanghai")
+		location, locErr := time.LoadLocation("Asia/Shanghai")
+		if locErr != nil {
+			err = fmt.Errorf("failed to load location: %w", locErr)
+			return
+		}
 		scheduler = asynq.NewScheduler(
-			asynq.RedisClientOpt{
-				Addr:     fmt.Sprintf("%s:%d", config.Config.Redis.Host, config.Config.Redis.Port),
-				Username: config.Config.Redis.Username,
-				Password: config.Config.Redis.Password,
-				DB:       config.Config.Redis.DB,
-				PoolSize: config.Config.Redis.PoolSize,
-			},
+			task.RedisOpt,
 			&asynq.SchedulerOpts{
 				Location: location,
 			},
@@ -50,13 +39,8 @@ func StartScheduler() error {
 			return
 		}
 
-		// 启动调度器（非阻塞）
-		err = scheduler.Start()
+		// 启动调度器
+		err = scheduler.Run()
 	})
 	return err
-}
-
-// EnqueueTask 通用的任务入队函数
-func EnqueueTask(taskType string, payload []byte, opts ...asynq.Option) (*asynq.TaskInfo, error) {
-	return AsynqClient.Enqueue(asynq.NewTask(taskType, payload))
 }

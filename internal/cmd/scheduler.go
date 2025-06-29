@@ -15,7 +15,5 @@ var schedulerCmd = &cobra.Command{
 		if err := schedule.StartScheduler(); err != nil {
 			log.Fatalf("[调度器] 启动失败: %v", err)
 		}
-		// 阻塞主线程，避免程序退出
-		select {}
 	},
 }

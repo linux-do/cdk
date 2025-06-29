@@ -15,7 +15,5 @@ var workerCmd = &cobra.Command{
 		if err := worker.StartWorker(); err != nil {
 			log.Fatalf("[工作器] 启动失败: %v", err)
 		}
-		// 阻塞主线程，避免程序退出
-		select {}
 	},
 }
