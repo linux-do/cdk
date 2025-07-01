@@ -24,10 +24,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # download Go modules
+      - name: Download Go modules
+        run: go mod download
+
       # build do
       - name: Build Go Binary
         run: |
-          go mod download
           go build -o cdk-server main.go
           ls -alh cdk-server
 
