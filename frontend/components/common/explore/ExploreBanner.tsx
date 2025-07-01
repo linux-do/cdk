@@ -5,6 +5,7 @@ import {Badge} from '@/components/ui/badge';
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi} from '@/components/ui/carousel';
 import {formatDateTimeWithSeconds} from '@/lib/utils';
 import {ProjectListItem} from '@/lib/services/project/types';
+import {motion} from 'motion/react';
 import Autoplay from 'embla-carousel-autoplay';
 
 export interface ExploreBannerProps {
@@ -113,39 +114,92 @@ export function ExploreBanner({
     );
   };
 
+  const containerVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const carouselVariants = {
+    hidden: {opacity: 0, scale: 0.95},
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {duration: 0.7, ease: 'easeOut'},
+    },
+  };
+
+  const indicatorsVariants = {
+    hidden: {opacity: 0, y: 10},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.05,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const indicatorVariants = {
+    hidden: {opacity: 0, scale: 0.8},
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {duration: 0.3, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="mb-8">
-      <Carousel
-        setApi={setApi}
-        className="w-full"
-        opts={{align: 'start', loop: true}}
-        plugins={[
-          // eslint-disable-next-line new-cap
-          Autoplay({
-            delay: 4000,
-          }),
-        ]}
-      >
-        <CarouselContent>
-          <CarouselItem>
-            <WelcomeCard />
-          </CarouselItem>
-
-          {randomProjects.map((project) => (
-            <CarouselItem key={project.id}>
-              <ProjectCard project={project} />
+    <motion.div
+      className="mb-8"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div variants={carouselVariants}>
+        <Carousel
+          setApi={setApi}
+          className="w-full"
+          opts={{align: 'start', loop: true}}
+          plugins={[
+            // eslint-disable-next-line new-cap
+            Autoplay({
+              delay: 4000,
+            }),
+          ]}
+        >
+          <CarouselContent>
+            <CarouselItem>
+              <WelcomeCard />
             </CarouselItem>
-          ))}
-        </CarouselContent>
 
-        <CarouselPrevious className="left-4" />
-        <CarouselNext className="right-4" />
-      </Carousel>
+            {randomProjects.map((project) => (
+              <CarouselItem key={project.id}>
+                <ProjectCard project={project} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
 
+          <CarouselPrevious className="left-4 bg-accent/60 border-none hidden md:flex" />
+          <CarouselNext className="right-4 bg-accent/60 border-none hidden md:flex" />
+        </Carousel>
+      </motion.div>
 
-      <div className="flex justify-center mt-4 gap-1.5">
+      <motion.div
+        className="flex justify-center mt-4 gap-1.5"
+        variants={indicatorsVariants}
+      >
         {Array.from({length: totalPages}).map((_, index) => (
-          <button
+          <motion.button
             key={index}
             className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
               index === current - 1 ?
@@ -154,9 +208,10 @@ export function ExploreBanner({
             }`}
             onClick={() => api?.scrollTo(index)}
             aria-label={`切换到第 ${index + 1} 页`}
+            variants={indicatorVariants}
           />
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

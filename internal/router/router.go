@@ -7,6 +7,7 @@ import (
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	_ "github.com/linux-do/cdk/docs"
+	"github.com/linux-do/cdk/internal/apps/dashboard"
 	"github.com/linux-do/cdk/internal/apps/health"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/apps/project"
@@ -94,6 +95,13 @@ func Serve() {
 			tagRouter.Use(oauth.LoginRequired())
 			{
 				tagRouter.GET("", project.ListTags)
+			}
+
+			// Dashboard
+			dashboardRouter := apiV1Router.Group("/dashboard")
+			dashboardRouter.Use(oauth.LoginRequired())
+			{
+				dashboardRouter.GET("/stats/all", dashboard.GetAllStats)
 			}
 		}
 	}

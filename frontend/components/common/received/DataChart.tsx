@@ -7,6 +7,7 @@ import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from '@/
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {ReceiveHistoryItem} from '@/lib/services/project/types';
 import {CountingNumber} from '@/components/animate-ui/text/counting-number';
+import {motion} from 'motion/react';
 
 /**
  * 时间范围配置
@@ -42,12 +43,23 @@ const StatCard = ({title, value, suffix = ''}: {title: string; value: number; su
   const decimalPlaces = value % 1 === 0 ? 0 : 2;
 
   return (
-    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+    <motion.div
+      className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+      variants={{
+        hidden: {opacity: 0, y: 20, scale: 0.95},
+        visible: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: {duration: 0.5, ease: 'easeOut'},
+        },
+      }}
+    >
       <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{title}</div>
       <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
         <CountingNumber number={value} decimalPlaces={decimalPlaces}/>{suffix}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -166,16 +178,43 @@ export function DataChart({data}: DataChartProps) {
     };
   }, [data]);
 
+  const containerVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.05,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const chartVariants = {
+    hidden: {opacity: 0, y: 30},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.7, ease: 'easeOut'},
+    },
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <motion.div
+      className="space-y-4"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-3" variants={containerVariants}>
         <StatCard title="总计" value={stats.total} />
         <StatCard title="今日" value={stats.today} />
         <StatCard title="本月" value={stats.thisMonth} />
         <StatCard title="日均" value={stats.avgDaily} />
-      </div>
+      </motion.div>
 
-      <div>
+      <motion.div variants={chartVariants}>
         <div className="mb-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold">
@@ -241,7 +280,7 @@ export function DataChart({data}: DataChartProps) {
             </AreaChart>
           </ChartContainer>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

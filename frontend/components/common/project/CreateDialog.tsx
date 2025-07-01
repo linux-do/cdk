@@ -8,14 +8,17 @@ import {Label} from '@/components/ui/label';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
+import {FileUpload} from '@/components/ui/file-upload';
 import {TagSelector} from '@/components/ui/tag-selector';
 import {DateTimePicker} from '@/components/ui/DateTimePicker';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {Checkbox} from '@/components/animate-ui/radix/checkbox';
 import {Counter} from '@/components/animate-ui/components/counter';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
-import {FORM_LIMITS, DEFAULT_FORM_VALUES, TRUST_LEVEL_OPTIONS, handleBulkImportContent, validateProjectForm} from '@/components/common/project';
+import {FORM_LIMITS, DEFAULT_FORM_VALUES, TRUST_LEVEL_OPTIONS, handleBulkImportContentWithFilter, validateProjectForm} from '@/components/common/project';
+import MarkdownEditor from '@/components/common/markdown/Editor';
 import {X, Plus, User, Lock, Copy, ExternalLink, CheckCircle} from 'lucide-react';
 import services from '@/lib/services';
 import {TrustLevel} from '@/lib/services/core/types';
@@ -43,6 +46,7 @@ export function CreateDialog({
   const [createdProject, setCreatedProject] = useState<ProjectInfo | null>(
       null,
   );
+  const [fileUploadOpen, setFileUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -60,6 +64,7 @@ export function CreateDialog({
   const [items, setItems] = useState<string[]>([]);
   const [bulkContent, setBulkContent] = useState('');
   const [activeTab, setActiveTab] = useState('basic');
+  const [allowDuplicates, setAllowDuplicates] = useState(false);
 
   /**
    * 获取可用标签列表
@@ -103,8 +108,10 @@ export function CreateDialog({
     setItems([]);
     setActiveTab('basic');
     setBulkContent('');
+    setAllowDuplicates(false);
     setCreateSuccess(false);
     setCreatedProject(null);
+    setFileUploadOpen(false);
   };
 
   const removeItem = (index: number) => {
@@ -115,19 +122,80 @@ export function CreateDialog({
    * 批量导入分发内容
    */
   const handleBulkImport = () => {
-    handleBulkImportContent(
+    handleBulkImportContentWithFilter(
         bulkContent,
         items,
-        (newItems, importedCount, skippedInfo) => {
+        allowDuplicates,
+        (newItems: string[], importedCount: number, skippedInfo?: string) => {
           setItems(newItems);
           setBulkContent('');
           const message = `成功导入 ${importedCount} 个内容${skippedInfo || ''}`;
           toast.success(message);
         },
-        (errorMessage) => {
+        (errorMessage: string) => {
           toast.error(errorMessage);
         },
     );
+  };
+
+  /**
+   * 处理文件上传
+   */
+  const handleFileUpload = (files: File[]) => {
+    if (files.length === 0) return;
+
+    const file = files[0];
+
+    // 检查文件类型
+    if (!file.name.toLowerCase().endsWith('.txt')) {
+      toast.error('仅支持上传 .txt 格式的文件');
+      return;
+    }
+
+    // 检查文件大小 (最大5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('文件大小不能超过 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content) {
+        // 按行分割并过滤空行
+        const lines = content
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0);
+
+        if (lines.length === 0) {
+          toast.error('文件内容为空');
+          return;
+        }
+
+        // 执行导入
+        handleBulkImportContentWithFilter(
+            lines.join('\n'),
+            items,
+            allowDuplicates,
+            (newItems: string[], importedCount: number, skippedInfo?: string) => {
+              setItems(newItems);
+              const message = `从文件成功导入 ${importedCount} 个内容${skippedInfo || ''}`;
+              toast.success(message);
+              setFileUploadOpen(false);
+            },
+            (errorMessage: string) => {
+              toast.error(errorMessage);
+            },
+        );
+      }
+    };
+
+    reader.onerror = () => {
+      toast.error('文件读取失败');
+    };
+
+    reader.readAsText(file, 'UTF-8');
   };
 
   /**
@@ -188,9 +256,12 @@ export function CreateDialog({
         return;
       }
 
-      const projectId =
-        (result as { data?: { id?: string } })?.data?.id ||
-        `project_${Date.now()}`;
+      if (!result.data?.projectId) {
+        toast.error('创建项目失败：未获取到项目ID');
+        return;
+      }
+
+      const projectId = result.data.projectId;
       const newProject = {
         id: projectId,
         name: formData.name.trim(),
@@ -356,16 +427,14 @@ export function CreateDialog({
 
                 <div className="space-y-2">
                   <Label htmlFor="description">项目描述</Label>
-                  <Textarea
-                    id="description"
-                    placeholder={`请输入项目描述，支持Markdown格式（${FORM_LIMITS.DESCRIPTION_MAX_LENGTH}字符以内）`}
+                  <MarkdownEditor
                     value={formData.description}
-                    onChange={(e) =>
-                      setFormData({...formData, description: e.target.value})
+                    onChange={(value) =>
+                      setFormData({...formData, description: value})
                     }
-                    className="resize-none h-48"
+                    placeholder={`请输入项目描述，支持Markdown格式（${FORM_LIMITS.DESCRIPTION_MAX_LENGTH}字符以内）`}
                     maxLength={FORM_LIMITS.DESCRIPTION_MAX_LENGTH}
-                    rows={4}
+                    className="w-full"
                   />
                 </div>
 
@@ -556,9 +625,44 @@ export function CreateDialog({
                     <div className="flex items-center">
                       <div className="flex items-center justify-between w-full gap-2">
                         <div className="text-sm font-medium">导入分发内容</div>
-                        <Badge variant="secondary" className="bg-muted">
-                          已添加: {items.length}个
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant="secondary"
+                                  className={`cursor-pointer ${
+                                    !allowDuplicates ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' : 'bg-muted hover:bg-muted/80'
+                                  }`}
+                                  onClick={() => setAllowDuplicates(!allowDuplicates)}
+                                >
+                                  {!allowDuplicates ? '已开启过滤' : '辅助过滤'}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <p className="text-xs">
+                                  {!allowDuplicates ?
+                                    '已开启：自动过滤重复内容' :
+                                    '已关闭：允许导入重复内容'
+                                  }
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  点击切换过滤模式
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs cursor-pointer hover:bg-gray-300"
+                            onClick={() => setFileUploadOpen(true)}
+                          >
+                            TXT导入
+                          </Badge>
+                          <Badge variant="secondary" className="bg-muted">
+                            已添加: {items.length}个
+                          </Badge>
+                        </div>
                       </div>
                     </div>
 
@@ -567,7 +671,7 @@ export function CreateDialog({
                         placeholder="请输入分发内容，支持以 逗号分隔（中英文逗号均可）或 每行一个内容 的格式批量导入"
                         value={bulkContent}
                         onChange={(e) => setBulkContent(e.target.value)}
-                        className="h-[100px]"
+                        className="h-[100px] break-all overflow-x-auto whitespace-pre-wrap"
                       />
                       <div className="flex items-center gap-2">
                         <Button
@@ -582,7 +686,7 @@ export function CreateDialog({
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="mt-1 text-sm bg-gray-100 text-muted-foreground hover:text-destructive hover:bg-transparent rounded-sm"
+                          className="mt-1 text-xs text-muted-foreground hover:text-destructive"
                           onClick={() => setBulkContent('')}
                         >
                           清空
@@ -609,7 +713,7 @@ export function CreateDialog({
                       </div>
 
                       {items.length > 0 ? (
-                        <div className="space-y-2 h-[150px] overflow-y-auto border rounded-md p-2">
+                        <div className="space-y-2 h-[150px] overflow-y-auto overflow-x-auto border rounded-md p-2">
                           {items.map((item, index) => (
                             <div
                               key={index}
@@ -618,7 +722,7 @@ export function CreateDialog({
                               <div className="w-6 h-6 flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs">
                                 {index + 1}
                               </div>
-                              <div className="flex-1 truncate">{item}</div>
+                              <div className="flex-1 min-w-0 break-all overflow-x-auto text-sm">{item}</div>
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -676,6 +780,30 @@ export function CreateDialog({
             </Button>
           )}
         </DialogFooter>
+
+        {/* 文件上传对话框 */}
+        <Dialog open={fileUploadOpen} onOpenChange={setFileUploadOpen}>
+          <DialogContent className={`${isMobile ? 'max-w-[90vw] max-h-[80vh]' : 'max-w-lg'}`}>
+            <DialogHeader>
+              <DialogTitle>文件导入分发内容</DialogTitle>
+              <DialogDescription className="text-xs">
+                支持 .txt 格式• 每行一个邀请码或 • 空行自动忽略 • 大小限制：5MB
+              </DialogDescription>
+            </DialogHeader>
+
+            <FileUpload onChange={handleFileUpload} />
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setFileUploadOpen(false)}
+                className="w-full"
+              >
+                取消
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );

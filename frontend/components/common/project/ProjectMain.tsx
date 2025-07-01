@@ -6,6 +6,7 @@ import {Separator} from '@/components/ui/separator';
 import {CreateDialog, MineProject} from '@/components/common/project';
 import services from '@/lib/services';
 import {ProjectListItem, ListProjectsRequest} from '@/lib/services/project/types';
+import {motion} from 'motion/react';
 
 const PAGE_SIZE = 12;
 
@@ -56,19 +57,36 @@ const LoadingSkeleton = () => (
 export function ProjectMain() {
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [Loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageCache, setPageCache] = useState<Map<number, ProjectListItem[]>>(new Map());
+  const [pageCache, setPageCache] = useState<Map<string, ProjectListItem[]>>(new Map());
+  const [tags, setTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagSearchKeyword, setTagSearchKeyword] = useState('');
+  const [isTagFilterOpen, setIsTagFilterOpen] = useState(false);
+
+  /**
+   * 获取标签列表
+   */
+  const fetchTags = useCallback(async () => {
+    const result = await services.project.getTagsSafe();
+    if (result.success) {
+      setTags(result.tags || []);
+    }
+  }, []);
 
   /**
    * 获取项目列表
    */
   const fetchProjects = useCallback(
       async (page: number = 1, forceRefresh: boolean = false) => {
-        if (!forceRefresh && pageCache.has(page)) {
-          const cachedData = pageCache.get(page)!;
-          setProjects(cachedData);
+        const cacheKey = `${page}-${selectedTags.join(',')}`;
+
+        if (!forceRefresh && pageCache.has(cacheKey) &&
+            !(selectedTags || []).length) {
+          const cachedData = pageCache.get(cacheKey)!;
+          setProjects(cachedData || []);
           setLoading(false);
           return;
         }
@@ -79,14 +97,17 @@ export function ProjectMain() {
         const params: ListProjectsRequest = {
           current: page,
           size: PAGE_SIZE,
+          tags: (selectedTags || []).length > 0 ? selectedTags : undefined,
         };
 
         const result = await services.project.getMyProjectsSafe(params);
 
         if (result.success && result.data) {
-          setProjects(result.data.results);
-          setTotal(result.data.total);
-          setPageCache((prev) => new Map(prev.set(page, result.data!.results)));
+          setProjects(result.data.results || []);
+          setTotal(result.data.total || 0);
+          if (!(selectedTags || []).length) {
+            setPageCache((prev) => new Map(prev.set(cacheKey, result.data!.results || [])));
+          }
         } else {
           setError(result.error || '获取项目列表失败');
           setProjects([]);
@@ -95,22 +116,54 @@ export function ProjectMain() {
 
         setLoading(false);
       },
-      [pageCache],
+      [pageCache, selectedTags],
   );
+
+  /**
+   * 处理标签选择
+   */
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags((prev) => {
+      const prevTags = prev || [];
+      const newTags = tag === '' ? [] :
+        prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag];
+
+      setCurrentPage(1);
+      return newTags;
+    });
+  };
+
+  /**
+   * 处理页面变化
+   */
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滚动到页面顶部
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  };
+
+  /**
+   * 清除所有筛选条件
+   */
+  const clearAllFilters = () => {
+    setSelectedTags([]);
+    setCurrentPage(1);
+  };
 
   /**
    * 处理新项目创建
    */
   const handleProjectCreated = (newProject: ProjectListItem) => {
-    setProjects((prev) => [newProject, ...prev]);
+    setProjects((prev) => [newProject, ...(prev || [])]);
     setTotal((prev) => prev + 1);
     setPageCache(new Map());
 
     setProjects((prev) => {
-      if (prev.length > PAGE_SIZE) {
-        return prev.slice(0, PAGE_SIZE);
+      const projects = prev || [];
+      if (projects.length > PAGE_SIZE) {
+        return projects.slice(0, PAGE_SIZE);
       }
-      return prev;
+      return projects;
     });
   };
 
@@ -121,13 +174,54 @@ export function ProjectMain() {
     fetchProjects(currentPage, true);
   };
 
+  /** 获取标签列表 */
+  useEffect(() => {
+    fetchTags();
+  }, [fetchTags]);
+
+  /** 获取项目列表 */
   useEffect(() => {
     fetchProjects(currentPage);
-  }, [currentPage, fetchProjects]);
+  }, [currentPage, fetchProjects, selectedTags]);
+
+  const containerVariants = {
+    hidden: {opacity: 0},
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: {opacity: 0, y: 20},
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {duration: 0.6, ease: 'easeOut'},
+    },
+  };
+
+  const separatorVariants = {
+    hidden: {opacity: 0, scaleX: 0},
+    visible: {
+      opacity: 1,
+      scaleX: 1,
+      transition: {duration: 0.4, ease: 'easeOut'},
+    },
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div className="flex items-center justify-between" variants={itemVariants}>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">我的项目</h1>
           <p className="text-muted-foreground mt-1">管理您的项目和分发内容</p>
@@ -135,13 +229,13 @@ export function ProjectMain() {
         <div>
           <CreateDialog onProjectCreated={handleProjectCreated} />
         </div>
-      </div>
+      </motion.div>
 
-      <Separator className="my-8" />
+      <motion.div variants={separatorVariants}>
+        <Separator className="my-8" />
+      </motion.div>
 
-      {Loading ? (
-        <LoadingSkeleton />
-      ) : (
+      <motion.div variants={itemVariants}>
         <MineProject
           data={{
             projects,
@@ -149,15 +243,25 @@ export function ProjectMain() {
             currentPage,
             pageSize: PAGE_SIZE,
             error,
-            onPageChange: setCurrentPage,
+            tags,
+            selectedTags,
+            tagSearchKeyword,
+            isTagFilterOpen,
+            loading,
+            onTagToggle: handleTagToggle,
+            onTagFilterOpenChange: setIsTagFilterOpen,
+            onTagSearchKeywordChange: setTagSearchKeyword,
+            onClearAllFilters: clearAllFilters,
+            onPageChange: handlePageChange,
             onProjectCreated: handleProjectCreated,
             onRetry: handleRetry,
             onProjectsChange: setProjects,
             onTotalChange: setTotal,
             onCacheClear: () => setPageCache(new Map()),
           }}
+          LoadingSkeleton={LoadingSkeleton}
         />
-      )}
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

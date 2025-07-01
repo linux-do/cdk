@@ -1,5 +1,6 @@
 import {AuthService} from './auth/index';
 import {ProjectService} from './project/index';
+import {DashboardService} from './dashboard/index';
 
 /**
  * 服务层架构说明：
@@ -24,7 +25,10 @@ import {ProjectService} from './project/index';
  *     - project.service.ts - 项目服务实现
  *     - types.ts - 项目相关类型
  *     - index.ts - 导出服务
- *   /[domain] - 其他业务领域服务
+ *   /dashboard - 仪表盘服务
+ *     - dashboard.service.ts - 仪表盘服务实现
+ *     - types.ts - 仪表盘相关类型
+ *     - index.ts - 导出服务
  *
  * 使用示例：
  *
@@ -65,29 +69,22 @@ import {ProjectService} from './project/index';
 
 /**
  * 服务层统一入口
- * 集中管理所有API服务
  */
 const services = {
   /**
    * 认证服务
-   * 处理用户登录、注册、认证等功能
-   * @see AuthService
    */
   auth: AuthService,
 
   /**
    * 项目服务
-   * 处理项目的创建、更新、删除等功能
-   * @see ProjectService
    */
   project: ProjectService,
 
   /**
-   * 在此添加更多服务...
-   *
-   * 示例：
-   * user: UserService,
+   * 仪表盘服务
    */
+  dashboard: DashboardService,
 };
 
 export default services;

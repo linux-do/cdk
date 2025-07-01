@@ -6,6 +6,7 @@ type configModel struct {
 	Database databaseConfig `mapstructure:"database"`
 	Redis    redisConfig    `mapstructure:"redis"`
 	Log      logConfig      `mapstructure:"log"`
+	Worker   workerConfig   `mapstructure:"worker"`
 }
 
 // appConfig 应用基本配置
@@ -69,4 +70,9 @@ type logConfig struct {
 	MaxAge     int    `mapstructure:"max_age"`
 	MaxBackups int    `mapstructure:"max_backups"`
 	Compress   bool   `mapstructure:"compress"`
+}
+
+// workerConfig 工作配置
+type workerConfig struct {
+	Concurrency int `mapstructure:"concurrency"`
 }
