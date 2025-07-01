@@ -1,7 +1,6 @@
 package project
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/linux-do/cdk/internal/apps/oauth"
