@@ -1,0 +1,537 @@
+definitions:
+  dashboard.DashboardDataResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
+  health.HealthResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
+  oauth.BasicUserInfo:
+    properties:
+      avatar_url:
+        type: string
+      id:
+        type: integer
+      nickname:
+        type: string
+      trust_level:
+        $ref: '#/definitions/oauth.TrustLevel'
+      username:
+        type: string
+    type: object
+  oauth.CallbackRequest:
+    properties:
+      code:
+        type: string
+      state:
+        type: string
+    type: object
+  oauth.CallbackResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
+  oauth.GetLoginURLResponse:
+    properties:
+      data:
+        type: string
+      error_msg:
+        type: string
+    type: object
+  oauth.LogoutResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
+  oauth.TrustLevel:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    type: integer
+    x-enum-varnames:
+    - TrustLevelNewUser
+    - TrustLevelBasicUser
+    - TrustLevelUser
+    - TrustLevelActiveUser
+    - TrustLevelLeader
+  oauth.UserInfoResponse:
+    properties:
+      data:
+        $ref: '#/definitions/oauth.BasicUserInfo'
+      error_msg:
+        type: string
+    type: object
+  project.CreateProjectRequestBody:
+    properties:
+      allow_same_ip:
+        type: boolean
+      description:
+        maxLength: 1024
+        type: string
+      distribution_type:
+        allOf:
+        - $ref: '#/definitions/project.DistributionType'
+        enum:
+        - 0
+        - 1
+      end_time:
+        type: string
+      minimum_trust_level:
+        allOf:
+        - $ref: '#/definitions/oauth.TrustLevel'
+        enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      name:
+        maxLength: 32
+        minLength: 1
+        type: string
+      project_items:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      project_tags:
+        items:
+          type: string
+        type: array
+      risk_level:
+        maximum: 100
+        minimum: 0
+        type: integer
+      start_time:
+        type: string
+    required:
+    - end_time
+    - name
+    - project_items
+    - start_time
+    type: object
+  project.DistributionType:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - DistributionTypeOneForEach
+    - DistributionTypeInvite
+  project.GetProjectResponseData:
+    properties:
+      allow_same_ip:
+        type: boolean
+      available_items_count:
+        type: integer
+      created_at:
+        type: string
+      creator_id:
+        type: integer
+      creator_nickname:
+        type: string
+      creator_username:
+        type: string
+      description:
+        type: string
+      distribution_type:
+        $ref: '#/definitions/project.DistributionType'
+      end_time:
+        type: string
+      id:
+        type: string
+      is_completed:
+        type: boolean
+      is_received:
+        type: boolean
+      minimum_trust_level:
+        $ref: '#/definitions/oauth.TrustLevel'
+      name:
+        type: string
+      received_content:
+        type: string
+      risk_level:
+        type: integer
+      start_time:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      total_items:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  project.ListProjectsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/project.ListProjectsResponseData'
+      error_msg:
+        type: string
+    type: object
+  project.ListProjectsResponseData:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/project.ListProjectsResponseDataResult'
+        type: array
+      total:
+        type: integer
+    type: object
+  project.ListProjectsResponseDataResult:
+    properties:
+      allow_same_ip:
+        type: boolean
+      created_at:
+        type: string
+      description:
+        type: string
+      distribution_type:
+        $ref: '#/definitions/project.DistributionType'
+      end_time:
+        type: string
+      id:
+        type: string
+      minimum_trust_level:
+        $ref: '#/definitions/oauth.TrustLevel'
+      name:
+        type: string
+      risk_level:
+        type: integer
+      start_time:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      total_items:
+        type: integer
+    type: object
+  project.ListReceiveHistoryResponse:
+    properties:
+      data:
+        $ref: '#/definitions/project.ListReceiveHistoryResponseData'
+      error_msg:
+        type: string
+    type: object
+  project.ListReceiveHistoryResponseData:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/project.ListReceiveHistoryResponseDataResult'
+        type: array
+      total:
+        type: integer
+    type: object
+  project.ListReceiveHistoryResponseDataResult:
+    properties:
+      content:
+        type: string
+      project_creator:
+        type: string
+      project_creator_nickname:
+        type: string
+      project_id:
+        type: string
+      project_name:
+        type: string
+      received_at:
+        type: string
+    type: object
+  project.ListTagsResponse:
+    properties:
+      data:
+        items:
+          type: string
+        type: array
+      error_msg:
+        type: string
+    type: object
+  project.ProjectResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
+  project.UpdateProjectRequestBody:
+    properties:
+      allow_same_ip:
+        type: boolean
+      description:
+        maxLength: 1024
+        type: string
+      end_time:
+        type: string
+      minimum_trust_level:
+        allOf:
+        - $ref: '#/definitions/oauth.TrustLevel'
+        enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      name:
+        maxLength: 32
+        minLength: 1
+        type: string
+      project_items:
+        items:
+          type: string
+        type: array
+      project_tags:
+        items:
+          type: string
+        type: array
+      risk_level:
+        maximum: 100
+        minimum: 0
+        type: integer
+      start_time:
+        type: string
+    required:
+    - end_time
+    - name
+    - start_time
+    type: object
+info:
+  contact: {}
+  title: Linux Do CDK
+  version: 0.1.0
+paths:
+  /api/v1/dashboard/stats/all:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.DashboardDataResponse'
+      tags:
+      - Dashboard
+  /api/v1/health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/health.HealthResponse'
+      tags:
+      - health
+  /api/v1/oauth/callback:
+    post:
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/oauth.CallbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth.CallbackResponse'
+      tags:
+      - oauth
+  /api/v1/oauth/login:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth.GetLoginURLResponse'
+      tags:
+      - oauth
+  /api/v1/oauth/logout:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth.LogoutResponse'
+      tags:
+      - oauth
+  /api/v1/oauth/user-info:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth.UserInfoResponse'
+      tags:
+      - oauth
+  /api/v1/projects:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListProjectsResponse'
+      tags:
+      - project
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 项目信息
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/project.CreateProjectRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/projects/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 项目ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+    get:
+      description: 获取指定项目所有信息以及领取情况 (Get all information and claim status for a specific
+        project)
+      parameters:
+      - description: 项目ID (Project ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/project.ProjectResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/project.GetProjectResponseData'
+              type: object
+      summary: 获取指定项目信息 (Get specific project information)
+      tags:
+      - project
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 项目ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 项目信息
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/project.UpdateProjectRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/projects/{id}/receive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: project id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/projects/mine:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListProjectsResponse'
+      tags:
+      - project
+  /api/v1/projects/received:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListReceiveHistoryResponse'
+      tags:
+      - project
+  /api/v1/tags:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ListTagsResponse'
+      tags:
+      - project
+swagger: "2.0"

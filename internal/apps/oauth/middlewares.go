@@ -1,0 +1,41 @@
+package oauth
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/linux-do/cdk/internal/db"
+	"github.com/linux-do/cdk/internal/logger"
+	"github.com/linux-do/cdk/internal/otel_trace"
+	"net/http"
+)
+
+func LoginRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// init trace
+		ctx, span := otel_trace.Start(c.Request.Context(), "LoginRequired")
+		defer span.End()
+
+		// load user
+		userId := GetUserIDFromContext(c)
+		if userId <= 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error_msg": UnAuthorized, "data": nil})
+			return
+		}
+
+		// load user from db to make sure is active
+		var user User
+		tx := db.DB(ctx).Where("id = ? AND is_active = ?", userId, true).First(&user)
+		if tx.Error != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error_msg": tx.Error.Error(), "data": nil})
+			return
+		}
+
+		// log
+		logger.InfoF(ctx, "[LoginRequired] %d %s", user.ID, user.Username)
+
+		// set user info
+		SetUserToContext(c, &user)
+
+		// next
+		c.Next()
+	}
+}

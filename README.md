@@ -1,3 +1,1 @@
-# Linux Do CDK 分发平台
-
-相关工作已经准备就绪，即将发布，敬请期待！
+# Linux Do CDK

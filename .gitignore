@@ -1,0 +1,32 @@
+# IDE
+.idea
+.vscode
+
+# logs
+logs
+*.log
+
+# config
+config.yaml
+
+# frontend
+frontend/build
+frontend/disk
+frontend/node_modules/*
+frontend/.next/*
+frontend/next-env.d.ts
+frontend/package-lock.json
+frontend/.env
+
+# os
+.DS_Store
+Thumbs.db
+
+# build
+/build/
+/bin/
+/dist/
+
+# go workspace
+go.work
+go.work.sum

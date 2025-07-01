@@ -1,0 +1,34 @@
+name: Go Build
+
+on:
+  pull_request:
+    branches: [ "*" ]
+  push:
+    branches:
+      - "dev"
+      - "main"
+
+jobs:
+  go_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Install dependencies
+        run: |
+          go mod download
+          go install github.com/swaggo/swag/cmd/swag@latest
+      - name: Make Swagger
+        run: make swagger
+      - name: Diff Files
+        run: |
+          if ! git diff --exit-code; then
+            echo 'Detected unstaged changes after command. Please make swagger locally.'
+            exit 1
+          fi
+      - name: Build
+        run: go build main.go
