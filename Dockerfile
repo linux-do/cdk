@@ -9,13 +9,10 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # copy source code
-COPY main.go .
-COPY internal/ ./internal/
-COPY docs/ ./docs/
-COPY support-files/ ./support-files/
+COPY . .
 
 # build binary
-RUN go build -o cdk-server main.go
+RUN go build -v -o cdk-server main.go
 
 # minimal runtime image
 FROM alpine:latest
