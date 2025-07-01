@@ -71,11 +71,11 @@ func GetProject(c *gin.Context) {
 	isReceived := false
 	receivedContent := ""
 	item, err := project.GetReceivedItem(c.Request.Context(), oauth.GetUserIDFromContext(c))
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
 		return
 	}
-	if err == nil {
+	if item != nil {
 		isReceived = true
 		receivedContent = item.Content
 	}

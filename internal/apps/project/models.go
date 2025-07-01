@@ -193,9 +193,13 @@ func (p *ProjectItem) Exact(tx *gorm.DB, id uint64) error {
 }
 
 func (p *Project) GetReceivedItem(ctx context.Context, userID uint64) (*ProjectItem, error) {
-	item := &ProjectItem{}
-	if err := db.DB(ctx).Where("project_id = ? AND receiver_id = ?", p.ID, userID).First(item).Error; err != nil {
-		return nil, err
-	}
-	return item, nil
+    item := &ProjectItem{}
+    err := db.DB(ctx).Where("project_id = ? AND receiver_id = ?", p.ID, userID).First(item).Error
+    if errors.Is(err, gorm.ErrRecordNotFound) {
+        return nil, nil
+    }
+    if err != nil {
+        return nil, err
+    }
+    return item, nil
 }
