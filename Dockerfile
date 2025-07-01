@@ -12,7 +12,7 @@ RUN go mod download
 COPY . .
 
 # build binary
-RUN go build -v -o cdk-server main.go
+RUN go build -o cdk-server main.go
 
 # minimal runtime image
 FROM alpine:latest
