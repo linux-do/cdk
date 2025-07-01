@@ -167,7 +167,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
 
       if (result.success) {
         const content = result.data?.itemContent || '领取成功，但未获取到兑换内容';
-        
+
         setCurrentProject((prev) => ({
           ...prev,
           available_items_count: prev.available_items_count - 1,
