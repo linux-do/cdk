@@ -130,6 +130,10 @@
   scrollbar-width: none;
 }
 
+button {
+  cursor: pointer;
+}
+
 @keyframes slide {
   0% { left: -33%; }
   50% { left: 100%; }

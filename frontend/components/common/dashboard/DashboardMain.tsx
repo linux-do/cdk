@@ -207,10 +207,10 @@ export function DashboardMain() {
                   onClick={handleRefresh}
                   disabled={isRefreshDisabled}
                   title={refreshContent.title}
-                  className="h-9 px-3"
+                  className="h-9 w-24 flex"
                 >
-                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                  <span className="ml-2 hidden sm:inline">{refreshContent.text}</span>
+                  <RefreshCw className={`justify-self-start ${isLoading ? 'animate-spin' : ''}`} />
+                  <span className="flex-1 hidden sm:inline">{refreshContent.text}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
