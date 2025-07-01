@@ -2,10 +2,10 @@ name: Build Docker Image
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "master" ]
     tags: [ "*" ]
   pull_request:
-    branches: [ "*" ]
+    branches: [ "master" ]
 
 env:
   REGISTRY: ghcr.io
@@ -23,6 +23,12 @@ jobs:
       # checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # build do
+      - name: Build Go Binary
+        run: |
+          go mod download
+          go build -o cdk-server main.go
 
       # set up docker buildx
       - name: Set up Docker Buildx
