@@ -31,7 +31,7 @@ func Migrate() {
 // 创建存储过程
 func createStoredProcedures() error {
 	// 读取SQL文件
-	sqlFile := "internal/db/migrator/sql/proc/create_dashboard_proc.sql"
+	sqlFile := "support-files/sql/create_dashboard_proc.sql"
 	content, err := os.ReadFile(sqlFile)
 	if err != nil {
 		return err
