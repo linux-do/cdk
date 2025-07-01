@@ -14,6 +14,10 @@ env:
 jobs:
   build_image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     steps:
       # checkout code
       - name: Checkout repository
