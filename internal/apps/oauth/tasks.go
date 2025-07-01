@@ -40,8 +40,8 @@ var httpClient = &http.Client{
 // loadBadgeScores 从Redis加载徽章分数
 func loadBadgeScores(ctx context.Context) (map[int]int, error) {
 	// 加载所有徽章信息
-	badgeValues, err := db.Redis.HGetAll(ctx, "user:badges").Result()
-	if err != nil || len(badgeValues) == 0 {
+	badgeValues, err := db.Redis.HGetAll(ctx, UserAllBadges).Result()
+	if err != nil {
 		logger.ErrorF(ctx, "获取徽章列表失败: %v", err)
 		return nil, err
 	}
@@ -173,6 +173,10 @@ func HandleUpdateSingleUserBadgeScore(ctx context.Context, t *asynq.Task) error 
 		return err
 	}
 
+	if len(badgeScores) == 0 {
+		return fmt.Errorf("未找到任何徽章数据")
+	}
+
 	// 获取用户徽章
 	response, err := getUserBadges(ctx, user.Username)
 	if err != nil {
@@ -185,4 +189,70 @@ func HandleUpdateSingleUserBadgeScore(ctx context.Context, t *asynq.Task) error 
 
 	// 更新用户分数
 	return updateUserScore(ctx, &user, totalScore)
+}
+
+// getAllBadges 获取所有徽章数据
+func getAllBadges(ctx context.Context) (*UserBadgeResponse, error) {
+	url := "https://linux.do/badges.json"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("创建HTTP请求失败: %w", err)
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("请求徽章列表接口失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("获取徽章列表失败，状态码: %d", resp.StatusCode)
+	}
+
+	var response UserBadgeResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, fmt.Errorf("解析徽章列表响应失败: %w", err)
+	}
+	return &response, nil
+}
+
+// HandleUpdateAllBadge 处理更新所有徽章
+func HandleUpdateAllBadge(ctx context.Context, t *asynq.Task) error {
+	fetchUserBadgeResponse, err := getAllBadges(ctx)
+	if err != nil {
+		logger.ErrorF(ctx, "获取徽章列表失败: %v", err)
+		return err
+	}
+
+	badgeScores, err := loadBadgeScores(ctx)
+	if err != nil {
+		return err
+	}
+
+	pipe := db.Redis.Pipeline()
+	var newBadgeCount int
+
+	for _, badge := range fetchUserBadgeResponse.Badges {
+		if _, exists := badgeScores[badge.ID]; !exists {
+			badgeJSON, errJson := json.Marshal(badge)
+			if errJson != nil {
+				logger.ErrorF(ctx, "序列化徽章[%d]失败: %v", badge.ID, errJson)
+				continue
+			}
+
+			pipe.HSet(ctx, UserAllBadges, badge.ID, badgeJSON)
+			newBadgeCount++
+		}
+	}
+
+	if newBadgeCount > 0 {
+		_, err := pipe.Exec(ctx)
+		if err != nil {
+			logger.ErrorF(ctx, "批量添加徽章失败: %v", err)
+			return err
+		}
+		logger.InfoF(ctx, "批量添加 %d 个新徽章成功", newBadgeCount)
+	}
+
+	return nil
 }
