@@ -73,6 +73,4 @@ jobs:
           push: ${{ github.ref_type == 'tag' || (github.ref == 'refs/heads/master' && github.event_name == 'push') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: ${{ github.event_name != 'pull_request' && format('type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max') || '' }}
           platforms: linux/amd64,linux/arm64
