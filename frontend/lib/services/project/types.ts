@@ -199,6 +199,10 @@ export interface GetProjectResponseData extends Project {
   tags: string[] | null;
   /** 可领取数量 */
   available_items_count: number;
+  /** 当前用户是否已领取 */
+  is_received: boolean;
+  /** 已领取的内容 */
+  received_content: string;
 }
 
 /**

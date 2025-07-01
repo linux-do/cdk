@@ -787,7 +787,7 @@ export function CreateDialog({
             <DialogHeader>
               <DialogTitle>文件导入分发内容</DialogTitle>
               <DialogDescription className="text-xs">
-                支持 .txt 格式• 每行一个邀请码或 • 空行自动忽略 • 大小限制：5MB
+                支持 .txt 格式• 每行一个邀请码 • 空行自动忽略 • 大小限制：5MB
               </DialogDescription>
             </DialogHeader>
 

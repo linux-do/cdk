@@ -150,8 +150,8 @@ export function ReceiveContent({data}: ReceiveContentProps) {
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isReceiving, setIsReceiving] = useState(false);
-  const [hasReceived, setHasReceived] = useState(false);
-  const [receivedContent, setReceivedContent] = useState<string | null>(null);
+  const [hasReceived, setHasReceived] = useState(project.is_received);
+  const [receivedContent, setReceivedContent] = useState<string | null>(project.received_content || null);
   const [currentProject, setCurrentProject] = useState(project);
 
   /**
@@ -166,12 +166,15 @@ export function ReceiveContent({data}: ReceiveContentProps) {
       const result = await services.project.receiveProjectSafe(projectId);
 
       if (result.success) {
+        const content = result.data?.itemContent || '领取成功，但未获取到兑换内容';
+        
         setCurrentProject((prev) => ({
           ...prev,
           available_items_count: prev.available_items_count - 1,
+          is_received: true,
+          received_content: content,
         }));
 
-        const content = result.data?.itemContent || '领取成功，但未获取到兑换内容';
         setHasReceived(true);
         setReceivedContent(content);
         toast.success('领取成功！');
