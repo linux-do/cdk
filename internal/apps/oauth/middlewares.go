@@ -25,11 +25,12 @@
 package oauth
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/logger"
 	"github.com/linux-do/cdk/internal/otel_trace"
-	"net/http"
 )
 
 func LoginRequired() gin.HandlerFunc {

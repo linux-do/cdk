@@ -26,12 +26,13 @@ package oauth
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/logger"
-	"net/http"
 )
 
 type GetLoginURLResponse struct {

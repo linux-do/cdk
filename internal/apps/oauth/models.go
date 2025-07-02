@@ -25,8 +25,9 @@
 package oauth
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type OAuthUserInfo struct {
