@@ -216,8 +216,8 @@ func getAllBadges(ctx context.Context) (*UserBadgeResponse, error) {
 	return &response, nil
 }
 
-// HandleUpdateAllBadge 处理更新所有徽章
-func HandleUpdateAllBadge(ctx context.Context, t *asynq.Task) error {
+// HandleUpdateAllBadges 处理更新所有徽章
+func HandleUpdateAllBadges(ctx context.Context, t *asynq.Task) error {
 	fetchUserBadgeResponse, err := getAllBadges(ctx)
 	if err != nil {
 		logger.ErrorF(ctx, "获取徽章列表失败: %v", err)

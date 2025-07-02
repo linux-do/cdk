@@ -42,7 +42,7 @@ func StartWorker() error {
 	// 注册任务处理器
 	mux := asynq.NewServeMux()
 	mux.Use(taskLoggingMiddleware)
-	mux.HandleFunc(task.UpdateAllBadgesTask, oauth.HandleUpdateAllBadge)
+	mux.HandleFunc(task.UpdateAllBadgesTask, oauth.HandleUpdateAllBadges)
 	mux.HandleFunc(task.UpdateUserBadgeScoresTask, oauth.HandleUpdateUserBadgeScores)
 	mux.HandleFunc(task.UpdateSingleUserBadgeScoreTask, oauth.HandleUpdateSingleUserBadgeScore)
 	// 启动服务器
