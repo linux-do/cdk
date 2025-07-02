@@ -23,6 +23,7 @@ const (
 const (
 	OAuthStateCacheKeyFormat     = "oauth:state:%s"
 	OAuthStateCacheKeyExpiration = 10 * time.Minute
+	UserAllBadges                = "user:badges"
 )
 
 const (

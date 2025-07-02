@@ -39,6 +39,10 @@ func StartScheduler() error {
 			return
 		}
 
+		if _, err = scheduler.Register("0 1 * * *", asynq.NewTask(task.UpdateAllBadgesTask, nil)); err != nil {
+			return
+		}
+
 		// 启动调度器
 		err = scheduler.Run()
 	})
