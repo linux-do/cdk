@@ -151,6 +151,16 @@ func (p *Project) IsReceivable(ctx context.Context, user *oauth.User, ip string)
 	if user.RiskLevel() > p.RiskLevel {
 		return errors.New(UnknownError)
 	}
+	// check if user already received from this project (only for OneForEach type)
+	if p.DistributionType == DistributionTypeOneForEach {
+		receivedItem, err := p.GetReceivedItem(ctx, user.ID)
+		if err != nil {
+			return err
+		}
+		if receivedItem != nil {
+			return errors.New(UserAlreadyReceived)
+		}
+	}
 	// check same ip
 	if sameIPReceived, err := p.CheckSameIPReceived(ctx, ip); err != nil {
 		return err
