@@ -8,7 +8,7 @@ app:
   addr: ":8000"
   session_cookie_name: "linux_do_cdk_session_id" # change this in local dev env
   session_secret: "<uniq string>" # you can't change this after first time start
-  session_domain: ".linux.do" # change this to "" in local dev env
+  session_domain: ".linux.do" # change this to "" in local dev env or use your own domain
   session_age: 86400
   session_secure: false
   session_http_only: false

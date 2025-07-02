@@ -27,8 +27,9 @@ package cmd
 import (
 	"log"
 
-	"github.com/linux-do/cdk/internal/db/migrator"
 	"github.com/spf13/cobra"
+
+	"github.com/linux-do/cdk/internal/db/migrator"
 )
 
 var rootCmd = &cobra.Command{
