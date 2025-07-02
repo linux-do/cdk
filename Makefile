@@ -4,7 +4,7 @@ swagger:
 tidy:
 	scripts/tidy.sh
 
-add_license:
+check_license:
 	scripts/license.sh
 
-pre_commit: tidy swagger add_license
+pre_commit: tidy swagger check_license
