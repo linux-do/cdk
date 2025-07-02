@@ -213,6 +213,13 @@ export function CreateDialog({
       return false;
     }
 
+    // 手动邀请模式暂时不可用
+    if (formData.distributionType === DistributionType.INVITE) {
+      toast.error('手动邀请功能正在开发中，暂时无法创建');
+      setActiveTab('distribution');
+      return false;
+    }
+
     if (
       formData.distributionType === DistributionType.ONE_FOR_EACH &&
       items.length === 0
@@ -502,9 +509,14 @@ export function CreateDialog({
                         setNumber={(value) =>
                           setFormData({
                             ...formData,
-                            riskLevel: Math.max(0, Math.min(100, value)),
+                            riskLevel: value,
                           })
                         }
+                        min={0}
+                        max={100}
+                        step={1}
+                        longPressDelay={300}
+                        longPressSpeed={80}
                         className="flex w-full justify-between items-center"
                         buttonProps={{
                           variant: 'outline',
@@ -773,10 +785,12 @@ export function CreateDialog({
           ) : (
             <Button
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || formData.distributionType === DistributionType.INVITE}
               className="w-full"
             >
-              {loading ? '创建中...' : '创建'}
+              {loading ? '创建中...' :
+               formData.distributionType === DistributionType.INVITE ? '开发中' :
+               '创建'}
             </Button>
           )}
         </DialogFooter>

@@ -2,7 +2,6 @@
 
 import {useEffect, useState} from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
-import {BackgroundLines} from '@/components/ui/background-lines';
 import {LiquidButton} from '@/components/animate-ui/buttons/liquid';
 import {GalleryVerticalEnd, CheckCircle2, AlertCircle} from 'lucide-react';
 import services from '@/lib/services';
@@ -78,7 +77,7 @@ export function CallbackHandler({
   }, [searchParams]);
 
   return (
-    <BackgroundLines className="fixed inset-0 flex items-center justify-center w-full h-screen overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center w-full h-screen overflow-hidden">
       <div className={cn('flex flex-col gap-6 w-full max-w-md px-6 py-8 rounded-2xl max-h-screen overflow-y-auto', className)} {...props}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
@@ -127,6 +126,6 @@ export function CallbackHandler({
           </span>
         </div>
       </div>
-    </BackgroundLines>
+    </div>
   );
 }

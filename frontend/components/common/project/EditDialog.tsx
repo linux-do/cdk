@@ -419,9 +419,14 @@ export function EditDialog({
                         setNumber={(value) =>
                           setFormData({
                             ...formData,
-                            riskLevel: Math.max(0, Math.min(100, value)),
+                            riskLevel: value,
                           })
                         }
+                        min={0}
+                        max={100}
+                        step={1}
+                        longPressDelay={300}
+                        longPressSpeed={80}
                         className="flex w-full justify-between items-center"
                         buttonProps={{
                           variant: 'outline',

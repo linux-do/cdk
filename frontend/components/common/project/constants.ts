@@ -15,7 +15,7 @@ export const FORM_LIMITS = {
  * 默认表单值
  */
 export const DEFAULT_FORM_VALUES = {
-  RISK_LEVEL: 75 as number,
+  RISK_LEVEL: 70 as number,
   TIME_OFFSET_24H: (24 * 60 * 60 * 1000) as number,
 } as const;
 
