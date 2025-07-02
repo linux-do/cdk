@@ -2,7 +2,6 @@
 
 import {useState, useEffect} from 'react';
 import {useSearchParams, useRouter} from 'next/navigation';
-import {BackgroundLines} from '@/components/ui/background-lines';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {LiquidButton} from '@/components/animate-ui/buttons/liquid';
 import {Accordion, AccordionItem, AccordionTrigger, AccordionContent} from '@/components/animate-ui/radix/accordion';
@@ -69,7 +68,7 @@ export function LoginForm({
   };
 
   return (
-    <BackgroundLines className="fixed inset-0 flex items-center justify-center w-full h-screen overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center w-full h-screen overflow-hidden">
       <div className={cn('flex flex-col gap-6 w-full max-w-md px-6 py-8 rounded-2xl max-h-screen overflow-y-auto', className)} {...props}>
 
         <form onSubmit={(e) => e.preventDefault()}>
@@ -377,6 +376,6 @@ export function LoginForm({
           </span>
         </div>
       </div>
-    </BackgroundLines>
+    </div>
   );
 }
