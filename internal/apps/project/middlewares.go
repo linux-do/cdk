@@ -25,10 +25,11 @@
 package project
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
-	"net/http"
 )
 
 func ProjectCreatorPermMiddleware() gin.HandlerFunc {

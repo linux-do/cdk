@@ -26,6 +26,7 @@ package otel_trace
 
 import (
 	"context"
+
 	"github.com/linux-do/cdk/internal/config"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"

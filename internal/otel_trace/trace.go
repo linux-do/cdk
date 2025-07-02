@@ -26,9 +26,10 @@ package otel_trace
 
 import (
 	"context"
+	"log"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"log"
 )
 
 var Tracer trace.Tracer

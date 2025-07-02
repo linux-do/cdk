@@ -25,13 +25,14 @@
 package router
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/logger"
 	"github.com/linux-do/cdk/internal/otel_trace"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	"strconv"
-	"time"
 )
 
 func loggerMiddleware() gin.HandlerFunc {

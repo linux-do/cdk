@@ -26,13 +26,14 @@ package worker
 
 import (
 	"context"
+	"time"
+
 	"github.com/hibiken/asynq"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/task"
 	"github.com/linux-do/cdk/internal/task/schedule"
-	"time"
 )
 
 // StartWorker 启动任务处理服务器

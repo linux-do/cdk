@@ -25,8 +25,9 @@
 package cmd
 
 import (
-	"github.com/linux-do/cdk/internal/task/worker"
 	"log"
+
+	"github.com/linux-do/cdk/internal/task/worker"
 
 	"github.com/spf13/cobra"
 )

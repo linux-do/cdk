@@ -26,13 +26,14 @@ package logger
 
 import (
 	"context"
+	"log"
+	"os"
+
 	"github.com/linux-do/cdk/internal/config"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"log"
-	"os"
 )
 
 // GetLogWriter 获取日志输出写入器

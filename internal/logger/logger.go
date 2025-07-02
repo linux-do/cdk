@@ -27,6 +27,7 @@ package logger
 import (
 	"context"
 	"fmt"
+
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

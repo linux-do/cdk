@@ -26,9 +26,10 @@ package schedule
 
 import (
 	"fmt"
-	"github.com/linux-do/cdk/internal/task"
 	"sync"
 	"time"
+
+	"github.com/linux-do/cdk/internal/task"
 
 	"github.com/hibiken/asynq"
 )

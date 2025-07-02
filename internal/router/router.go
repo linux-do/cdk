@@ -27,6 +27,9 @@ package router
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
@@ -40,8 +43,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
-	"log"
-	"strconv"
 )
 
 func Serve() {
