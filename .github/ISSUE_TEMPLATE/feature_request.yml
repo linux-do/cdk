@@ -1,0 +1,79 @@
+name: 新功能建议
+description: 请求新的功能或对现有功能进行改进。
+title: "feature: "
+labels: ["enhancement"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您花时间填写此功能请求！
+
+        - **提交功能请求前**：请检查 [已有 Issues](https://github.com/linux-do/cdk/issues) 列表和讨论区，了解是否有类似功能已被讨论或请求。这有助于我们避免重复工作，并高效地专注于改进项目。
+  - type: checkboxes
+    id: check-existing
+    attributes:
+      label: 检查现有问题和讨论
+      description: 确认您在提交新请求之前已经检查了现有报告和讨论。
+      options:
+        - label: 我已经搜索了现有问题和讨论。
+          required: true
+        - label: 我正在使用最新版本或 cdk.linux.do 上的此应用。
+          required: true
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 你希望添加什么功能或改进什么？
+      description: 请详细描述您希望添加的功能或进行的改进。
+      placeholder: 我希望可以...
+    validations:
+      required: true
+  - type: textarea
+    id: why-needed
+    attributes:
+      label: 为什么需要此功能？
+      description: 请说明此功能解决了什么问题，或提供了什么价值。请提供具体的用例和场景，帮助我们理解其重要性。
+      placeholder: |
+        目前我遇到...
+        如果有了此功能，我可以...
+        这将为用户带来...
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: 建议的解决方案（可选）
+      description: 如果您对如何实现此功能有任何想法，请在此处描述。这可以包括用户界面草图、API 设想、技术方案等。
+      placeholder: |
+        我设想此功能可以通过以下方式实现：
+        1. ...
+        2. ...
+    validations:
+      required: false
+  - type: textarea
+    id: other-info
+    attributes:
+      label: 任何其他信息
+      description: 您有任何其他关于此报告的信息吗？例如，您目前如何解决这个问题，或者其他类似项目的实现方式等。
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: 确认
+      description: 确保已满足以下先决条件。
+      options:
+        - label: 我已阅读并遵循了 `README.md` 中的所有说明。
+          required: true
+        - label: 我正在使用 linux-do/cdk 的最新版本。
+          required: true
+        - label: 我已提供我能够提供的尽可能多的相关信息，包括用例和场景。
+          required: true
+        - label: 我理解功能请求的实现取决于项目优先级和资源。
+          required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## 注意
+        如果功能请求不完整或不遵循说明，则可能不会得到处理。请确保您已提供所有必要信息以便我们理解您的建议。
+        感谢您为 linux-do/cdk 做出贡献！

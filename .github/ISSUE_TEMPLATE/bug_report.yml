@@ -1,0 +1,90 @@
+name: 使用时的错误报告
+description: 某些事情不按照预期工作。
+title: "bug: "
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您花时间填写此 Bug 报告！
+
+        - **提交错误报告前**：请检查 [已有 Issues](https://github.com/linux-do/cdk/issues)列表，了解是否有类似问题被报告。如果不确定，请进行搜索，这有助于我们高效地专注于改进项目。
+  - type: checkboxes
+    id: issue-check
+    attributes:
+      label: 检查现有问题
+      description: 确认您在提交新报告之前已经检查了现有报告。
+      options:
+        - label: 我已经搜索了现有问题和讨论。
+          required: true
+        - label: 我正在使用最新版本或 cdk.linux.do 上的此应用。
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么？
+      description: 请详细描述您正在进行的操作，您期待看到什么，实际发生了什么。
+      placeholder: 请告诉我们您看到了什么！
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 如何重现此 Bug？
+      description: 请提供详细的步骤来重现此 Bug。
+      placeholder: |
+        1. 在此环境中...
+        2. 使用此配置...
+        3. 运行 '...'
+        4. 看到错误...
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: 在哪些浏览器中出现问题？
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+        - Other (请在“其他信息”中说明)
+    validations:
+      required: false
+  - type: textarea
+    id: other-info
+    attributes:
+      label: 任何其他信息
+      description: 您有任何其他关于此报告的信息吗？
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: 确认
+      description: 确保已满足以下先决条件。
+      options:
+        - label: 我已阅读并遵循了 `README.md` 中的所有说明。
+          required: true
+        - label: 我正在使用 linux-do/cdk 的最新版本。
+          required: true
+        - label: 我已提供我能够提供的尽可能多的相关日志，屏幕截图等。
+          required: true
+        - label: |
+            我已详细记录了精确、按顺序且无歧义的逐步重现说明。我的步骤：
+            - 从正在执行的操作开始，
+            - 指定进入了什么页面，
+            - 列出访问的 URL、用户输入（包括所需的示例值/电子邮件/密码），
+            - 描述所有已启用或更改的选项和开关，
+            - 包含任何可能的浏览器控制台日志，
+            - 识别每个阶段的预期和实际结果，
+            - 确保任何有合理技能的用户都可以遵循并遇到相同的问题。
+          required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## 注意
+        如果 Bug 报告不完整或不遵循说明，则可能不会得到处理。请确保您已遵循所有 **README.md** 指南，并提供所有必要信息以便我们重现该问题。
+        感谢您为 linux-do/cdk 做出贡献！
