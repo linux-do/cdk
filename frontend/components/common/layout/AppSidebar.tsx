@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import {RollingText} from '@/components/animate-ui/text/rolling';
 import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from '@/components/ui/sidebar';
-import {SquareArrowUpRight, BarChartIcon, FolderIcon, LayoutDashboardIcon, ShoppingBag, FileIcon} from 'lucide-react';
+import {SquareArrowUpRight, BarChartIcon, FolderIcon, LayoutDashboardIcon, ShoppingBag, ExternalLinkIcon} from 'lucide-react';
 import {NavDocuments} from '@/components/common/layout/NavDocuments';
 import {NavMain} from '@/components/common/layout/NavMain';
 import {NavUser} from '@/components/common/layout/NavUser';
@@ -41,14 +41,9 @@ const navMain = [
  */
 const navDocuments = [
   {
-    name: '使用说明',
-    url: '/docs/usage',
-    icon: FileIcon,
-  },
-  {
-    name: '更新日志',
-    url: '/docs/changelog',
-    icon: FileIcon,
+    name: '前往社区',
+    url: 'https://linux.do',
+    icon: ExternalLinkIcon,
   },
 ];
 
