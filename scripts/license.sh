@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 # 配置变量
 LICENSE_FILE="LICENSE"
