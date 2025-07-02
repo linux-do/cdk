@@ -1,0 +1,21 @@
+name: check license
+
+on:
+  push:
+    branches: [ "master" ]
+    tags: [ "*" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  check_license:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+      - name: run make add_license
+        run: make add_license
+      - name: check for uncommitted changes
+        run: |
+          git diff --exit-code || (echo "some files are missing license headers" && exit 1)
+
