@@ -44,6 +44,7 @@ const navDocuments = [
     name: '前往社区',
     url: 'https://linux.do',
     icon: ExternalLinkIcon,
+    openInNewTab: true,
   },
 ];
 
