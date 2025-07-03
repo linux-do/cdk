@@ -1,12 +1,10 @@
 'use client';
 
 import {motion} from 'motion/react';
-import {useState, useCallback} from 'react';
-import {Button} from '@/components/ui/button';
+import {useState} from 'react';
 import {Separator} from '@/components/ui/separator';
-import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip';
 import {StatCard, CardList, UserGrowthChart, ActivityChart, CategoryChart, DistributeModeChart} from '@/components/common/dashboard/';
-import {RefreshCw, UsersIcon, DownloadIcon, FolderIcon, TrendingUpIcon, ChartPieIcon, ChartColumnBigIcon, ChartAreaIcon, ChartLineIcon, FlameIcon} from 'lucide-react';
+import {UsersIcon, DownloadIcon, FolderIcon, TrendingUpIcon, ChartPieIcon, ChartColumnBigIcon, ChartAreaIcon, ChartLineIcon, FlameIcon} from 'lucide-react';
 import {useDashboard} from '@/hooks/use-dashboard';
 
 /**
@@ -14,30 +12,7 @@ import {useDashboard} from '@/hooks/use-dashboard';
  */
 export function DashboardMain() {
   const [range, setRange] = useState(7);
-  const [cooldown, setCooldown] = useState(0);
-  const {data, isLoading, refresh} = useDashboard(range);
-
-  /**
-   * 防抖刷新函数
-   */
-  const handleRefresh = useCallback(async () => {
-    if (isLoading || cooldown > 0) return;
-
-    setCooldown(3);
-    try {
-      await refresh(true);
-    } finally {
-      const timer = setInterval(() => {
-        setCooldown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-  }, [refresh, isLoading, cooldown]);
+  const {data, isLoading} = useDashboard(range);
 
   /**
    * 时间范围配置
@@ -106,32 +81,6 @@ export function DashboardMain() {
     },
   ];
 
-  const isRefreshDisabled = isLoading || cooldown > 0;
-
-  /**
-   * 获取刷新按钮显示内容
-   */
-  const getRefreshContent = () => {
-    if (isLoading) {
-      return {
-        text: '刷新中',
-        title: '数据加载中...',
-      };
-    }
-    if (cooldown > 0) {
-      return {
-        text: `${cooldown}s`,
-        title: `请等待 ${cooldown} 秒后再试`,
-      };
-    }
-    return {
-      text: '刷新',
-      title: '刷新数据',
-    };
-  };
-
-  const refreshContent = getRefreshContent();
-
   const containerVariants = {
     hidden: {opacity: 0},
     visible: {
@@ -197,26 +146,6 @@ export function DashboardMain() {
                 ))}
               </div>
             </div>
-
-            {/* 刷新按钮 */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleRefresh}
-                  disabled={isRefreshDisabled}
-                  title={refreshContent.title}
-                  className="h-9 w-24 flex"
-                >
-                  <RefreshCw className={`justify-self-start ${isLoading ? 'animate-spin' : ''}`} />
-                  <span className="flex-1 hidden sm:inline">{refreshContent.text}</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">平台数据每5分钟刷新</p>
-              </TooltipContent>
-            </Tooltip>
           </div>
         </div>
       </motion.div>

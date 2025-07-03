@@ -29,7 +29,7 @@ const DataChartSkeleton = () => {
         ))}
       </div>
 
-      <div>
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
         <div className="mb-4">
           <div className="flex items-center justify-between">
             <Skeleton className="h-6 w-16" />
@@ -38,7 +38,7 @@ const DataChartSkeleton = () => {
         </div>
 
         <div className="py-2">
-          <div className="h-[300px] w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+          <div className="h-[300px] w-full flex items-center justify-center">
             <div className="w-full max-w-full px-8">
               <div className="flex items-end justify-between h-48 gap-4">
                 {chartBarHeights.map((height, i) => (

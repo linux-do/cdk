@@ -214,7 +214,7 @@ export function DataChart({data}: DataChartProps) {
         <StatCard title="日均" value={stats.avgDaily} />
       </motion.div>
 
-      <motion.div variants={chartVariants}>
+      <motion.div variants={chartVariants} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
         <div className="mb-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold">
