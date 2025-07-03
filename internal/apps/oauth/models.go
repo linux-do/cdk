@@ -25,8 +25,9 @@
 package oauth
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type OAuthUserInfo struct {
@@ -46,7 +47,7 @@ type User struct {
 	IsActive    bool       `json:"is_active" gorm:"default:true"`
 	TrustLevel  TrustLevel `json:"trust_level"`
 	Score       int8       `json:"score"`
-	LastLoginAt time.Time  `json:"last_login_at;index"`
+	LastLoginAt time.Time  `json:"last_login_at" gorm:"index"`
 	CreatedAt   time.Time  `json:"created_at" gorm:"autoCreateTime;index"`
 	UpdatedAt   time.Time  `json:"updated_at" gorm:"autoUpdateTime;index"`
 }
