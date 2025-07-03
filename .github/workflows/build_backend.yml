@@ -3,10 +3,15 @@ name: Go Build
 on:
   pull_request:
     branches: [ "*" ]
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
   push:
     branches:
-      - "dev"
-      - "main"
+      - "master"
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
 
 jobs:
   go_build:
