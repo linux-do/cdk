@@ -27,6 +27,8 @@ package logger
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -35,8 +37,13 @@ import (
 var logger *otelzap.Logger
 
 func init() {
+	logWriter, err := GetLogWriter()
+	if err != nil {
+		log.Fatalf("[Logger] get log writer err: %v\n", err)
+	}
+
 	zapLogger := zap.New(
-		zapcore.NewCore(getEncoder(), GetLogWriter(), getLogLevel()),
+		zapcore.NewCore(getEncoder(), logWriter, getLogLevel()),
 		zap.AddCaller(),
 		zap.AddCallerSkip(1),
 	)
