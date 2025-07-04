@@ -224,7 +224,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
             <div className="text-sm text-muted-foreground order-2 sm:order-1">
             共 {total} 个项目，第 {currentPage} / {totalPages} 页
             </div>

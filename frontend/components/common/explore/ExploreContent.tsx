@@ -12,8 +12,6 @@ import {ProjectListItem} from '@/lib/services/project/types';
 import {EmptyState} from '@/components/common/layout/EmptyState';
 import {motion} from 'motion/react';
 
-const PAGE_SIZE = 96;
-
 interface ExploreContentProps {
   data: {
     projects: ProjectListItem[];
@@ -38,12 +36,13 @@ interface ExploreContentProps {
     onShowAllTagsChange: (show: boolean) => void;
   };
   LoadingSkeleton: React.ComponentType;
+  pageSize?: number;
 }
 
 /**
  * 探索页面内容组件
  */
-export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
+export function ExploreContent({data, LoadingSkeleton, pageSize = 20}: ExploreContentProps) {
   const {
     projects,
     upcomingProjects,
@@ -69,7 +68,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
   const filteredTags = (tags || []).filter((tag) =>
     tag.toLowerCase().includes(tagSearchKeyword.toLowerCase()),
   );
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.ceil(total / pageSize);
 
   /** 快捷操作 */
   const handleClearAllTags = () => {
@@ -242,7 +241,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
                         const isSelected = (selectedTags || []).includes(tag);
                         return (
                           <div
-                            key={tag}
+                            key={`tag-filter-${tag}`}
                             className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors hover:bg-muted ${
                               isSelected ? 'bg-primary/10 border border-primary/20' : ''
                             }`}
@@ -281,7 +280,7 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
                   <div className="flex flex-wrap gap-1 mt-1">
                     {(selectedTags || []).map((tag) => (
                       <Badge
-                        key={tag}
+                        key={`selected-tag-${tag}`}
                         variant="outline"
                         className="px-2 py-0 h-6 bg-primary/5 text-xs text-primary border-primary/20 flex items-center gap-1"
                       >
@@ -323,10 +322,10 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
           >
             <CarouselContent className="-ml-2 md:-ml-4">
               {upcomingProjects.map((project, index) => (
-                <CarouselItem key={project.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                <CarouselItem key={`upcoming-${project.id}`} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                   <ProjectCard
                     project={project}
-                    delay={index * 0.05}
+                    delay={index * 0.08}
                     onClick={() => onCardClick(project)}
                   />
                 </CarouselItem>
@@ -370,11 +369,11 @@ export function ExploreContent({data, LoadingSkeleton}: ExploreContentProps) {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {projects.map((project, index) => (
+            {projects.map((project) => (
               <ProjectCard
-                key={project.id}
+                key={`project-${project.id}`}
                 project={project}
-                delay={index * 0.05}
+                delay={0}
                 onClick={() => onCardClick(project)}
               />
             ))}

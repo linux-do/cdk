@@ -5,7 +5,8 @@ import {X, Check, PlusCircle, SearchIcon} from 'lucide-react';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
-import {ScrollArea} from '@/components/ui/scroll-area';
+import {useVirtualizer} from '@tanstack/react-virtual';
+
 import {toast} from 'sonner';
 import {cn} from '@/lib/utils';
 
@@ -34,6 +35,7 @@ function TagSelector({
 }: TagSelectorProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
+  const scrollElementRef = React.useRef<HTMLDivElement>(null);
 
   const handleInputChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -44,18 +46,102 @@ function TagSelector({
     }
   }, [maxTagLength]);
 
-  /* 判断是否显示创建选项 */
-  const shouldShowCreate = React.useMemo(() => {
-    return searchValue && searchValue.trim() &&
-      !availableTags.some((tag) => tag.toLowerCase() === searchValue.toLowerCase());
-  }, [searchValue, availableTags]);
+  /* 构建虚拟列表项 */
+  const listItems = React.useMemo(() => {
+    const items: Array<{
+      type: 'tag' | 'create' | 'header' | 'empty';
+      content: string;
+      id: string;
+    }> = [];
 
-  /* 获取过滤后的可用标签 */
-  const filteredTags = React.useMemo(() => {
-    return availableTags
+    // 过滤可用标签
+    const filteredTags = availableTags
         .filter((tag) => !selectedTags.includes(tag))
         .filter((tag) => !searchValue || tag.toLowerCase().includes(searchValue.toLowerCase()));
-  }, [availableTags, selectedTags, searchValue]);
+
+    // 判断是否显示创建选项
+    const shouldShowCreate = searchValue && searchValue.trim() &&
+      !availableTags.some((tag) => tag.toLowerCase() === searchValue.toLowerCase());
+
+    // 如果没有标签且没有搜索内容
+    if (availableTags.length === 0 && !searchValue) {
+      items.push({
+        type: 'empty',
+        content: emptyMessage,
+        id: 'empty',
+      });
+      return items;
+    }
+
+    // 如果有搜索内容但没有匹配的标签
+    if (searchValue && filteredTags.length === 0) {
+      if (shouldShowCreate) {
+        items.push({
+          type: 'create',
+          content: searchValue,
+          id: `create-${searchValue}`,
+        });
+      } else {
+        items.push({
+          type: 'empty',
+          content: '未找到匹配的标签',
+          id: 'no-match',
+        });
+      }
+      return items;
+    }
+
+    // 添加可用标签
+    if (filteredTags.length > 0) {
+      items.push({
+        type: 'header',
+        content: `可用标签 (${filteredTags.length})`,
+        id: 'available-header',
+      });
+
+      filteredTags.forEach((tag) => {
+        items.push({
+          type: 'tag',
+          content: tag,
+          id: `tag-${tag}`,
+        });
+      });
+    }
+
+    // 添加创建选项
+    if (shouldShowCreate && filteredTags.length > 0) {
+      items.push({
+        type: 'header',
+        content: '创建新标签',
+        id: 'create-header',
+      });
+      items.push({
+        type: 'create',
+        content: searchValue,
+        id: `create-${searchValue}`,
+      });
+    }
+
+    return items;
+  }, [availableTags, selectedTags, searchValue, emptyMessage]);
+
+  // 虚拟列表 @tanstack/react-virtual
+  const virtualizer = useVirtualizer({
+    count: listItems.length,
+    getScrollElement: () => scrollElementRef.current,
+    estimateSize: () => 32,
+    overscan: 5,
+  });
+
+  // 当 Popover 打开时，重新计算虚拟列表
+  React.useEffect(() => {
+    if (isOpen) {
+      // 延迟一帧确保 DOM 已渲染
+      requestAnimationFrame(() => {
+        virtualizer.measure();
+      });
+    }
+  }, [isOpen, virtualizer]);
 
   const addTag = React.useCallback((tag: string) => {
     const trimmedTag = tag.trim();
@@ -76,7 +162,6 @@ function TagSelector({
       return;
     }
 
-    /* 标签长度已在输入时控制（额外检查） */
     if (trimmedTag.length > maxTagLength) {
       const truncatedTag = trimmedTag.slice(0, maxTagLength);
       onTagsChange([...selectedTags, truncatedTag]);
@@ -138,81 +223,89 @@ function TagSelector({
                 />
               </div>
 
-              <ScrollArea
+              <div
+                ref={scrollElementRef}
                 data-slot="tag-selector-scroll-area"
-                className="h-[220px]"
+                className="h-[220px] overflow-auto overscroll-contain"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#d1d5db transparent',
+                  scrollBehavior: 'smooth',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+                onWheel={(e) => {
+                  e.stopPropagation();
+                }}
+                onTouchMove={(e) => {
+                  e.stopPropagation();
+                }}
+                onScroll={(e) => {
+                  e.stopPropagation();
+                }}
               >
                 <div
-                  data-slot="tag-selector-list"
-                  className="p-1"
+                  style={{
+                    height: `${virtualizer.getTotalSize()}px`,
+                    width: '100%',
+                    position: 'relative',
+                  }}
                 >
-                  {(availableTags.length === 0 || filteredTags.length === 0) && (
-                    <div className="p-2">
-                      {searchValue ? (
-                        <div
-                          data-slot="tag-selector-create"
-                          className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
-                          onClick={() => addTag(searchValue)}
-                        >
-                          <PlusCircle className="h-4 w-4" />
-                          <span>创建 &quot;{searchValue}&quot;</span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-6 h-full text-center text-sm">
-                          <p>{emptyMessage}</p>
-                          <p className="text-muted-foreground">输入内容创建新标签</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {virtualizer.getVirtualItems().map((virtualItem) => {
+                    const item = listItems[virtualItem.index];
 
-                  {/* 显示可用标签 */}
-                  {filteredTags.length > 0 && (
-                    <div
-                      data-slot="tag-selector-available"
-                      className="p-1"
-                    >
-                      <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                        可用标签
-                      </div>
-                      {filteredTags.map((tag) => (
-                        <div
-                          key={tag}
-                          data-slot="tag-selector-item"
-                          className="flex items-center justify-between rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
-                          onClick={() => addTag(tag)}
-                        >
-                          {tag}
-                          {selectedTags.includes(tag) && <Check className="h-4 w-4 text-green-500" />}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 有搜索内容且搜索内容不在可用标签中，显示创建选项 */}
-                  {shouldShowCreate && filteredTags.length > 0 && (
-                    <>
-                      <div className="h-px bg-border mx-1 my-1" />
+                    return (
                       <div
-                        data-slot="tag-selector-create-section"
-                        className="p-1"
+                        key={virtualItem.key}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: `${virtualItem.size}px`,
+                          transform: `translateY(${virtualItem.start}px)`,
+                        }}
                       >
-                        <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                          创建新标签
-                        </div>
-                        <div
-                          data-slot="tag-selector-create-item"
-                          className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
-                          onClick={() => addTag(searchValue)}
-                        >
-                          <PlusCircle className="h-4 w-4" />
-                          <span>创建 &quot;{searchValue}&quot;</span>
-                        </div>
+                        {item.type === 'empty' && (
+                          <div className="flex flex-col items-center justify-center text-center text-sm px-2 h-full py-8">
+                            <p>{item.content}</p>
+                            {item.id === 'empty' && (
+                              <p className="text-muted-foreground mt-1">输入内容创建新标签</p>
+                            )}
+                          </div>
+                        )}
+
+                        {item.type === 'header' && (
+                          <div className="px-3 text-xs font-medium text-muted-foreground flex items-center h-full bg-muted/30">
+                            {item.content}
+                          </div>
+                        )}
+
+                        {item.type === 'create' && (
+                          <div
+                            className="flex items-center gap-2 rounded-sm px-3 text-sm cursor-pointer hover:bg-accent mx-1 h-full mt-2"
+                            onClick={() => addTag(item.content)}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                            <span>创建 &quot;{item.content}&quot;</span>
+                          </div>
+                        )}
+
+                        {item.type === 'tag' && (
+                          <div
+                            className="flex items-center justify-between rounded-sm px-3 text-sm cursor-pointer hover:bg-accent mx-1 h-full"
+                            onClick={() => addTag(item.content)}
+                          >
+                            <span>{item.content}</span>
+                            {selectedTags.includes(item.content) && (
+                              <Check className="h-4 w-4 text-green-500" />
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </>
-                  )}
+                    );
+                  })}
                 </div>
-              </ScrollArea>
+              </div>
             </div>
           </PopoverContent>
         </Popover>

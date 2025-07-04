@@ -4,7 +4,7 @@ import Link from 'next/link';
 import {SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from '@/components/ui/sidebar';
 import {motion} from 'motion/react';
 import {useEffect, useState, useMemo} from 'react';
-import {HoverCard, HoverCardContent, HoverCardTrigger} from '@/components/ui/hover-card';
+import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 import {CountingNumber} from '@/components/animate-ui/text/counting-number';
 import {type LucideIcon, BarChart2} from 'lucide-react';
 
@@ -48,7 +48,6 @@ export function NavDocuments({items, userScore}: NavDocumentsProps) {
 
   useEffect(() => {
     if (userScore !== undefined) {
-      // 使用requestAnimationFrame延迟显示动画，避免与布局切换冲突
       const timer = requestAnimationFrame(() => {
         setShowScore(true);
       });
@@ -58,6 +57,25 @@ export function NavDocuments({items, userScore}: NavDocumentsProps) {
 
   const scoreItem = useMemo(() => {
     if (userScore === undefined) return null;
+
+    const scoreContent = (
+      <div className="flex flex-col space-y-1">
+        <h4 className="text-sm font-semibold">我的分数</h4>
+        <div className="flex items-center gap-2">
+          <div className="text-2xl font-bold">
+            <CountingNumber
+              number={userScore || 0}
+              fromNumber={0}
+              inView={true}
+              transition={{stiffness: 200, damping: 25}}
+            />
+          </div>
+          <div className="text-xs text-muted-foreground">
+            基于社区贡献和活跃度，每日更新
+          </div>
+        </div>
+      </div>
+    );
 
     return (
       <motion.div
@@ -72,32 +90,17 @@ export function NavDocuments({items, userScore}: NavDocumentsProps) {
         layout={false}
       >
         <SidebarMenuItem>
-          <HoverCard>
-            <HoverCardTrigger asChild>
+          <Popover>
+            <PopoverTrigger asChild>
               <SidebarMenuButton>
                 <BarChart2 className="h-4 w-4" />
                 <span>我的分数</span>
               </SidebarMenuButton>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-48">
-              <div className="flex flex-col space-y-1">
-                <h4 className="text-sm font-semibold">我的分数</h4>
-                <div className="flex items-center gap-2">
-                  <div className="text-2xl font-bold">
-                    <CountingNumber
-                      number={userScore}
-                      fromNumber={0}
-                      inView={true}
-                      transition={{stiffness: 200, damping: 25}}
-                    />
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    基于社区贡献和活跃度，每日更新
-                  </div>
-                </div>
-              </div>
-            </HoverCardContent>
-          </HoverCard>
+            </PopoverTrigger>
+            <PopoverContent className="w-48" side="bottom" align="start" sideOffset={8}>
+              {scoreContent}
+            </PopoverContent>
+          </Popover>
         </SidebarMenuItem>
       </motion.div>
     );

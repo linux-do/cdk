@@ -97,10 +97,15 @@ const ENHANCED_COLORS = {
   // 饼图配色
   pieChart: [
     '#6366f1',
+    '#10b981',
+    '#f59e0b',
+    '#ef4444',
     '#8b5cf6',
-    '#a855f7',
-    '#c084fc',
-    '#e879f9',
+    '#06b6d4',
+    '#84cc16',
+    '#f97316',
+    '#ec4899',
+    '#6b7280',
   ],
   // 柱状图配色
   barChart: [
@@ -356,7 +361,11 @@ export function ActivityChart({data, isLoading, icon, range = 7}: ActivityChartP
  */
 export function CategoryChart({data, isLoading, icon}: CategoryChartProps) {
   const chartData = useMemo(() => {
-    return data && data.length > 0 ? data : [];
+    if (!data || data.length === 0) return [];
+
+    // 按value降序排序，只取前10个
+    const sortedData = [...data].sort((a, b) => b.value - a.value);
+    return sortedData.slice(0, 10);
   }, [data]);
 
   if (!isLoading && (!chartData || chartData.length === 0)) {
@@ -369,8 +378,9 @@ export function CategoryChart({data, isLoading, icon}: CategoryChartProps) {
       </ChartContainer>
     );
   }
-  const total = data?.reduce((sum, item) => sum + item.value, 0) || 0;
-  const enhancedData = data?.map((item, index) => ({
+
+  const total = chartData.reduce((sum, item) => sum + item.value, 0);
+  const enhancedData = chartData.map((item, index) => ({
     ...item,
     total,
     color: ENHANCED_COLORS.pieChart[index % ENHANCED_COLORS.pieChart.length],

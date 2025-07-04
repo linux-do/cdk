@@ -9,15 +9,15 @@ import services from '@/lib/services';
 import {ProjectListItem} from '@/lib/services/project/types';
 import {motion} from 'motion/react';
 
-const PAGE_SIZE = 96;
+const PAGE_SIZE = 24;
 
 /**
  * 加载骨架屏组件
  */
 const LoadingSkeleton = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-    {Array.from({length: 12}).map((_, index) => (
-      <div key={index} className="w-full max-w-sm mx-auto">
+    {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
+      <div key={`skeleton-fixed-${index}`} className="w-full max-w-sm mx-auto">
         <div className="bg-gray-200 dark:bg-gray-800 p-4 sm:p-6 rounded-2xl relative">
           <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex gap-1 sm:gap-2">
             <Skeleton className="h-3 w-3 sm:h-4 sm:w-4 rounded-full" />
@@ -51,6 +51,12 @@ export function ExploreMain() {
   const [tagSearchKeyword, setTagSearchKeyword] = useState('');
   const [isTagFilterOpen, setIsTagFilterOpen] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // 确保客户端渲染
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   /**
    * 项目过滤和分类逻辑
@@ -80,11 +86,6 @@ export function ExploreMain() {
       return startTime > now && project.total_items > 0;
     });
 
-    /** 随机横幅项目 */
-    const randomProjects = [...activeProjects]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 5);
-
     /** 即将开始项目 */
     const upcomingProjects = upcomingList
         .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
@@ -92,11 +93,21 @@ export function ExploreMain() {
 
     return {
       projects: filteredProjects,
-      randomProjects,
+      activeProjects,
       upcomingProjects,
       total: totalCount,
     };
   }, [allProjects, searchKeyword, totalCount]);
+
+  // 使用稳定的排序方式选择特色项目，避免使用Math.random()
+  const featuredProjects = useMemo(() => {
+    if (!processedData.activeProjects?.length) return [];
+
+    // 使用稳定的排序方式：按项目ID进行稳定排序，取前5个
+    return [...processedData.activeProjects]
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .slice(0, 5);
+  }, [processedData.activeProjects]);
 
   /**
    * 获取项目列表
@@ -188,6 +199,11 @@ export function ExploreMain() {
     fetchProjects();
   }, [fetchProjects]);
 
+  // 如果还没有客户端渲染，显示加载状态
+  if (!isClient) {
+    return <LoadingSkeleton />;
+  }
+
   const containerVariants = {
     hidden: {opacity: 0},
     visible: {
@@ -218,7 +234,7 @@ export function ExploreMain() {
     >
       <motion.div variants={contentVariants}>
         <ExploreBanner
-          randomProjects={processedData.randomProjects}
+          randomProjects={featuredProjects}
           onProjectClick={handleCardClick}
         />
         <ExploreContent
@@ -245,6 +261,7 @@ export function ExploreMain() {
             onShowAllTagsChange: setShowAllTags,
           }}
           LoadingSkeleton={LoadingSkeleton}
+          pageSize={PAGE_SIZE}
         />
       </motion.div>
     </motion.div>
