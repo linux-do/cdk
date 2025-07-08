@@ -26,6 +26,10 @@ package project
 
 import (
 	"errors"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/linux-do/cdk/internal/apps/oauth"
@@ -33,9 +37,6 @@ import (
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/utils"
 	"gorm.io/gorm"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type ProjectResponse struct {
@@ -56,12 +57,12 @@ type ProjectRequest struct {
 }
 type GetProjectResponseData struct {
 	Project             `json:",inline"` // 内嵌所有 Project 字段
-	CreatorUsername     string           `json:"creator_username"`
-	CreatorNickname     string           `json:"creator_nickname"`
-	Tags                []string         `json:"tags"`
-	AvailableItemsCount int64            `json:"available_items_count"`
-	IsReceived          bool             `json:"is_received"`
-	ReceivedContent     string           `json:"received_content"`
+	CreatorUsername     string   `json:"creator_username"`
+	CreatorNickname     string   `json:"creator_nickname"`
+	Tags                []string `json:"tags"`
+	AvailableItemsCount int64    `json:"available_items_count"`
+	IsReceived          bool     `json:"is_received"`
+	ReceivedContent     string   `json:"received_content"`
 }
 
 // GetProject
@@ -584,9 +585,19 @@ func ListTags(c *gin.Context) {
 }
 
 type ListProjectsRequest struct {
-	Current int      `json:"current" form:"current" binding:"min=1"`
-	Size    int      `json:"size" form:"size" binding:"min=1,max=100"`
-	Tags    []string `json:"tags" form:"tags" binding:"dive,min=1,max=16"`
+	Current       int      `json:"current" form:"current" binding:"min=1"`
+	Size          int      `json:"size" form:"size" binding:"min=1,max=100"`
+	Tags          []string `json:"tags" form:"tags" binding:"dive,min=1,max=16"`
+	MinTrustLevel int      `json:"min_trust_level" form:"min_trust_level" binding:"omitempty,min=0,max=4"`
+	MaxTrustLevel int      `json:"max_trust_level" form:"max_trust_level" binding:"omitempty,min=0,max=4"`
+	MinTotalItems int64    `json:"min_total_items" form:"min_total_items" binding:"omitempty,min=0"`
+	MaxTotalItems int64    `json:"max_total_items" form:"max_total_items" binding:"omitempty,min=0"`
+	StartTimeFrom string   `json:"start_time_from" form:"start_time_from"`
+	StartTimeTo   string   `json:"start_time_to" form:"start_time_to"`
+	EndTimeFrom   string   `json:"end_time_from" form:"end_time_from"`
+	EndTimeTo     string   `json:"end_time_to" form:"end_time_to"`
+	SortBy        string   `json:"sort_by" form:"sort_by" binding:"omitempty,oneof=trust_level total_items start_time end_time created_at"`
+	SortOrder     string   `json:"sort_order" form:"sort_order" binding:"omitempty,oneof=asc desc"`
 }
 
 type ListProjectsResponseDataResult struct {
@@ -630,7 +641,7 @@ func ListProjects(c *gin.Context) {
 
 	currentUser, _ := oauth.GetUserFromContext(c)
 
-	pagedData, err := ListProjectsWithTags(c.Request.Context(), offset, req.Size, req.Tags, currentUser)
+	pagedData, err := ListProjectsWithTags(c.Request.Context(), offset, req.Size, req.Tags, currentUser, req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
@@ -657,7 +668,7 @@ func ListMyProjects(c *gin.Context) {
 	}
 	offset := (req.Current - 1) * req.Size
 
-	pagedData, err := ListMyProjectsWithTags(c.Request.Context(), userID, offset, req.Size, req.Tags)
+	pagedData, err := ListMyProjectsWithTags(c.Request.Context(), userID, offset, req.Size, req.Tags, req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ListProjectsResponse{ErrorMsg: err.Error()})
 		return
