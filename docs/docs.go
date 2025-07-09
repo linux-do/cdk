@@ -343,6 +343,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/pow/challenge": {
+            "get": {
+                "description": "获取用于项目列表请求的工作量证明验证挑战",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "summary": "获取PoW验证挑战",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.POWResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/project.POWResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/received": {
             "get": {
                 "produces": [
@@ -1051,6 +1077,28 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.POWChallenge": {
+            "type": "object",
+            "properties": {
+                "challenge": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "project.POWResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/project.POWChallenge"
                 },
                 "error_msg": {
                     "type": "string"
