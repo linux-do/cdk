@@ -35,7 +35,7 @@ export class POWProjectService extends ProjectService {
       searchParams.append('current', requestParams.current.toString());
       searchParams.append('size', requestParams.size.toString());
       if (requestParams.tags && requestParams.tags.length > 0) {
-        requestParams.tags.forEach(tag => searchParams.append('tags', tag));
+        requestParams.tags.forEach((tag) => searchParams.append('tags', tag));
       }
 
       const response = await fetch(`/api/v1/projects?${searchParams.toString()}`, {
