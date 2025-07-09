@@ -25,6 +25,8 @@
 package project
 
 import (
+	"fmt"
+	"time"
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
@@ -74,4 +76,26 @@ func ReceiveProjectMiddleware() gin.HandlerFunc {
 		// do next
 		c.Next()
 	}
+}
+
+func GetPOWChallenge(c *gin.Context) {
+	challenge := generateChallenge()
+	expiresAt := time.Now().Unix() + POW_EXPIRY
+	
+	// 存储 challenge 到 Redis
+	key := fmt.Sprintf("pow_challenge:%s", challenge)
+	err := db.Redis.Set(c.Request.Context(), key, "1", time.Duration(POW_EXPIRY)*time.Second).Err()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, POWResponse{
+			Success:  false,
+			ErrorMsg: "Failed to generate challenge",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, POWResponse{
+		Success:   true,
+		Challenge: challenge,
+		ExpiresAt: expiresAt,
+	})
 }

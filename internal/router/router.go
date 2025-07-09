@@ -104,8 +104,9 @@ func Serve() {
 			projectRouter := apiV1Router.Group("/projects")
 			projectRouter.Use(oauth.LoginRequired())
 			{
+				projectRouter.GET("/pow/challenge", project.GetPOWChallenge)
 				projectRouter.GET("/mine", project.ListMyProjects)
-				projectRouter.GET("", project.ListProjects)
+				projectRouter.GET("", project.POWMiddleware(), project.ListProjects)
 				projectRouter.POST("", project.CreateProject)
 				projectRouter.PUT("/:id", project.ProjectCreatorPermMiddleware(), project.UpdateProject)
 				projectRouter.DELETE("/:id", project.ProjectCreatorPermMiddleware(), project.DeleteProject)
