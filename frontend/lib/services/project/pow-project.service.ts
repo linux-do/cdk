@@ -30,7 +30,15 @@ export class POWProjectService extends ProjectService {
         requestParams.tags = params.tags;
       }
 
-      const response = await fetch(`/api/v1/projects?${new URLSearchParams(requestParams as Record<string, string>)}`, {
+      // 构建查询参数
+      const searchParams = new URLSearchParams();
+      searchParams.append('current', requestParams.current.toString());
+      searchParams.append('size', requestParams.size.toString());
+      if (requestParams.tags && requestParams.tags.length > 0) {
+        requestParams.tags.forEach(tag => searchParams.append('tags', tag));
+      }
+
+      const response = await fetch(`/api/v1/projects?${searchParams.toString()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
