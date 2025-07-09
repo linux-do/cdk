@@ -1,5 +1,5 @@
 import apiClient from '../core/api-client';
-import { POWManager } from '../../utils/pow';
+import {POWManager} from '../../utils/pow';
 
 class POWApiClient {
   private powManager = POWManager.getInstance();
@@ -9,19 +9,19 @@ class POWApiClient {
     if (url === '/api/v1/projects' && (!config || config.method !== 'POST')) {
       try {
         // 尝试获取 challenge 并解决 PoW
-        const { challenge, nonce } = await this.powManager.getChallengeAndSolve();
-        
+        const {challenge, nonce} = await this.powManager.getChallengeAndSolve();
+
         // 添加 PoW 头部
         const headers = {
           ...config?.headers,
           'X-POW-Challenge': challenge,
-          'X-POW-Nonce': nonce.toString()
+          'X-POW-Nonce': nonce.toString(),
         };
 
-        return apiClient.get<T>(url, { ...config, headers });
+        return apiClient.get<T>(url, {...config, headers});
       } catch (error) {
         console.error('PoW verification failed:', error);
-        
+
         // 如果 PoW 失败，尝试直接发送请求
         try {
           return apiClient.get<T>(url, config);

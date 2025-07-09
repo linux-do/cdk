@@ -55,11 +55,11 @@ export class POWSolver {
 
       try {
         const worker = new Worker(
-          URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' }))
+            URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'})),
         );
 
         worker.onmessage = (e) => {
-          const { success, nonce, progress } = e.data;
+          const {success, nonce, progress} = e.data;
           if (success) {
             worker.terminate();
             resolve(nonce);
@@ -77,7 +77,7 @@ export class POWSolver {
 
         worker.postMessage({
           challenge,
-          targetPrefix: POWSolver.TARGET_PREFIX
+          targetPrefix: POWSolver.TARGET_PREFIX,
         });
       } catch (error) {
         console.error('Failed to create worker:', error);
@@ -89,20 +89,20 @@ export class POWSolver {
 
   static async solvePOWFallback(challenge: string): Promise<number> {
     let nonce = 0;
-    
+
     while (true) {
       const input = `${challenge}:${nonce}`;
       const hash = CryptoJS.SHA256(input).toString();
-      
+
       if (hash.startsWith(POWSolver.TARGET_PREFIX)) {
         return nonce;
       }
-      
+
       nonce++;
-      
+
       // 每100次计算让出控制权，避免阻塞UI
       if (nonce % 100 === 0) {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
   }
@@ -141,7 +141,7 @@ export class POWManager {
     try {
       const response = await fetch('/api/v1/projects/pow/challenge', {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -149,14 +149,14 @@ export class POWManager {
       }
 
       const data: POWResponse = await response.json();
-      
+
       if (data.error_msg || !data.data) {
         throw new Error(data.error_msg || 'Invalid challenge response');
       }
 
       this.cachedChallenge = {
         challenge: data.data.challenge,
-        expires_at: data.data.expires_at
+        expires_at: data.data.expires_at,
       };
 
       return this.solveChallenge(data.data.challenge);
@@ -169,7 +169,7 @@ export class POWManager {
   private async solveChallenge(challenge: string): Promise<{ challenge: string; nonce: number }> {
     try {
       let nonce: number;
-      
+
       // 尝试使用 Web Worker，如果不可用则使用 fallback
       if (typeof Worker !== 'undefined') {
         nonce = await POWSolver.solvePOW(challenge);
@@ -177,7 +177,7 @@ export class POWManager {
         nonce = await POWSolver.solvePOWFallback(challenge);
       }
 
-      const result = { challenge, nonce };
+      const result = {challenge, nonce};
       this.solvingPromise = null;
       return result;
     } catch (error) {
