@@ -78,6 +78,14 @@ func ReceiveProjectMiddleware() gin.HandlerFunc {
 	}
 }
 
+// GetPOWChallenge
+// @Tags project
+// @Summary 获取PoW验证挑战
+// @Description 获取用于项目列表请求的工作量证明验证挑战
+// @Produce json
+// @Success 200 {object} POWResponse
+// @Failure 500 {object} POWResponse
+// @Router /api/v1/projects/pow/challenge [get]
 func GetPOWChallenge(c *gin.Context) {
 	challenge := generateChallenge()
 	expiresAt := time.Now().Unix() + POW_EXPIRY
@@ -87,15 +95,15 @@ func GetPOWChallenge(c *gin.Context) {
 	err := db.Redis.Set(c.Request.Context(), key, "1", time.Duration(POW_EXPIRY)*time.Second).Err()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, POWResponse{
-			Success:  false,
 			ErrorMsg: "Failed to generate challenge",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, POWResponse{
-		Success:   true,
-		Challenge: challenge,
-		ExpiresAt: expiresAt,
+		Data: POWChallenge{
+			Challenge: challenge,
+			ExpiresAt: expiresAt,
+		},
 	})
 }

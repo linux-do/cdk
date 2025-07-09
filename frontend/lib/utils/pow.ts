@@ -6,10 +6,8 @@ export interface POWChallenge {
 }
 
 export interface POWResponse {
-  success: boolean;
-  challenge?: string;
-  expires_at?: number;
-  error_msg?: string;
+  error_msg: string;
+  data: POWChallenge;
 }
 
 export class POWSolver {
@@ -152,16 +150,16 @@ export class POWManager {
 
       const data: POWResponse = await response.json();
       
-      if (!data.success || !data.challenge) {
+      if (data.error_msg || !data.data) {
         throw new Error(data.error_msg || 'Invalid challenge response');
       }
 
       this.cachedChallenge = {
-        challenge: data.challenge,
-        expires_at: data.expires_at!
+        challenge: data.data.challenge,
+        expires_at: data.data.expires_at
       };
 
-      return this.solveChallenge(data.challenge);
+      return this.solveChallenge(data.data.challenge);
     } catch (error) {
       this.solvingPromise = null;
       throw error;

@@ -49,10 +49,8 @@ type POWChallenge struct {
 }
 
 type POWResponse struct {
-	Success   bool   `json:"success"`
-	Challenge string `json:"challenge,omitempty"`
-	ExpiresAt int64  `json:"expires_at,omitempty"`
-	ErrorMsg  string `json:"error_msg,omitempty"`
+	ErrorMsg string       `json:"error_msg"`
+	Data     POWChallenge `json:"data"`
 }
 
 func POWMiddleware() gin.HandlerFunc {
@@ -77,17 +75,17 @@ func POWMiddleware() gin.HandlerFunc {
 			err := db.Redis.Set(c.Request.Context(), key, "1", time.Duration(POW_EXPIRY)*time.Second).Err()
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, POWResponse{
-					Success:  false,
 					ErrorMsg: "Failed to generate challenge",
 				})
 				return
 			}
 
 			c.AbortWithStatusJSON(http.StatusUnauthorized, POWResponse{
-				Success:   false,
-				Challenge: newChallenge,
-				ExpiresAt: expiresAt,
-				ErrorMsg:  "POW challenge required",
+				ErrorMsg: "POW challenge required",
+				Data: POWChallenge{
+					Challenge: newChallenge,
+					ExpiresAt: expiresAt,
+				},
 			})
 			return
 		}
@@ -95,7 +93,6 @@ func POWMiddleware() gin.HandlerFunc {
 		// 验证 PoW
 		if !verifyPOW(c, challenge, nonce) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, POWResponse{
-				Success:  false,
 				ErrorMsg: "Invalid POW solution",
 			})
 			return
