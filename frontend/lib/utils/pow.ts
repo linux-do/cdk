@@ -102,7 +102,9 @@ export class POWSolver {
 
       // 每100次计算让出控制权，避免阻塞UI
       if (nonce % 100 === 0) {
-        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 0);
+        });
       }
     }
   }
@@ -141,7 +143,7 @@ export class POWManager {
     try {
       const response = await fetch('/api/v1/projects/pow/challenge', {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -149,14 +151,14 @@ export class POWManager {
       }
 
       const data: POWResponse = await response.json();
-
+      
       if (data.error_msg || !data.data) {
         throw new Error(data.error_msg || 'Invalid challenge response');
       }
 
       this.cachedChallenge = {
         challenge: data.data.challenge,
-        expires_at: data.data.expires_at,
+        expires_at: data.data.expires_at
       };
 
       return this.solveChallenge(data.data.challenge);

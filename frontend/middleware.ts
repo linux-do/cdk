@@ -1,9 +1,15 @@
 import {NextRequest, NextResponse} from 'next/server';
+import CryptoJS from 'crypto-js';
 
 const HCAPTCHA_VERIFY_URL = 'https://hcaptcha.com/siteverify';
 const HCAPTCHA_SECRET_KEY = process.env.HCAPTCHA_SECRET_KEY || 'your-hcaptcha-secret-key';
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:8000';
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+
+// PoW 配置
+const POW_DIFFICULTY = 18;
+const POW_EXPIRY = 5 * 60 * 1000; // 5 minutes in milliseconds
+const TARGET_PREFIX = '0'.repeat(POW_DIFFICULTY);
 
 interface HCaptchaResponse {
   success: boolean;
@@ -20,6 +26,163 @@ interface ProjectData {
 interface ReceiveRequestBody {
   captcha_token?: string;
   [key: string]: string | number | boolean | null | undefined;
+}
+
+interface ChallengeStore {
+  [key: string]: {
+    timestamp: number;
+    used: boolean;
+  };
+}
+
+// 内存存储 challenge，生产环境可以使用 Redis
+const challengeStore: ChallengeStore = {};
+
+// 定期清理过期的 challenge
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of Object.entries(challengeStore)) {
+    if (now - value.timestamp > POW_EXPIRY) {
+      delete challengeStore[key];
+    }
+  }
+}, 60000); // 每分钟清理一次
+
+/**
+ * 生成 PoW 挑战
+ */
+function generateChallenge(): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 15);
+  return `${timestamp}_${random}`;
+}
+
+/**
+ * 验证 PoW 解决方案
+ */
+function verifyPOW(challenge: string, nonce: number): boolean {
+  // 检查 challenge 是否存在且未过期
+  const challengeData = challengeStore[challenge];
+  if (!challengeData) {
+    return false;
+  }
+
+  const now = Date.now();
+  if (now - challengeData.timestamp > POW_EXPIRY) {
+    delete challengeStore[challenge];
+    return false;
+  }
+
+  // 检查是否已被使用（防重放攻击）
+  if (challengeData.used) {
+    return false;
+  }
+
+  // 标记为已使用
+  challengeData.used = true;
+
+  // 验证 PoW
+  const input = `${challenge}:${nonce}`;
+  const hash = CryptoJS.SHA256(input).toString();
+  
+  return hash.startsWith(TARGET_PREFIX);
+}
+
+/**
+ * 处理项目列表请求的 PoW 验证
+ */
+async function handleProjectListPoW(request: NextRequest): Promise<NextResponse | null> {
+  const challenge = request.headers.get('x-pow-challenge');
+  const nonceStr = request.headers.get('x-pow-nonce');
+
+  // 如果没有 PoW 头部，返回 challenge
+  if (!challenge || !nonceStr) {
+    const newChallenge = generateChallenge();
+    const expiresAt = Date.now() + POW_EXPIRY;
+    
+    // 存储 challenge
+    challengeStore[newChallenge] = {
+      timestamp: Date.now(),
+      used: false
+    };
+
+    return NextResponse.json(
+      {
+        error_msg: 'POW challenge required',
+        data: {
+          challenge: newChallenge,
+          expires_at: Math.floor(expiresAt / 1000)
+        }
+      },
+      { status: 401 }
+    );
+  }
+
+  // 验证 PoW
+  const nonce = parseInt(nonceStr, 10);
+  if (isNaN(nonce) || !verifyPOW(challenge, nonce)) {
+    return NextResponse.json(
+      {
+        error_msg: 'Invalid POW solution',
+        data: null
+      },
+      { status: 401 }
+    );
+  }
+
+  // 验证通过，转发请求到后端
+  const backendUrl = `${BACKEND_BASE_URL}${request.nextUrl.pathname}${request.nextUrl.search}`;
+  
+  try {
+    const backendResponse = await fetch(backendUrl, {
+      method: request.method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': request.headers.get('cookie') || '',
+        'User-Agent': 'CDK-Frontend-Middleware',
+      },
+      credentials: 'include',
+    });
+
+    const backendData = await backendResponse.json();
+
+    return NextResponse.json(backendData, {
+      status: backendResponse.status,
+      headers: {
+        'Set-Cookie': backendResponse.headers.get('Set-Cookie') || '',
+      },
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error_msg: formatErrorMessage(error, '服务器暂时不可用，请稍后重试'),
+        data: null
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * 处理 PoW challenge 请求
+ */
+function handlePOWChallenge(): NextResponse {
+  const challenge = generateChallenge();
+  const expiresAt = Date.now() + POW_EXPIRY;
+  
+  // 存储 challenge
+  challengeStore[challenge] = {
+    timestamp: Date.now(),
+    used: false
+  };
+
+  return NextResponse.json({
+    error_msg: '',
+    data: {
+      challenge,
+      expires_at: Math.floor(expiresAt / 1000)
+    }
+  });
 }
 
 /**
@@ -226,6 +389,20 @@ async function handleReceiveRequest(request: NextRequest, pathname: string): Pro
 }
 
 /**
+ * 检查是否为项目列表请求
+ */
+function isProjectListRequest(pathname: string, method: string): boolean {
+  return pathname === '/api/v1/projects' && method === 'GET';
+}
+
+/**
+ * 检查是否为 PoW challenge 请求
+ */
+function isPOWChallengeRequest(pathname: string, method: string): boolean {
+  return pathname === '/api/v1/projects/pow/challenge' && method === 'GET';
+}
+
+/**
  * 检查是否为领取请求
  */
 function isReceiveRequest(pathname: string, method: string): boolean {
@@ -240,6 +417,16 @@ export async function middleware(request: NextRequest) {
 
   if (!pathname.startsWith('/api/')) {
     return NextResponse.next();
+  }
+
+  // 处理 PoW challenge 请求
+  if (isPOWChallengeRequest(pathname, request.method)) {
+    return handlePOWChallenge();
+  }
+
+  // 处理项目列表请求的 PoW 验证
+  if (isProjectListRequest(pathname, request.method)) {
+    return await handleProjectListPoW(request);
   }
 
   // 处理领取请求

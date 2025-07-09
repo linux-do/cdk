@@ -6,6 +6,7 @@ import {Skeleton} from '@/components/ui/skeleton';
 import {ExploreContent} from './ExploreContent';
 import {ExploreBanner} from './ExploreBanner';
 import services from '@/lib/services';
+import {POWProjectService} from '@/lib/services/project/pow-project.service';
 import {ProjectListItem} from '@/lib/services/project/types';
 import {motion} from 'motion/react';
 
@@ -115,7 +116,7 @@ export function ExploreMain() {
   const fetchProjects = useCallback(async () => {
     setLoading(true);
 
-    const result = await services.project.getProjectsSafe({
+    const result = await POWProjectService.getProjectsSafe({
       current: currentPage,
       size: PAGE_SIZE,
       tags: (selectedTags || []).length > 0 ? selectedTags : undefined,

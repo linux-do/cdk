@@ -25,8 +25,6 @@
 package project
 
 import (
-	"fmt"
-	"time"
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
@@ -76,34 +74,4 @@ func ReceiveProjectMiddleware() gin.HandlerFunc {
 		// do next
 		c.Next()
 	}
-}
-
-// GetPOWChallenge
-// @Tags project
-// @Summary 获取PoW验证挑战
-// @Description 获取用于项目列表请求的工作量证明验证挑战
-// @Produce json
-// @Success 200 {object} POWResponse
-// @Failure 500 {object} POWResponse
-// @Router /api/v1/projects/pow/challenge [get]
-func GetPOWChallenge(c *gin.Context) {
-	challenge := generateChallenge()
-	expiresAt := time.Now().Unix() + POW_EXPIRY
-	
-	// 存储 challenge 到 Redis
-	key := fmt.Sprintf("pow_challenge:%s", challenge)
-	err := db.Redis.Set(c.Request.Context(), key, "1", time.Duration(POW_EXPIRY)*time.Second).Err()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, POWResponse{
-			ErrorMsg: "Failed to generate challenge",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, POWResponse{
-		Data: POWChallenge{
-			Challenge: challenge,
-			ExpiresAt: expiresAt,
-		},
-	})
 }

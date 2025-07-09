@@ -20,7 +20,6 @@ import {
   ReportProjectResponse,
 } from './types';
 import apiClient from '../core/api-client';
-import powApiClient from '../core/pow-api-client';
 
 /**
  * 项目服务
@@ -160,7 +159,7 @@ export class ProjectService extends BaseService {
       requestParams.tags = params.tags;
     }
 
-    const response = await powApiClient.get<ProjectListResponse>(`${this.basePath}`, {
+    const response = await apiClient.get<ProjectListResponse>(`${this.basePath}`, {
       params: requestParams,
       paramsSerializer: {
         indexes: null,
