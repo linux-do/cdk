@@ -92,6 +92,7 @@ export class POWSolver {
 
     while (true) {
       const input = `${challenge}:${nonce}`;
+      // eslint-disable-next-line new-cap
       const hash = CryptoJS.SHA256(input).toString();
 
       if (hash.startsWith(POWSolver.TARGET_PREFIX)) {
@@ -143,7 +144,7 @@ export class POWManager {
     try {
       const response = await fetch('/api/v1/projects/pow/challenge', {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -151,14 +152,14 @@ export class POWManager {
       }
 
       const data: POWResponse = await response.json();
-      
+
       if (data.error_msg || !data.data) {
         throw new Error(data.error_msg || 'Invalid challenge response');
       }
 
       this.cachedChallenge = {
         challenge: data.data.challenge,
-        expires_at: data.data.expires_at
+        expires_at: data.data.expires_at,
       };
 
       return this.solveChallenge(data.data.challenge);

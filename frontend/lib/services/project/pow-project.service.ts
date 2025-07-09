@@ -1,6 +1,6 @@
-import { POWManager } from '../../utils/pow';
-import { ProjectService } from './project.service';
-import { ListProjectsRequest, ProjectListData } from './types';
+import {POWManager} from '../../utils/pow';
+import {ProjectService} from './project.service';
+import {ListProjectsRequest, ProjectListData} from './types';
 
 export class POWProjectService extends ProjectService {
   private static powManager = POWManager.getInstance();
@@ -8,12 +8,12 @@ export class POWProjectService extends ProjectService {
   static async getProjectsWithPOW(params: ListProjectsRequest): Promise<ProjectListData> {
     try {
       // 尝试获取 challenge 并解决 PoW（在后台进行）
-      const { challenge, nonce } = await this.powManager.getChallengeAndSolve();
-      
+      const {challenge, nonce} = await this.powManager.getChallengeAndSolve();
+
       // 设置 PoW 头部
       const headers = {
         'X-POW-Challenge': challenge,
-        'X-POW-Nonce': nonce.toString()
+        'X-POW-Nonce': nonce.toString(),
       };
 
       // 使用带有 PoW 头部的请求
@@ -30,9 +30,9 @@ export class POWProjectService extends ProjectService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...headers
+          ...headers,
         },
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -41,7 +41,7 @@ export class POWProjectService extends ProjectService {
       }
 
       const data = await response.json();
-      
+
       if (data.error_msg) {
         throw new Error(data.error_msg);
       }
@@ -72,7 +72,7 @@ export class POWProjectService extends ProjectService {
       const errorMessage = error instanceof Error ? error.message : '获取项目列表失败';
       return {
         success: false,
-        data: { total: 0, results: [] },
+        data: {total: 0, results: []},
         error: errorMessage,
       };
     }
