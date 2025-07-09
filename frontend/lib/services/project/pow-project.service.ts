@@ -17,7 +17,11 @@ export class POWProjectService extends ProjectService {
       };
 
       // 使用带有 PoW 头部的请求
-      const requestParams = {
+      const requestParams: {
+        current: number;
+        size: number;
+        tags?: string[];
+      } = {
         current: params.current,
         size: params.size,
       };
