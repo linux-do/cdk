@@ -1,10 +1,11 @@
 import apiClient from '../core/api-client';
 import {POWManager} from '../../utils/pow';
+import {AxiosRequestConfig} from 'axios';
 
 class POWApiClient {
   private powManager = POWManager.getInstance();
 
-  async get<T>(url: string, config?: any): Promise<{ data: T }> {
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<{ data: T }> {
     // 检查是否是需要 PoW 验证的项目列表请求
     if (url === '/api/v1/projects' && (!config || config.method !== 'POST')) {
       try {
@@ -40,17 +41,18 @@ class POWApiClient {
     return apiClient.get<T>(url, config);
   }
 
-  async post<T>(url: string, data?: any, config?: any): Promise<{ data: T }> {
+  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<{ data: T }> {
     return apiClient.post<T>(url, data, config);
   }
 
-  async put<T>(url: string, data?: any, config?: any): Promise<{ data: T }> {
+  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<{ data: T }> {
     return apiClient.put<T>(url, data, config);
   }
 
-  async delete<T>(url: string, config?: any): Promise<{ data: T }> {
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<{ data: T }> {
     return apiClient.delete<T>(url, config);
   }
 }
 
-export default new POWApiClient();
+const powApiClient = new POWApiClient();
+export default powApiClient;

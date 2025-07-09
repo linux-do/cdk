@@ -102,7 +102,7 @@ export class POWSolver {
 
       // 每100次计算让出控制权，避免阻塞UI
       if (nonce % 100 === 0) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
       }
     }
   }
