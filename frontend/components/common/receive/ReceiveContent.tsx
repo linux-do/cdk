@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {useRouter} from 'next/navigation';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
@@ -9,6 +9,7 @@ import {TRUST_LEVEL_OPTIONS} from '@/components/common/project';
 import {ArrowLeftIcon, Copy, Tag, Gift, Clock, AlertCircle, Package} from 'lucide-react';
 import ContentRender from '@/components/common/markdown/ContentRender';
 import {ReportButton} from '@/components/common/receive/ReportButton';
+import {ReceiveVerify, ReceiveVerifyRef} from '@/components/common/receive/ReceiveVerify';
 import services from '@/lib/services';
 import {BasicUserInfo} from '@/lib/services/core';
 import {GetProjectResponseData} from '@/lib/services/project';
@@ -35,25 +36,30 @@ const getTimeRemainingText = (startTime: Date, currentTime: Date): string | null
 };
 
 /**
+ * 项目领取按钮组件的 Props 接口
+ */
+interface ReceiveButtonProps {
+  project: GetProjectResponseData;
+  user: BasicUserInfo | null;
+  currentTime: Date;
+  hasReceived: boolean;
+  receivedContent: string | null;
+  isVerifying: boolean;
+  onReceive: () => void;
+}
+
+/**
  * 项目领取按钮组件
  */
 const ReceiveButton = ({
   project,
   user,
   currentTime,
-  isReceiving,
   hasReceived,
   receivedContent,
+  isVerifying,
   onReceive,
-}: {
-  project: GetProjectResponseData;
-  user: BasicUserInfo | null;
-  currentTime: Date;
-  isReceiving: boolean;
-  hasReceived: boolean;
-  receivedContent: string | null;
-  onReceive: () => void;
-}) => {
+}: ReceiveButtonProps) => {
   if (hasReceived && receivedContent) {
     return (
       <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg -mt-4">
@@ -122,11 +128,20 @@ const ReceiveButton = ({
   return (
     <Button
       onClick={onReceive}
-      disabled={isReceiving}
+      disabled={isVerifying}
       className="w-full"
     >
-      <Gift className="w-4 h-4 mr-2" />
-      {isReceiving ? '领取中...' : '立即领取'}
+      {isVerifying ? (
+        <>
+          <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent mr-2" />
+          验证中...
+        </>
+      ) : (
+        <>
+          <Gift className="w-4 h-4 mr-2" />
+          立即领取
+        </>
+      )}
     </Button>
   );
 };
@@ -142,7 +157,6 @@ interface ReceiveContentProps {
   };
 }
 
-
 /**
  * 项目接收内容组件
  */
@@ -150,44 +164,82 @@ export function ReceiveContent({data}: ReceiveContentProps) {
   const {project, user, projectId} = data;
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isReceiving, setIsReceiving] = useState(false);
   const [hasReceived, setHasReceived] = useState(project.is_received);
   const [receivedContent, setReceivedContent] = useState<string | null>(project.received_content || null);
   const [currentProject, setCurrentProject] = useState(project);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const verifyRef = useRef<ReceiveVerifyRef>(null);
 
   /**
-   * 处理项目领取
+   * 检查项目是否可以领取（时间限制）
    */
-  const handleReceive = async () => {
-    if (!projectId || isReceiving || hasReceived) return;
+  const isProjectAvailable = () => {
+    const startTime = new Date(currentProject.start_time);
+    const endTime = new Date(currentProject.end_time);
+    return currentTime >= startTime && currentTime <= endTime;
+  };
 
-    try {
-      setIsReceiving(true);
+  /**
+   * 处理项目领取（触发验证）
+   */
+  const handleReceive = () => {
+    if (!projectId || hasReceived || isVerifying) return;
 
-      const result = await services.project.receiveProjectSafe(projectId);
+    // 检查项目时间
+    if (!isProjectAvailable()) {
+      const startTime = new Date(currentProject.start_time);
+      const endTime = new Date(currentProject.end_time);
 
-      if (result.success) {
-        const content = result.data?.itemContent || '领取成功，但未获取到兑换内容';
-
-        setCurrentProject((prev) => ({
-          ...prev,
-          available_items_count: prev.available_items_count - 1,
-          is_received: true,
-          received_content: content,
-        }));
-
-        setHasReceived(true);
-        setReceivedContent(content);
-        toast.success('领取成功！');
-      } else {
-        toast.error(result.error || '领取失败');
+      if (currentTime < startTime) {
+        toast.error('项目尚未开始，请等待开始时间');
+      } else if (currentTime > endTime) {
+        toast.error('项目已结束');
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '领取失败';
-      toast.error(errorMessage);
-    } finally {
-      setIsReceiving(false);
+      return;
     }
+
+    // 触发验证
+    verifyRef.current?.execute();
+  };
+
+  /**
+   * 验证成功后处理
+   */
+  const handleVerifySuccess = async (token: string) => {
+    // 调用领取接口
+    const result = await services.project.receiveProjectSafe(projectId, token);
+
+    if (result.success) {
+      const content = result.data?.itemContent || '领取成功，但未获取到兑换内容';
+
+      setCurrentProject((prev) => ({
+        ...prev,
+        available_items_count: prev.available_items_count - 1,
+        is_received: true,
+        received_content: content,
+      }));
+
+      setHasReceived(true);
+      setReceivedContent(content);
+      toast.success('领取成功！');
+    } else {
+      toast.error(result.error || '领取失败');
+      throw new Error(result.error || '领取失败');
+    }
+  };
+
+  /**
+   * 验证开始回调
+   */
+  const handleVerifyStart = () => {
+    setIsVerifying(true);
+  };
+
+  /**
+   * 验证结束回调
+   */
+  const handleVerifyEnd = () => {
+    setIsVerifying(false);
   };
 
   const handleGoBack = () => {
@@ -316,9 +368,9 @@ export function ReceiveContent({data}: ReceiveContentProps) {
           project={currentProject}
           user={user}
           currentTime={currentTime}
-          isReceiving={isReceiving}
           hasReceived={hasReceived}
           receivedContent={receivedContent}
+          isVerifying={isVerifying}
           onReceive={handleReceive}
         />
       </motion.div>
@@ -344,6 +396,14 @@ export function ReceiveContent({data}: ReceiveContentProps) {
           />
         </div>
       </motion.div>
+
+      {/* 验证组件 */}
+      <ReceiveVerify
+        ref={verifyRef}
+        onVerify={handleVerifySuccess}
+        onVerifyStart={handleVerifyStart}
+        onVerifyEnd={handleVerifyEnd}
+      />
     </motion.div>
   );
 }

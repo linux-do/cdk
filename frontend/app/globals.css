@@ -68,13 +68,16 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: rgb(249, 250, 251);
+  /* bg-gray-50 */
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-accent: rgb(249, 250, 251);
+  /* bg-gray-50 - 与背景相同 */
+  --sidebar-accent-foreground: oklch(0.15 0.01 285.885);
+  --sidebar-border: transparent;
+  /* 移除边框 */
   --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
@@ -102,13 +105,16 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar: rgb(31, 41, 55);
+  /* bg-gray-800 */
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-accent: rgb(31, 41, 55);
+  /* bg-gray-800 - 与背景相同 */
+  --sidebar-accent-foreground: oklch(0.95 0.01 0);
+  --sidebar-border: transparent;
+  /* 移除边框 */
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
@@ -116,6 +122,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -135,9 +142,17 @@ button {
 }
 
 @keyframes slide {
-  0% { left: -33%; }
-  50% { left: 100%; }
-  100% { left: -33%; }
+  0% {
+    left: -33%;
+  }
+
+  50% {
+    left: 100%;
+  }
+
+  100% {
+    left: -33%;
+  }
 }
 
 /* Toast 图标着色样式 */
@@ -189,4 +204,23 @@ button {
 
 .dark [data-sonner-toast][data-type="loading"] [data-icon] {
   color: #9ca3af;
+}
+
+/* 侧边栏菜单高亮增强样式 */
+[data-slot="sidebar-menu-button"][data-active="true"] {
+  position: relative;
+}
+
+/* 亮色模式下的活跃状态增强 */
+:root [data-slot="sidebar-menu-button"][data-active="true"] {
+  background: rgb(243, 244, 246);
+  /* bg-gray-100 */
+  color: var(--sidebar-primary);
+}
+
+/* 深色模式下的活跃状态增强 */
+.dark [data-slot="sidebar-menu-button"][data-active="true"] {
+  background: rgb(55, 65, 81);
+  /* bg-gray-700 */
+  color: var(--sidebar-primary-foreground);
 }

@@ -88,12 +88,18 @@ export class ProjectService extends BaseService {
   }
 
   /**
-   * 领取项目内容
+   * 领取项目内容（必须带验证码）
    * @param projectId - 项目ID
+   * @param captchaToken - hCaptcha验证令牌
    * @returns 领取结果，包含领取内容
    */
-  static async receiveProject(projectId: string): Promise<ReceiveProjectData> {
-    const response = await apiClient.post<ReceiveProjectResponse>(`${this.basePath}/${projectId}/receive`);
+  static async receiveProject(projectId: string, captchaToken: string): Promise<ReceiveProjectData> {
+    const response = await apiClient.post<ReceiveProjectResponse>(
+        `${this.basePath}/${projectId}/receive`,
+        {
+          captcha_token: captchaToken,
+        },
+    );
     if (response.data.error_msg) {
       throw new Error(response.data.error_msg);
     }
@@ -307,17 +313,18 @@ export class ProjectService extends BaseService {
   }
 
   /**
-   * 领取项目内容（带错误处理）
+   * 领取项目内容（带错误处理，必须提供验证码）
    * @param projectId - 项目ID
+   * @param captchaToken - hCaptcha验证令牌
    * @returns 领取结果，包含成功状态、领取内容和错误信息
    */
-  static async receiveProjectSafe(projectId: string): Promise<{
+  static async receiveProjectSafe(projectId: string, captchaToken: string): Promise<{
     success: boolean;
     data?: ReceiveProjectData;
     error?: string;
   }> {
     try {
-      const data = await this.receiveProject(projectId);
+      const data = await this.receiveProject(projectId, captchaToken);
       return {success: true, data};
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '领取项目内容失败';

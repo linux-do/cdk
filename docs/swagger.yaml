@@ -1,4 +1,53 @@
 definitions:
+  admin.ListProjectsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/admin.ListProjectsResponseData'
+      error_msg:
+        type: string
+    type: object
+  admin.ListProjectsResponseData:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/admin.ListProjectsResponseDataResult'
+        type: array
+      total:
+        type: integer
+    type: object
+  admin.ListProjectsResponseDataResult:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      nickname:
+        type: string
+      status:
+        $ref: '#/definitions/project.ProjectStatus'
+      tags:
+        items:
+          type: string
+        type: array
+      username:
+        type: string
+    type: object
+  admin.ReviewProjectRequest:
+    properties:
+      status:
+        allOf:
+        - $ref: '#/definitions/project.ProjectStatus'
+        enum:
+        - 0
+        - 1
+        - 2
+    type: object
+  admin.ReviewProjectResponse:
+    properties:
+      data: {}
+      error_msg:
+        type: string
+    type: object
   dashboard.DashboardDataResponse:
     properties:
       data: {}
@@ -345,8 +394,70 @@ info:
   title: Linux Do CDK
   version: 0.1.0
 paths:
+  /api/v1/admin/projects:
+    get:
+      parameters:
+      - in: query
+        minimum: 1
+        name: current
+        type: integer
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      - enum:
+        - 0
+        - 1
+        - 2
+        in: query
+        name: status
+        type: integer
+        x-enum-varnames:
+        - ProjectStatusNormal
+        - ProjectStatusHidden
+        - ProjectStatusViolation
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin.ListProjectsResponse'
+      tags:
+      - admin
+  /api/v1/admin/projects/{id}/review:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 项目ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 项目信息
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/admin.ReviewProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin.ReviewProjectResponse'
+      tags:
+      - admin
   /api/v1/dashboard/stats/all:
     get:
+      parameters:
+      - description: request query
+        in: query
+        name: days
+        type: integer
       produces:
       - application/json
       responses:
@@ -420,6 +531,22 @@ paths:
       - oauth
   /api/v1/projects:
     get:
+      parameters:
+      - in: query
+        minimum: 1
+        name: current
+        type: integer
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: tags
+        type: array
       produces:
       - application/json
       responses:
@@ -561,6 +688,22 @@ paths:
       - project
   /api/v1/projects/mine:
     get:
+      parameters:
+      - in: query
+        minimum: 1
+        name: current
+        type: integer
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: tags
+        type: array
       produces:
       - application/json
       responses:
@@ -572,6 +715,16 @@ paths:
       - project
   /api/v1/projects/received:
     get:
+      parameters:
+      - in: query
+        minimum: 1
+        name: current
+        type: integer
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
       produces:
       - application/json
       responses:

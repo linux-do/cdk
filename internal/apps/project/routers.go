@@ -513,7 +513,7 @@ type ListReceiveHistoryResponse struct {
 
 // ListReceiveHistory
 // @Tags project
-// @Params request query ListReceiveHistoryRequest true "request query"
+// @Param request query ListReceiveHistoryRequest true "request query"
 // @Produce json
 // @Success 200 {object} ListReceiveHistoryResponse
 // @Router /api/v1/projects/received [get]
@@ -633,7 +633,7 @@ type ListProjectsResponse struct {
 
 // ListProjects
 // @Tags project
-// @Params request query ListProjectsRequest true "request query"
+// @Param request query ListProjectsRequest true "request query"
 // @Produce json
 // @Success 200 {object} ListProjectsResponse
 // @Router /api/v1/projects [get]
@@ -660,7 +660,7 @@ func ListProjects(c *gin.Context) {
 
 // ListMyProjects
 // @Tags project
-// @Params request query ListProjectsRequest true "request query"
+// @Param request query ListProjectsRequest true "request query"
 // @Produce json
 // @Success 200 {object} ListProjectsResponse
 // @Router /api/v1/projects/mine [get]

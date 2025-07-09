@@ -31,6 +31,7 @@ import (
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	_ "github.com/linux-do/cdk/docs"
+	"github.com/linux-do/cdk/internal/apps/admin"
 	"github.com/linux-do/cdk/internal/apps/dashboard"
 	"github.com/linux-do/cdk/internal/apps/health"
 	"github.com/linux-do/cdk/internal/apps/oauth"
@@ -85,8 +86,10 @@ func Serve() {
 
 	apiGroup := r.Group(config.Config.App.APIPrefix)
 	{
-		// Swagger
-		apiGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		if config.Config.App.Env == "development" {
+			// Swagger
+			apiGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		}
 
 		// API V1
 		apiV1Router := apiGroup.Group("/v1")
@@ -128,6 +131,18 @@ func Serve() {
 			dashboardRouter.Use(oauth.LoginRequired())
 			{
 				dashboardRouter.GET("/stats/all", dashboard.GetAllStats)
+			}
+
+			// Admin
+			adminRouter := apiV1Router.Group("/admin")
+			adminRouter.Use(oauth.LoginRequired(), admin.LoginAdminRequired())
+			{
+				// Project
+				projectAdminRouter := adminRouter.Group("/projects")
+				{
+					projectAdminRouter.GET("", admin.GetProjectsList)
+					projectAdminRouter.PUT("/:id/review", admin.ReviewProject)
+				}
 			}
 		}
 	}

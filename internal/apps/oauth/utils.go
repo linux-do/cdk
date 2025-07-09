@@ -153,17 +153,6 @@ func doOAuth(ctx context.Context, code string) (*User, error) {
 			span.SetStatus(codes.Error, tx.Error.Error())
 			return nil, tx.Error
 		}
-
-		// 后续删除
-		payload, _ := json.Marshal(map[string]interface{}{
-			"user_id": userInfo.Id,
-		})
-
-		if _, errTask := schedule.AsynqClient.Enqueue(asynq.NewTask(task.UpdateSingleUserBadgeScoreTask, payload)); errTask != nil {
-			logger.ErrorF(ctx, "下发用户[%s]徽章分数计算任务失败: %v", userInfo.Username, errTask)
-		} else {
-			logger.InfoF(ctx, "下发用户[%s]徽章分数计算任务成功", userInfo.Username)
-		}
 	}
 	return &user, nil
 }

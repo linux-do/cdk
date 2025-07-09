@@ -22,40 +22,33 @@
  * SOFTWARE.
  */
 
-package dashboard
+package admin
 
 import (
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
+	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/logger"
+	"github.com/linux-do/cdk/internal/otel_trace"
+	"net/http"
 )
 
-type DashboardDataResponse struct {
-	ErrorMsg string      `json:"error_msg"`
-	Data     interface{} `json:"data"`
-}
+func LoginAdminRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// init trace
+		ctx, span := otel_trace.Start(c.Request.Context(), "LoginAdminRequired")
+		defer span.End()
 
-// GetAllStats
-// @Tags Dashboard
-// @Param days query int false "request query"
-// @Produce json
-// @Success 200 {object} DashboardDataResponse
-// @Router /api/v1/dashboard/stats/all [get]
-func GetAllStats(c *gin.Context) {
-	daysStr := c.DefaultQuery("days", "14")
-	days, err := strconv.Atoi(daysStr)
-	if err != nil || days <= 0 || days > 30 {
-		days = 14
+		user, _ := oauth.GetUserFromContext(c)
+
+		if !user.IsAdmin {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error_msg": AdminRequired, "data": nil})
+			return
+		}
+
+		// log
+		logger.InfoF(ctx, "[LoginAdminRequired] %d %s", user.ID, user.Username)
+
+		// next
+		c.Next()
 	}
-	data, err := GetAllDashboardData(c.Request.Context(), days)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, DashboardDataResponse{ErrorMsg: err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, DashboardDataResponse{
-		Data: data,
-	})
 }

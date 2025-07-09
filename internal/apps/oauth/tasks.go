@@ -160,7 +160,7 @@ func HandleUpdateUserBadgeScores(ctx context.Context, t *asynq.Task) error {
 		}
 
 		for _, user := range users {
-			currentDelay += 5 * time.Second
+			currentDelay += time.Duration(config.Config.Schedule.UserBadgeScoreDispatchIntervalSeconds) * time.Second
 
 			payload, _ := json.Marshal(map[string]interface{}{
 				"user_id": user.ID,
