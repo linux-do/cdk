@@ -83,8 +83,9 @@ function verifyPOW(challenge: string, nonce: number): boolean {
 
   // 验证 PoW
   const input = `${challenge}:${nonce}`;
+  // eslint-disable-next-line new-cap
   const hash = CryptoJS.SHA256(input).toString();
-  
+
   return hash.startsWith(TARGET_PREFIX);
 }
 
@@ -99,22 +100,22 @@ async function handleProjectListPoW(request: NextRequest): Promise<NextResponse 
   if (!challenge || !nonceStr) {
     const newChallenge = generateChallenge();
     const expiresAt = Date.now() + POW_EXPIRY;
-    
+
     // 存储 challenge
     challengeStore[newChallenge] = {
       timestamp: Date.now(),
-      used: false
+      used: false,
     };
 
     return NextResponse.json(
-      {
-        error_msg: 'POW challenge required',
-        data: {
-          challenge: newChallenge,
-          expires_at: Math.floor(expiresAt / 1000)
-        }
-      },
-      { status: 401 }
+        {
+          error_msg: 'POW challenge required',
+          data: {
+            challenge: newChallenge,
+            expires_at: Math.floor(expiresAt / 1000),
+          },
+        },
+        {status: 401},
     );
   }
 
@@ -122,17 +123,17 @@ async function handleProjectListPoW(request: NextRequest): Promise<NextResponse 
   const nonce = parseInt(nonceStr, 10);
   if (isNaN(nonce) || !verifyPOW(challenge, nonce)) {
     return NextResponse.json(
-      {
-        error_msg: 'Invalid POW solution',
-        data: null
-      },
-      { status: 401 }
+        {
+          error_msg: 'Invalid POW solution',
+          data: null,
+        },
+        {status: 401},
     );
   }
 
   // 验证通过，转发请求到后端
   const backendUrl = `${BACKEND_BASE_URL}${request.nextUrl.pathname}${request.nextUrl.search}`;
-  
+
   try {
     const backendResponse = await fetch(backendUrl, {
       method: request.method,
@@ -154,11 +155,11 @@ async function handleProjectListPoW(request: NextRequest): Promise<NextResponse 
     });
   } catch (error) {
     return NextResponse.json(
-      {
-        error_msg: formatErrorMessage(error, '服务器暂时不可用，请稍后重试'),
-        data: null
-      },
-      { status: 500 }
+        {
+          error_msg: formatErrorMessage(error, '服务器暂时不可用，请稍后重试'),
+          data: null,
+        },
+        {status: 500},
     );
   }
 }
@@ -169,19 +170,19 @@ async function handleProjectListPoW(request: NextRequest): Promise<NextResponse 
 function handlePOWChallenge(): NextResponse {
   const challenge = generateChallenge();
   const expiresAt = Date.now() + POW_EXPIRY;
-  
+
   // 存储 challenge
   challengeStore[challenge] = {
     timestamp: Date.now(),
-    used: false
+    used: false,
   };
 
   return NextResponse.json({
     error_msg: '',
     data: {
       challenge,
-      expires_at: Math.floor(expiresAt / 1000)
-    }
+      expires_at: Math.floor(expiresAt / 1000),
+    },
   });
 }
 
