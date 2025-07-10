@@ -326,7 +326,13 @@ export function DataTable({data}: DataTableProps) {
                 <TableRow key={`${item.project_id}-${item.received_at}`}>
                   <TableCell>
                     <div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">{item.project_name}</div>
+                      <span
+                        className="text-xs text-gray-600 dark:text-gray-400 hover:text-primary hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                        onClick={() => openProjectDetail(item.project_id)}
+                        title="点击查看项目详情"
+                      >
+                        {item.project_name}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-gray-600 dark:text-gray-400">
