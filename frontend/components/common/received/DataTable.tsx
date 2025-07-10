@@ -1,6 +1,7 @@
 'use client';
 
 import React, {useState, useMemo, useEffect} from 'react';
+import Link from 'next/link';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
@@ -330,7 +331,13 @@ export function DataTable({data}: DataTableProps) {
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-gray-600 dark:text-gray-400">
-                    {item.project_creator_nickname || item.project_creator}
+                    <Link
+                      href={`https://linux.do/u/${item.project_creator}/summary`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      {item.project_creator_nickname || item.project_creator}
+                    </Link>
                   </TableCell>
                   <TableCell className="text-xs font-mono text-gray-600 dark:text-gray-400">
                     <div className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-sm flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">

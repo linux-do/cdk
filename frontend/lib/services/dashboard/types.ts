@@ -69,12 +69,32 @@ export interface UserActivityData {
 }
 
 /**
+ * 活跃创建者原始数据
+ */
+export interface RawActiveCreatorData {
+  avatar: string | null;
+  nickname: string;
+  username: string;
+  projectCount: number;
+}
+
+/**
  * 活跃创建者数据
  */
 export interface ActiveCreatorData {
   avatar: string | null;
   name: string;
   projectCount: number;
+}
+
+/**
+ * 活跃领取者原始数据
+ */
+export interface RawActiveReceiverData {
+  avatar: string | null;
+  nickname: string;
+  username: string;
+  receiveCount: number;
 }
 
 /**
@@ -114,8 +134,8 @@ export interface RawDashboardData {
   projectTags: string | ProjectTagsData[];
   distributeModes: string | DistributeModeData[];
   hotProjects: string | HotProjectData[];
-  activeCreators: string | ActiveCreatorData[];
-  activeReceivers: string | ActiveReceiverData[];
+  activeCreators: string | RawActiveCreatorData[];
+  activeReceivers: string | RawActiveReceiverData[];
   summary: string | StatsSummary;
   [key: string]: unknown;
 }

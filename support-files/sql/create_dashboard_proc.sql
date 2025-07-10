@@ -81,7 +81,7 @@ BEGIN
         ) AS hotProjects,
         (
             SELECT JSON_ARRAYAGG(
-                           JSON_OBJECT('avatar', avatar_url, 'nickname', COALESCE(NULLIF(nickname, ''), username), 'username', username, 'projectCount', project_count)
+                           JSON_OBJECT('avatar', avatar_url, 'nickname', nickname, 'username', username, 'projectCount', project_count)
                    )
             FROM (
                      SELECT u.avatar_url, u.nickname, u.username, COUNT(p.id) AS project_count
@@ -94,7 +94,7 @@ BEGIN
         ) AS activeCreators,
         (
             SELECT JSON_ARRAYAGG(
-                           JSON_OBJECT('avatar', avatar_url, 'nickname', COALESCE(NULLIF(nickname, ''), username), 'username', username, 'receiveCount', receive_count)
+                           JSON_OBJECT('avatar', avatar_url, 'nickname', nickname, 'username', username, 'receiveCount', receive_count)
                    )
             FROM (
                      SELECT u.avatar_url, u.nickname, u.username, COUNT(pi.id) AS receive_count
