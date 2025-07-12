@@ -275,6 +275,14 @@ export function DataTable({data}: DataTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[10px]">
+                <button
+                  className="font-medium hover:text-primary transition-colors"
+                  onClick={() => handleSort('received_at')}
+                >
+                  领取时间{renderSortIcon('received_at')}
+                </button>
+              </TableHead>
               <TableHead className="w-[120px]">
                 <button
                   className="font-medium hover:text-primary transition-colors"
@@ -297,14 +305,6 @@ export function DataTable({data}: DataTableProps) {
                   onClick={() => handleSort('content')}
                 >
                   项目内容{renderSortIcon('content')}
-                </button>
-              </TableHead>
-              <TableHead className="w-[10px]">
-                <button
-                  className="font-medium hover:text-primary transition-colors"
-                  onClick={() => handleSort('received_at')}
-                >
-                  领取时间{renderSortIcon('received_at')}
                 </button>
               </TableHead>
               <TableHead className="text-right w-[60px]"></TableHead>
@@ -333,7 +333,10 @@ export function DataTable({data}: DataTableProps) {
                     {item.project_creator_nickname || item.project_creator}
                   </TableCell>
                   <TableCell className="text-xs font-mono text-gray-600 dark:text-gray-400">
-                    <div className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-sm flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <div className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-sm flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                      onDoubleClick={() => copyToClipboard(item.content)}
+                      title="双击复制项目内容"
+                      >
                       <div className="flex-1 min-w-0">
                         {item.content}
                       </div>
