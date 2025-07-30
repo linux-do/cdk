@@ -1,11 +1,21 @@
 import {useState, useEffect} from 'react';
-import {useTheme} from 'next-themes';
 import {SidebarTrigger} from '@/components/ui/sidebar';
 import {FloatingDock} from '@/components/ui/floating-dock';
-import {SunIcon, MoonIcon, MenuIcon, HomeIcon, MessageCircleIcon, SendIcon} from 'lucide-react';
+import {
+  MoonIcon,
+  MenuIcon,
+  HomeIcon,
+  MessageCircleIcon,
+  SendIcon,
+} from 'lucide-react';
+import {useThemeUtils} from '@/hooks/use-theme-utils';
+
+const IconOptions = {
+  className: 'h-3 w-3',
+} as const;
 
 export function ManagementBar() {
-  const {theme, setTheme} = useTheme();
+  const themeUtils = useThemeUtils();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -17,28 +27,35 @@ export function ManagementBar() {
       title: '侧边栏',
       icon: <MenuIcon className="h-3 w-3" />,
       onClick: () => {
-        const trigger = document.querySelector('[data-sidebar="trigger"]') as HTMLButtonElement;
+        const trigger = document.querySelector(
+            '[data-sidebar="trigger"]',
+        ) as HTMLButtonElement;
         trigger?.click();
       },
     },
     {
       title: '主页',
-      icon: <HomeIcon className="h-3 w-3" />,
+      icon: <HomeIcon {...IconOptions} />,
       href: '/explore',
     },
     {
-      title: mounted ? (theme === 'dark' ? '切换浅色模式' : '切换深色模式') : '主题切换',
-      icon: mounted ? (theme === 'dark' ? <SunIcon className="h-3 w-3" /> : <MoonIcon className="h-3 w-3" />) : <SunIcon className="h-3 w-3" />,
-      onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+      title: '主题切换',
+      tooltip: mounted ? themeUtils.getAction() : '主题切换',
+      icon: mounted ? (
+        themeUtils.getIcon(IconOptions.className)
+      ) : (
+        <MoonIcon {...IconOptions} />
+      ),
+      onClick: themeUtils.toggle,
     },
     {
       title: '需求反馈',
-      icon: <MessageCircleIcon className="h-3 w-3" />,
+      icon: <MessageCircleIcon {...IconOptions} />,
       href: 'https://github.com/linux-do/cdk/issues/new/choose',
     },
     {
       title: '群组交流',
-      icon: <SendIcon className="h-3 w-3" />,
+      icon: <SendIcon {...IconOptions} />,
       href: 'https://t.me/linuxdocdk',
     },
   ];
