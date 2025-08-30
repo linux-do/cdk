@@ -134,7 +134,7 @@ func (p *Project) CreateItemsWithFilter(ctx context.Context, tx *gorm.DB, items 
 	if len(items) <= 0 {
 		return nil
 	}
-	
+
 	filteredItems := items
 	if enableFilter {
 		// Get existing items for this project
@@ -144,13 +144,13 @@ func (p *Project) CreateItemsWithFilter(ctx context.Context, tx *gorm.DB, items 
 			Pluck("content", &existingItems).Error; err != nil {
 			return err
 		}
-		
+
 		// Create a set of existing items for O(1) lookup
 		existingSet := make(map[string]bool)
 		for _, item := range existingItems {
 			existingSet[item] = true
 		}
-		
+
 		// Filter out duplicates
 		filteredItems = make([]string, 0, len(items))
 		for _, item := range items {
@@ -159,7 +159,7 @@ func (p *Project) CreateItemsWithFilter(ctx context.Context, tx *gorm.DB, items 
 			}
 		}
 	}
-	
+
 	// Use the original CreateItems method with filtered items
 	return p.CreateItems(ctx, tx, filteredItems)
 }
@@ -169,11 +169,11 @@ func (p *Project) GetFilteredItemsCount(ctx context.Context, tx *gorm.DB, items 
 	if len(items) <= 0 {
 		return 0, nil
 	}
-	
+
 	if !enableFilter {
 		return int64(len(items)), nil
 	}
-	
+
 	// Get existing items for this project
 	var existingItems []string
 	if err := tx.Model(&ProjectItem{}).
@@ -181,13 +181,13 @@ func (p *Project) GetFilteredItemsCount(ctx context.Context, tx *gorm.DB, items 
 		Pluck("content", &existingItems).Error; err != nil {
 		return 0, err
 	}
-	
+
 	// Create a set of existing items for O(1) lookup
 	existingSet := make(map[string]bool)
 	for _, item := range existingItems {
 		existingSet[item] = true
 	}
-	
+
 	// Count unique items
 	uniqueCount := int64(0)
 	for _, item := range items {
@@ -195,7 +195,7 @@ func (p *Project) GetFilteredItemsCount(ctx context.Context, tx *gorm.DB, items 
 			uniqueCount++
 		}
 	}
-	
+
 	return uniqueCount, nil
 }
 
@@ -236,9 +236,8 @@ func (p *Project) HasStock(ctx context.Context) (bool, error) {
 	return stock > 0, nil
 }
 
-func (p *Project) IsReceivable(ctx context.Context, user *oauth.User, ip string) error {
+func (p *Project) IsReceivable(ctx context.Context, now time.Time, user *oauth.User, ip string) error {
 	// check time
-	now := time.Now()
 	if now.Before(p.StartTime) {
 		return errors.New(TimeTooEarly)
 	} else if p.EndTime.Before(now) {
@@ -250,7 +249,7 @@ func (p *Project) IsReceivable(ctx context.Context, user *oauth.User, ip string)
 	}
 	// check risk level
 	if user.RiskLevel() > p.RiskLevel {
-		return errors.New(UnknownError)
+		return errors.New(ScoreNotEnough)
 	}
 	// check same ip
 	if sameIPReceived, err := p.CheckSameIPReceived(ctx, ip); err != nil {

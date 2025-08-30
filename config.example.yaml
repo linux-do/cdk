@@ -40,6 +40,19 @@ database:
   conn_max_lifetime: 3600
   log_level: "info"  # error, warn, info, debug, silent
 
+# clickhouse
+clickhouse:
+  enabled: false
+  hosts:
+    - "127.0.0.1:9000"
+  username: "default"
+  password: ""
+  database: "linux_do_cdk"
+  max_idle_conn: 10
+  max_open_conn: 100
+  conn_max_lifetime: 3600
+  dial_timeout: 5
+
 # Redis配置
 redis:
   host: "127.0.0.1"

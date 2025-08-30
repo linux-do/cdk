@@ -29,6 +29,7 @@ import (
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
 	"net/http"
+	"time"
 )
 
 func ProjectCreatorPermMiddleware() gin.HandlerFunc {
@@ -59,15 +60,18 @@ func ReceiveProjectMiddleware() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
 			return
 		}
+		now := time.Now()
 		// load project
 		projectID := c.Param("id")
 		project := &Project{}
 		if err := project.Exact(db.DB(ctx), projectID, true); err != nil {
+			recordErrProjectReceive(c, now, user.ID, user.Username, projectID, time.Time{}, time.Time{}, NotFound)
 			c.AbortWithStatusJSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
 			return
 		}
 		// check receivable
-		if err := project.IsReceivable(ctx, user, c.ClientIP()); err != nil {
+		if err := project.IsReceivable(ctx, now, user, c.ClientIP()); err != nil {
+			recordErrProjectReceive(c, now, user.ID, user.Username, project.ID, project.StartTime, project.EndTime, err.Error())
 			c.AbortWithStatusJSON(http.StatusForbidden, ProjectResponse{ErrorMsg: err.Error()})
 			return
 		}

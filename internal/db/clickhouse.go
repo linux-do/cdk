@@ -22,19 +22,55 @@
  * SOFTWARE.
  */
 
-package project
+package db
 
-const (
-	NoPermission       = "无权限"
-	AlreadyReceived    = "已有用户领取，不允许删除"
-	TimeTooEarly       = "未到开启时间"
-	TimeTooLate        = "已经结束"
-	TrustLevelNotMatch = "需要信任等级 %d"
-	UnknownError       = "未知异常"
-	ScoreNotEnough     = "分数未达标"
-	SameIPReceived     = "已有相同IP领取"
-	NoStock            = "无库存"
-	NotFound           = "项目不存在"
-	AlreadyReported    = "已举报过当前项目"
-	RequirementsFailed = "未达到项目发起者设置的条件"
+import (
+	"context"
+	"log"
+	"time"
+
+	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
+	"github.com/linux-do/cdk/internal/config"
 )
+
+var (
+	ChConn driver.Conn
+)
+
+func init() {
+	if !config.Config.ClickHouse.Enabled {
+		return
+	}
+
+	cfg := config.Config.ClickHouse
+	var err error
+
+	// 配置 ClickHouse 连接
+	ChConn, err = clickhouse.Open(&clickhouse.Options{
+		Addr: cfg.Hosts,
+		Auth: clickhouse.Auth{
+			Database: cfg.Database,
+			Username: cfg.Username,
+			Password: cfg.Password,
+		},
+		Settings: clickhouse.Settings{
+			"max_execution_time": 60,
+		},
+		DialTimeout:     time.Duration(cfg.DialTimeout) * time.Second,
+		MaxOpenConns:    cfg.MaxOpenConn,
+		MaxIdleConns:    cfg.MaxIdleConn,
+		ConnMaxLifetime: time.Duration(cfg.ConnMaxLifetime) * time.Second,
+	})
+
+	if err != nil {
+		log.Fatalf("[ClickHouse] init connection failed: %v\n", err)
+	}
+
+	// 测试连接
+	if err = ChConn.Ping(context.Background()); err != nil {
+		log.Fatalf("[ClickHouse] ping failed: %v\n", err)
+	}
+
+	log.Println("[ClickHouse] connection established successfully")
+}
