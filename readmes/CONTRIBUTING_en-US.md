@@ -1,73 +1,72 @@
-# 贡献指南
+# Contribution Guide
 
-[English version](readmes/CONTRIBUTING_en-US.md)
+[中文版](/CONTRIBUTING.md)
 
-感谢您有兴趣为本项目做出贡献！我们欢迎各种形式的贡献，但请先阅读如下文档，以节省您和我们的时间。
+Thank you for your interest in contributing to this project! We welcome all forms of contributions, but please read the following documentation first to save both your time and ours.
 
-当您在使用 Claude Code, Gemini CLI 等 Vibe-coding 工具时，推荐将此文档内容附加到上下文内。
+When using Vibe-coding tools like Claude Code or Gemini CLI, it is recommended to append the content of this document to your context.
 
-## 我们不接受的更改
+## Changes We Do Not Accept
 
-出于包括但不限于项目可持续性与可维护性考虑，我们不接受如下类型的更改。  
-如果您提交的 PR 包含以下类型的更改，我们可能会包括但不限于忽略、关闭或要求您更改 PR 内容。
+For reasons including but not limited to project sustainability and maintainability, we do not accept the following types of changes.
+If your submitted PR contains changes of the following types, we may, including but not limited to, ignore, close, or request you to modify the PR content.
 
-- 导致项目整体性能下降的更改；
-- 仅修改注释、空格、格式的小 PR；
-- 仅修正无影响力的拼写错误（typo）或代码注释，不提升可读性或准确性；
-- 重构已稳定工作的逻辑而不带来可维护性或功能上的实质提升；
-- 未经讨论的接口或 API 命名改动；
-- 为了获取社区徽章而提交的大量无实际意义的更改。
+- Changes that cause an overall performance degradation of the project;
+- Small PRs that only modify comments, whitespace, or formatting;
+- Corrections of insignificant typos or code comments that do not improve readability or accuracy;
+- Refactoring of stable logic without substantial improvements in maintainability or functionality;
+- Un-discussed changes to interface or API names;
+- A large number of meaningless changes submitted solely for obtaining community badges.
 
-**请注意：判断标准不是改动大小，而是改动是否有实际作用。**
+**Please note: The criterion is not the size of the change, but whether the change has a practical impact.**
 
-为提高协作效率，我们建议您在提交 PR 前，先通过 Issue 简要说明动机与背景。  
+To improve collaboration efficiency, we recommend that you briefly describe the motivation and background via an Issue before submitting a PR.
 
-## 在编写代码前
+## Before Writing Code
 
-1. 请仔细阅读[贡献者许可协议](/CLA.md)，您提交 PR 默认您已经阅读并同意该协议。
-2. 请预先构想您的更改，并确保它不在**我们不接受的更改**列表中。
+1.  Please carefully read the [Contributor License Agreement](/CLA.md). Submitting a PR implies you have read and agreed to this agreement.
+2.  Please conceptualize your changes in advance and ensure they are not on the list of **Changes We Do Not Accept**.
 
-## 贡献步骤
+## Contribution Steps
 
-1. **Fork 本仓库** 并创建您的分支（建议使用有意义的分支名）。
-2. **编写代码**，确保遵循项目的代码风格和最佳实践。
-3. **添加/更新测试**，确保您的更改不会破坏现有功能。
-4. **本地测试**，确认所有测试通过。
-5. **提交 Pull Request**，请详细描述您的更改内容和动机。
+1.  **Fork this repository** and create your branch (meaningful branch names are recommended).
+2.  **Write code**, ensuring it follows the project's code style and best practices.
+3.  **Add/update tests** to ensure your changes do not break existing functionality.
+4.  **Test locally** to confirm all tests pass.
+5.  **Submit a Pull Request**, providing a detailed description of your changes and their motivation.
 
+## Code Standards
 
-## 代码规范
+### General
 
-### 通用
+All PRs require at least one Approve from a collaborator with write permissions before being merged.
 
-所有 PR ，需至少有一位具有写权限的协作者 Approve 后再合并。
+### Backend
 
-### 后端
+**Basic Checks**
 
-**基础检查**
+Must pass CodeQL scanning. For longer code segments, adding a Copilot check is recommended.
 
-需要通过 CodeQL 扫描，较长的代码建议增加 Copilot 检查。
+**API Documentation**
 
-**API 文档**
+All interfaces must have Swagger documentation. Run `make swagger` to update the documentation before submitting.
 
-所有接口需要写 Swagger 文档，提交前通过 make swagger 更新文档后再提交。
-
-**响应格式**
+**Response Format**
 
 ```json
-# 响应数据最外层有两个字段，error_msg 和 data
+// The outermost layer of the response data has two fields: error_msg and data
 {
     "error_msg": "",
     "data": null
 }
 
-# 如果是非列表数据
+// For non-list data
 {
     "error_msg": "",
     "data": {}
 }
 
-# 如果是分页数据
+// For paginated data
 {
     "error_msg": "",
     "data": {
@@ -77,81 +76,84 @@
 }
 ```
 
-**数据库**
+**Database**
 
-- 禁止使用外键，但需要保留对应字段的索引；
-- 字段如有默认值，需要与 struct 默认值相同，如 nil，0，false，空字符串等，避免初始化时未填写或漏填写导致的数据异常。
+- The use of foreign keys is prohibited, but corresponding field indexes must be retained.
+- If a field has a default value, it must be the same as the struct's default value (e.g., nil, 0, false, empty string) to avoid data anomalies caused by uninitialized or missing values during initialization.
 
-### 前端
+### Frontend
 
-**基础检查**
+**Basic Checks**
 
-代码需要通过 ESLint 检查和 CodeQL 扫描。
+Code must pass ESLint checks and CodeQL scanning.
 
-**类型安全**
+**Type Safety**
 
-- 禁止使用 `any` 类型，`any` 类型绕过了 TypeScript 的类型检查系统，会导致潜在的运行时错误；
-- `unknown` 是类型安全的 `any`，但必须立即进行类型断言或类型收窄；
-- `never` 类型表示永远不会发生的值类型，必须谨慎使用，并提供清晰的注释说明。
+- The use of the `any` type is prohibited. The `any` type bypasses TypeScript's type checking system and can lead to potential runtime errors.
+- `unknown` is the type-safe version of `any`, but it must be immediately type-asserted or narrowed.
+- The `never` type represents a value type that should never occur. It must be used cautiously and accompanied by clear explanatory comments.
 
-**组件规范**
+**Component Standards**
 
-- 组件应按功能分类
-- 公共组件放在 `components/common` 目录
-- ShadcnUI 组件放在 `components/ui` 目录
-- 自定义图标应放置在 `/components/icons/` 目录下以命名导出形式管理，对于常规的图标，我们使用 Lucide 库
+- Components should be categorized by functionality.
+- Public components are placed in the `components/common` directory.
+- ShadcnUI components are placed in the `components/ui` directory.
+- Custom icons should be placed in the `/components/icons/` directory and managed as named exports. For regular icons, we use the Lucide library.
 
-**服务层**
+**Service Layer**
 
-服务层架构是前端与API交互的统一入口，基于以下原则：
+The service layer architecture is the unified entry point for frontend-API interaction, based on the following principles:
 
-1. 关注点分离 - 每个服务负责一个业务领域
-2. 统一入口 - 通过services对象导出所有服务
-3. 类型安全 - 所有请求和响应有明确类型定义
+1. Separation of Concerns - Each service is responsible for a specific business domain.
+2. Unified Entry Point - All services are exported via a `services` object.
+3. Type Safety - All requests and responses have clear type definitions.
 
+**How to Create a New Interface Service**
 
-**如何新建接口服务**
-
-1. **创建目录结构**:
+1. **Create the directory structure**
 
    ```text
-   /services/新服务名/
-     - types.ts       // 类型定义
-     - 服务名.service.ts  // 服务实现
-     - index.ts       // 导出服务
+   /services/NewServiceName/
+     - types.ts       // Type definitions
+     - ServiceName.service.ts  // Service implementation
+     - index.ts       // Service export
    ```
 
-2. **实现服务类**:
+   
+
+2. **Implement the service class**
 
    ```typescript
-   // 新服务名/服务名.service.ts
-   import {BaseService} from '../core/base.service';
+   // NewServiceName/ServiceName.service.ts
+   import { BaseService } from '../core/base.service';
    
-   export class 新服务类 extends BaseService {
-     protected static readonly basePath = '/api/v1/路径';
+   export class NewServiceClass extends BaseService {
+     protected static readonly basePath = '/api/v1/path';
    
-     static async 方法名(参数): Promise<返回类型> {
-       return this.get<返回类型>('/endpoint');
+     static async methodName(parameters): Promise<ReturnType> {
+       return this.get<ReturnType>('/endpoint');
      }
    }
    ```
 
-3. **在services/index.ts注册**:
+   
 
-   ```typescript
-   import {新服务类} from './新服务名';
+3. **Register in services/index.ts**
+
+```typescript
+   import { NewServiceClass } from './NewServiceName';
    
    const services = {
      auth: AuthService,
-     新服务名: 新服务类
+     newServiceName: NewServiceClass
    };
-   ```
+```
 
-**使用方法**
+**Usage**
 
 ```typescript
 import services from '@/lib/services';
 
-// 调用服务方法
-const 结果 = await services.新服务名.方法名(参数);
+// Call the service method
+const result = await services.newServiceName.methodName(parameters);
 ```
