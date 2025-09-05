@@ -55,19 +55,19 @@
 **响应格式**
 
 ```json
-# 响应数据最外层有两个字段，error_msg 和 data
+// 响应数据最外层有两个字段，error_msg 和 data
 {
     "error_msg": "",
     "data": null
 }
 
-# 如果是非列表数据
+// 如果是非列表数据
 {
     "error_msg": "",
     "data": {}
 }
 
-# 如果是分页数据
+// 如果是分页数据
 {
     "error_msg": "",
     "data": {
