@@ -18,8 +18,7 @@ interface DateTimePickerProps {
   placeholder?: string;
   disabled?: boolean;
   minDate?: Date;
-  label?: string;
-  required?: boolean;
+  label?: React.ReactNode;
 }
 
 export function DateTimePicker({
@@ -29,7 +28,6 @@ export function DateTimePicker({
   disabled = false,
   minDate,
   label,
-  required = false,
 }: DateTimePickerProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(value);
   const [isOpen, setIsOpen] = useState(false);
@@ -102,7 +100,7 @@ export function DateTimePicker({
     <div className="space-y-2">
       {label && (
         <Label className="text-sm font-medium">
-          {label} {required && <span className="text-destructive">*</span>}
+          {label}
         </Label>
       )}
       <Popover open={isOpen} onOpenChange={setIsOpen}>

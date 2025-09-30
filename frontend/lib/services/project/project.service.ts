@@ -18,6 +18,8 @@ import {
   ApiRequestParams,
   ReceiveProjectData,
   ReportProjectResponse,
+  ProjectReceiver,
+  ProjectReceiversResponse,
 } from './types';
 import apiClient from '../core/api-client';
 
@@ -84,6 +86,20 @@ export class ProjectService extends BaseService {
     if (response.data.error_msg) {
       throw new Error(response.data.error_msg);
     }
+  }
+
+  /**
+   * 获取项目领取者列表（仅项目创建者可访问）
+   * @param projectId - 项目ID
+   * @returns 项目领取者列表
+   */
+  static async getProjectReceivers(projectId: string): Promise<ProjectReceiver[]> {
+    const response = await apiClient.get<ProjectReceiversResponse>(`${this.basePath}/${projectId}/receivers`);
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
+    // 处理后端返回null的情况，确保返回空数组而不是null
+    return response.data.data || [];
   }
 
   /**
@@ -454,6 +470,32 @@ export class ProjectService extends BaseService {
       const errorMessage = error instanceof Error ? error.message : '举报失败';
       return {
         success: false,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 获取项目领取者列表（带错误处理，仅项目创建者可访问）
+   * @param projectId - 项目ID
+   * @returns 获取结果，包含成功状态、领取者列表和错误信息
+   */
+  static async getProjectReceiversSafe(projectId: string): Promise<{
+    success: boolean;
+    data?: ProjectReceiver[];
+    error?: string;
+  }> {
+    try {
+      const data = await this.getProjectReceivers(projectId);
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '获取项目领取者列表失败';
+      return {
+        success: false,
+        data: [],
         error: errorMessage,
       };
     }

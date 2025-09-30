@@ -26,6 +26,7 @@ package admin
 
 import (
 	"context"
+	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/utils"
@@ -51,8 +52,8 @@ func QueryProjectsList(ctx context.Context, offset, limit int, status *project.P
 	query := `
 		SELECT u.username, u.nickname, p.id, p.description, p.status, IF(COUNT(pt.tag) = 0, NULL, JSON_ARRAYAGG(pt.tag)) AS tags
 		FROM users u
-		INNER JOIN projects p ON u.id = p.creator_id AND 
-			CASE 
+		INNER JOIN projects p ON u.id = p.creator_id AND
+			CASE
 				WHEN ? THEN p.status != ?
 				ELSE p.status = ?
 			END
@@ -68,8 +69,8 @@ func QueryProjectsList(ctx context.Context, offset, limit int, status *project.P
 	countQuery := `
 		SELECT COUNT(p.id)
 		FROM users u
-		INNER JOIN projects p ON u.id = p.creator_id AND 
-			CASE 
+		INNER JOIN projects p ON u.id = p.creator_id AND
+			CASE
 				WHEN ? THEN p.status != ?
 				ELSE p.status = ?
 			END
@@ -82,4 +83,38 @@ func QueryProjectsList(ctx context.Context, offset, limit int, status *project.P
 		Total:   total,
 		Results: &results,
 	}, nil
+}
+
+// QueryUsersList 获取用户列表
+func QueryUsersList(ctx context.Context, req *listUsersRequest) (int64, []oauth.User, error) {
+	offset := (req.Current - 1) * req.Size
+
+	query := db.DB(ctx).Model(&oauth.User{})
+	if req.Username != "" {
+		query = query.Where("username LIKE ?", req.Username+"%")
+	}
+	if req.IsActive != nil {
+		query = query.Where("is_active = ?", *req.IsActive)
+	}
+	if req.TrustLevel != nil {
+		query = query.Where("trust_level = ?", *req.TrustLevel)
+	}
+	if req.IsAdmin != nil {
+		query = query.Where("is_admin = ?", *req.IsAdmin)
+	}
+	if req.MinViolations != nil {
+		query = query.Where("violation_count >= ?", *req.MinViolations)
+	}
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return 0, nil, err
+	}
+
+	var users []oauth.User
+	if err := query.Order("created_at DESC").Offset(offset).Limit(req.Size).Find(&users).Error; err != nil {
+		return 0, nil, err
+	}
+
+	return total, users, nil
 }

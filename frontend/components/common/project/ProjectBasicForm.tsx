@@ -55,7 +55,9 @@ export function ProjectBasicForm({
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="name">项目名称 *</Label>
+        <Label htmlFor="name">
+          项目名称 <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="name"
           placeholder={`请填写此项目的名称（${FORM_LIMITS.PROJECT_NAME_MAX_LENGTH}字符以内）`}
@@ -80,18 +82,24 @@ export function ProjectBasicForm({
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <DateTimePicker
-          label="开始时间"
+          label={
+            <>
+              开始时间 <span className="text-red-500">*</span>
+            </>
+          }
           value={formData.startTime}
           onChange={(date) => updateField('startTime', date || new Date())}
           placeholder="选择开始时间"
-          required
         />
         <DateTimePicker
-          label="结束时间"
+          label={
+            <>
+              结束时间 <span className="text-red-500">*</span>
+            </>
+          }
           value={formData.endTime}
           onChange={(date) => updateField('endTime', date || new Date())}
           placeholder="选择结束时间"
-          required
         />
       </div>
 
@@ -149,21 +157,6 @@ export function ProjectBasicForm({
       </div>
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-        <div className="space-y-2">
-          <Label htmlFor="hideFromExplore">显示在探索广场</Label>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="hideFromExplore"
-              checked={!formData.hideFromExplore}
-              onCheckedChange={(checked) => updateField('hideFromExplore', !checked)}
-              className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
-            />
-            <p className="text-muted-foreground text-sm">
-              开启后，项目会显示在探索广场
-            </p>
-          </div>
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="allowSameIP">允许相同 IP 领取</Label>
           <div className="flex items-center gap-2">

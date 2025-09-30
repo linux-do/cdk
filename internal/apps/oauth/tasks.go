@@ -31,6 +31,7 @@ import (
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/task"
 	"github.com/linux-do/cdk/internal/task/schedule"
+	"github.com/linux-do/cdk/internal/utils"
 	"net/http"
 	"time"
 
@@ -50,16 +51,6 @@ type Badge struct {
 // UserBadgeResponse API响应
 type UserBadgeResponse struct {
 	Badges []Badge `json:"badges"`
-}
-
-// 配置HTTP客户端
-var httpClient = &http.Client{
-	Timeout: 10 * time.Second,
-	Transport: &http.Transport{
-		MaxIdleConns:        100,
-		MaxIdleConnsPerHost: 20,
-		IdleConnTimeout:     60 * time.Second,
-	},
 }
 
 // loadBadgeScores 从Redis加载徽章分数
@@ -86,14 +77,9 @@ func loadBadgeScores(ctx context.Context) (map[int]int, error) {
 // getUserBadges 获取用户的徽章
 func getUserBadges(ctx context.Context, username string) (*UserBadgeResponse, error) {
 	url := fmt.Sprintf("https://linux.do/user-badges/%s.json", username)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	resp, err := utils.Request(ctx, http.MethodGet, url, nil, nil, nil)
 	if err != nil {
-		return nil, fmt.Errorf("创建HTTP请求失败: %w", err)
-	}
-
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("请求用户徽章接口失败: %w", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -102,7 +88,7 @@ func getUserBadges(ctx context.Context, username string) (*UserBadgeResponse, er
 	}
 
 	var response UserBadgeResponse
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, fmt.Errorf("解析用户徽章响应失败: %w", err)
 	}
 	return &response, nil
@@ -224,14 +210,9 @@ func HandleUpdateSingleUserBadgeScore(ctx context.Context, t *asynq.Task) error 
 // getAllBadges 获取所有徽章数据
 func getAllBadges(ctx context.Context) (*UserBadgeResponse, error) {
 	url := "https://linux.do/badges.json"
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	resp, err := utils.Request(ctx, http.MethodGet, url, nil, nil, nil)
 	if err != nil {
-		return nil, fmt.Errorf("创建HTTP请求失败: %w", err)
-	}
-
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("请求徽章列表接口失败: %w", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -240,7 +221,7 @@ func getAllBadges(ctx context.Context) (*UserBadgeResponse, error) {
 	}
 
 	var response UserBadgeResponse
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, fmt.Errorf("解析徽章列表响应失败: %w", err)
 	}
 	return &response, nil

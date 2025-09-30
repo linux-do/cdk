@@ -29,7 +29,7 @@ BEGIN
             FROM (
                      SELECT DATE(received_at) AS date_col, COUNT(*) AS count_val
                      FROM project_items
-                     WHERE received_at >= CURDATE() - INTERVAL 14 DAY
+                     WHERE received_at >= CURDATE() - INTERVAL days DAY
                      GROUP BY DATE(received_at)
                      ORDER BY date_col DESC
                  ) AS tmp_activity

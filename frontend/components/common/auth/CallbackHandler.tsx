@@ -46,7 +46,7 @@ export function CallbackHandler({
         await services.auth.handleCallback({state, code});
 
         const redirectTo = sessionStorage.getItem('oauth_redirect_to');
-        const targetPath = redirectTo || '/explore';
+        const targetPath = redirectTo || '/dashboard';
 
         setStatus('success');
 

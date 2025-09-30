@@ -1,5 +1,6 @@
 # IDE
-.idea
+.idea/*
+!.idea/icon.png
 .vscode
 
 # logs

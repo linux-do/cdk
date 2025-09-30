@@ -25,12 +25,48 @@
 package project
 
 import (
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
+	"github.com/redis/go-redis/v9"
 	"net/http"
 	"time"
 )
+
+func ProjectCreateRateLimitMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, _ := oauth.GetUserFromContext(c)
+
+		ctx := c.Request.Context()
+		userLimit := config.Config.ProjectApp.CreateProjectRateLimit[user.TrustLevel]
+		key := fmt.Sprintf("rate_limit:project:create:%d:%s:%d", user.ID, user.Username, userLimit.IntervalSeconds)
+
+		// get count
+		count, err := db.Redis.Get(ctx, key).Int()
+		if err != nil && !errors.Is(err, redis.Nil) {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
+			return
+		}
+		if count >= userLimit.MaxCount {
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, ProjectResponse{
+				ErrorMsg: TooManyRequests,
+			})
+			return
+		}
+
+		// set count + 1 and expire
+		db.Redis.Incr(ctx, key)
+		if count == 0 {
+			db.Redis.Expire(ctx, key, time.Duration(userLimit.IntervalSeconds)*time.Second)
+		}
+
+		// do next
+		c.Next()
+	}
+}
 
 func ProjectCreatorPermMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -45,6 +81,10 @@ func ProjectCreatorPermMiddleware() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, ProjectResponse{ErrorMsg: NoPermission})
 			return
 		}
+
+		// set to context
+		SetProjectToContext(c, project)
+
 		// do next
 		c.Next()
 	}

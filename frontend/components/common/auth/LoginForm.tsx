@@ -43,7 +43,7 @@ export function LoginForm({
 
   useEffect(() => {
     if (isAuthenticated && user && !searchParams.get('logout') && !error) {
-      router.push('/explore');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, user, router, searchParams, error]);
 
@@ -60,7 +60,7 @@ export function LoginForm({
       const redirectPath = searchParams.get('redirect');
       const validRedirectPath = redirectPath && redirectPath !== '/' && redirectPath !== '/login' ?
         redirectPath :
-        '/explore';
+        '/dashboard';
 
       await login(validRedirectPath);
     } catch {

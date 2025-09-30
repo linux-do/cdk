@@ -116,7 +116,7 @@ export default function NotFound() {
           transition={{duration: 0.6, delay: 2.2}}
           className="flex justify-center pt-6"
         >
-          <Link href="/explore">
+          <Link href="/dashboard">
             <Button size="lg">
               <Home className="w-4 h-4 mr-2" />
                返回首页

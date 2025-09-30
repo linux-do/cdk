@@ -24,10 +24,15 @@
 
 package project
 
+const (
+	ProjectObjKey = "project_obj"
+)
+
 type DistributionType int8
 
 const (
 	DistributionTypeOneForEach DistributionType = iota
+	DistributionTypeLottery
 	DistributionTypeInvite
 )
 

@@ -48,6 +48,20 @@ definitions:
       error_msg:
         type: string
     type: object
+  admin.listUsersResponse:
+    properties:
+      data:
+        properties:
+          total:
+            type: integer
+          users:
+            items:
+              $ref: '#/definitions/oauth.User'
+            type: array
+        type: object
+      error_msg:
+        type: string
+    type: object
   dashboard.DashboardDataResponse:
     properties:
       data: {}
@@ -116,6 +130,33 @@ definitions:
     - TrustLevelUser
     - TrustLevelActiveUser
     - TrustLevelLeader
+  oauth.User:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      is_admin:
+        type: boolean
+      last_login_at:
+        type: string
+      nickname:
+        type: string
+      score:
+        type: integer
+      trust_level:
+        $ref: '#/definitions/oauth.TrustLevel'
+      updated_at:
+        type: string
+      username:
+        type: string
+      violation_count:
+        type: integer
+    type: object
   oauth.UserInfoResponse:
     properties:
       data:
@@ -168,6 +209,8 @@ definitions:
         type: integer
       start_time:
         type: string
+      topic_id:
+        type: integer
     required:
     - end_time
     - name
@@ -178,10 +221,12 @@ definitions:
     enum:
     - 0
     - 1
+    - 2
     format: int32
     type: integer
     x-enum-varnames:
     - DistributionTypeOneForEach
+    - DistributionTypeLottery
     - DistributionTypeInvite
   project.GetProjectResponseData:
     properties:
@@ -455,6 +500,55 @@ paths:
             $ref: '#/definitions/admin.ReviewProjectResponse'
       tags:
       - admin
+  /api/v1/admin/users:
+    get:
+      parameters:
+      - in: query
+        minimum: 1
+        name: current
+        type: integer
+      - in: query
+        name: is_active
+        type: boolean
+      - in: query
+        name: is_admin
+        type: boolean
+      - in: query
+        name: min_violations
+        type: integer
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      - enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        format: int32
+        in: query
+        name: trust_level
+        type: integer
+        x-enum-varnames:
+        - TrustLevelNewUser
+        - TrustLevelBasicUser
+        - TrustLevelUser
+        - TrustLevelActiveUser
+        - TrustLevelLeader
+      - in: query
+        name: username
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin.listUsersResponse'
+      tags:
+      - admin
   /api/v1/dashboard/stats/all:
     get:
       parameters:
@@ -652,6 +746,25 @@ paths:
       - application/json
       parameters:
       - description: project id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.ProjectResponse'
+      tags:
+      - project
+  /api/v1/projects/{id}/receivers:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 项目ID
         in: path
         name: id
         required: true

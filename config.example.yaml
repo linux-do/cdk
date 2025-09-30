@@ -18,6 +18,18 @@ app:
 projectApp:
   hidden_threshold: 5 # project hidden threshold
   deduction_per_offense: 5 # deduction per offense
+  # 0-4级创建项目频率限制
+  create_project_rate_limit:
+    - interval_seconds: 60
+      max_count: 1
+    - interval_seconds: 60
+      max_count: 3
+    - interval_seconds: 60
+      max_count: 5
+    - interval_seconds: 60
+      max_count: 10
+    - interval_seconds: 60
+      max_count: 20
 
 # OAuth2
 oauth2:
@@ -88,3 +100,7 @@ schedule:
 # Worker
 worker:
   concurrency: 50
+
+# linuxDo
+linuxDo:
+  api_key: "<LINUX_DO_API_KEY>"

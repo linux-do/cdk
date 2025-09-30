@@ -25,14 +25,20 @@
 package admin
 
 import (
+	"net/http"
+
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/db"
 	"gorm.io/gorm"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+type projectResponse struct {
+	ErrorMsg string      `json:"error_msg"`
+	Data     interface{} `json:"data"`
+}
 
 type ListProjectsRequest struct {
 	Current int                    `json:"current" form:"current" binding:"min=1"`
@@ -135,4 +141,52 @@ func ReviewProject(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, ReviewProjectResponse{})
+}
+
+type listUsersRequest struct {
+	Current       int               `json:"current" form:"current" binding:"min=1"`
+	Size          int               `json:"size" form:"size" binding:"min=1,max=100"`
+	Username      string            `json:"username" form:"username"`
+	IsActive      *bool             `json:"is_active" form:"is_active"`
+	TrustLevel    *oauth.TrustLevel `json:"trust_level" form:"trust_level" binding:"omitempty,oneof=0 1 2 3 4"`
+	IsAdmin       *bool             `json:"is_admin" form:"is_admin"`
+	MinViolations *uint8            `json:"min_violations" form:"min_violations"`
+}
+
+type listUsersResponse struct {
+	ErrorMsg string `json:"error_msg"`
+	Data     *struct {
+		Total int64        `json:"total"`
+		Users []oauth.User `json:"users"`
+	} `json:"data"`
+}
+
+// ListUsers
+// @Tags admin
+// @Param request query listUsersRequest true "request query"
+// @Produce json
+// @Success 200 {object} listUsersResponse
+// @Router /api/v1/admin/users [get]
+func ListUsers(c *gin.Context) {
+	req := &listUsersRequest{}
+	if err := c.ShouldBindQuery(req); err != nil {
+		c.JSON(http.StatusBadRequest, listUsersResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	total, users, err := QueryUsersList(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, listUsersResponse{ErrorMsg: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, listUsersResponse{
+		Data: &struct {
+			Total int64        `json:"total"`
+			Users []oauth.User `json:"users"`
+		}{
+			Total: total,
+			Users: users,
+		},
+	})
 }

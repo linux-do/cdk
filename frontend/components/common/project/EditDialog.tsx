@@ -15,7 +15,7 @@ import {ProjectBasicForm} from '@/components/common/project/ProjectBasicForm';
 import {BulkImportSection} from '@/components/common/project/BulkImportSection';
 import {Pencil, CheckCircle} from 'lucide-react';
 import services from '@/lib/services';
-import {ProjectListItem} from '@/lib/services/project/types';
+import {DistributionType, ProjectListItem, UpdateProjectRequest} from '@/lib/services/project/types';
 
 interface EditDialogProps {
   project: ProjectListItem;
@@ -119,7 +119,7 @@ export function EditDialog({
 
     setLoading(true);
     try {
-      const updateData = {
+      const updateData: UpdateProjectRequest = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         project_tags: tags.length > 0 ? tags : undefined,
@@ -128,9 +128,11 @@ export function EditDialog({
         minimum_trust_level: formData.minimumTrustLevel,
         allow_same_ip: formData.allowSameIP,
         risk_level: formData.riskLevel,
-        hide_from_explore: formData.hideFromExplore,
-        project_items: newItems.length > 0 ? newItems : undefined,
-        enable_filter: !allowDuplicates, // 如果不允许重复，则启用过滤
+        // 只有非抽奖项目才允许更新项目内容
+        ...(project.distribution_type !== DistributionType.LOTTERY && {
+          project_items: newItems.length > 0 ? newItems : undefined,
+          enable_filter: !allowDuplicates, // 如果不允许重复，则启用过滤
+        }),
       };
 
       const result = await services.project.updateProjectSafe(
@@ -153,8 +155,9 @@ export function EditDialog({
         minimum_trust_level: formData.minimumTrustLevel,
         allow_same_ip: formData.allowSameIP,
         risk_level: formData.riskLevel,
-        hide_from_explore: formData.hideFromExplore,
-        total_items: project.total_items + newItems.length,
+        total_items: project.distribution_type === DistributionType.LOTTERY ?
+          project.total_items :
+          project.total_items + newItems.length,
       };
 
       setUpdateSuccess(true);
@@ -210,15 +213,17 @@ export function EditDialog({
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className={`grid w-full ${project.distribution_type === DistributionType.LOTTERY ? 'grid-cols-1' : 'grid-cols-2'}`}>
               <TabsTrigger value="basic">基本设置</TabsTrigger>
-              <TabsTrigger value="content">追加内容</TabsTrigger>
+              {project.distribution_type !== DistributionType.LOTTERY && (
+                <TabsTrigger value="content">追加内容</TabsTrigger>
+              )}
             </TabsList>
 
-            <TabsContents className="mx-1 mb-1 -mt-2 rounded-sm h-full bg-background">
+            <TabsContents className="mb-1 -mt-2 rounded-sm h-full bg-background">
               <TabsContent
                 value="basic"
-                className={`space-y-6 py-6 px-1 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
+                className={`space-y-6 py-6 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
               >
                 <ProjectBasicForm
                   formData={formData}
@@ -230,33 +235,35 @@ export function EditDialog({
                 />
               </TabsContent>
 
-              <TabsContent
-                value="content"
-                className={`space-y-6 py-6 px-1 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
-              >
-                <BulkImportSection
-                  items={newItems}
-                  bulkContent={bulkContent}
-                  setBulkContent={setBulkContent}
-                  allowDuplicates={allowDuplicates}
-                  setAllowDuplicates={setAllowDuplicates}
-                  onBulkImport={handleBulkImport}
-                  onRemoveItem={removeItem}
-                  onClearItems={clearNewItems}
-                  onClearBulkContent={() => setBulkContent('')}
-                  fileUploadOpen={fileUploadOpen}
-                  onFileUploadOpenChange={setFileUploadOpen}
-                  onFileUpload={handleFileUpload}
-                  isMobile={isMobile}
-                  mode="edit"
-                  totalExistingItems={project.total_items}
-                  confirmationOpen={confirmationOpen}
-                  onConfirmationOpenChange={setConfirmationOpen}
-                  pendingFile={pendingFile}
-                  onConfirmUpload={handleConfirmUpload}
-                  onCancelUpload={handleCancelUpload}
-                />
-              </TabsContent>
+              {project.distribution_type !== DistributionType.LOTTERY && (
+                <TabsContent
+                  value="content"
+                  className={`space-y-6 py-6 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
+                >
+                  <BulkImportSection
+                    items={newItems}
+                    bulkContent={bulkContent}
+                    setBulkContent={setBulkContent}
+                    allowDuplicates={allowDuplicates}
+                    setAllowDuplicates={setAllowDuplicates}
+                    onBulkImport={handleBulkImport}
+                    onRemoveItem={removeItem}
+                    onClearItems={clearNewItems}
+                    onClearBulkContent={() => setBulkContent('')}
+                    fileUploadOpen={fileUploadOpen}
+                    onFileUploadOpenChange={setFileUploadOpen}
+                    onFileUpload={handleFileUpload}
+                    isMobile={isMobile}
+                    mode="edit"
+                    totalExistingItems={project.total_items}
+                    confirmationOpen={confirmationOpen}
+                    onConfirmationOpenChange={setConfirmationOpen}
+                    pendingFile={pendingFile}
+                    onConfirmUpload={handleConfirmUpload}
+                    onCancelUpload={handleCancelUpload}
+                  />
+                </TabsContent>
+              )}
             </TabsContents>
           </Tabs>
         )}

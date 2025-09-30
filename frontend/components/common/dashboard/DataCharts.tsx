@@ -219,20 +219,22 @@ const PieTooltip = ({active, payload}: TooltipProps) => {
 /**
  * 图表容器
  */
-function ChartContainer({title, icon, isLoading, children}: ChartContainerProps) {
+function ChartContainer({title, icon, isLoading, children, hideHeader = false}: ChartContainerProps & {hideHeader?: boolean}) {
   return (
     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors">
-      <div className="p-4 pb-2">
-        <div className="flex items-center gap-3">
-          {icon && (
-            <div className="text-gray-600 dark:text-gray-400 w-4 h-4 flex items-center justify-center">
-              {icon}
-            </div>
-          )}
-          <h3 className="text-xs font-medium text-gray-600 dark:text-gray-400">{title}</h3>
+      {!hideHeader && (
+        <div className="p-4 pb-2">
+          <div className="flex items-center gap-3">
+            {icon && (
+              <div className="text-gray-600 dark:text-gray-400 w-4 h-4 flex items-center justify-center">
+                {icon}
+              </div>
+            )}
+            <h3 className="text-xs font-medium text-gray-600 dark:text-gray-400">{title}</h3>
+          </div>
         </div>
-      </div>
-      <div className="p-4 pt-2">
+      )}
+      <div className={hideHeader ? 'p-4' : 'p-4 pt-2'}>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-[300px] space-y-3">
             <div className="animate-spin h-8 w-8 border-4 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full"></div>
@@ -247,14 +249,14 @@ function ChartContainer({title, icon, isLoading, children}: ChartContainerProps)
 /**
  * 用户增长趋势图表
  */
-export function UserGrowthChart({data, isLoading, icon, range = 7}: UserGrowthChartProps) {
+export function UserGrowthChart({data, isLoading, icon, range = 7, hideHeader = false}: UserGrowthChartProps & {hideHeader?: boolean}) {
   const chartData = useMemo(() => generateTimeRangeChartData(data, range), [data, range]);
 
   return (
-    <ChartContainer title="用户增长趋势" icon={icon} isLoading={isLoading}>
+    <ChartContainer title="用户增长" icon={icon} isLoading={isLoading} hideHeader={hideHeader}>
       <div className="h-[300px] transition-all duration-300 ease-in-out" key={`user-growth-${range}-${data?.length || 0}`}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{top: 10, right: 10, left: -10, bottom: 10}}>
+          <AreaChart data={chartData} margin={{top: 10, right: 10, left: -10, bottom: 0}}>
             <defs>
               <linearGradient id="userGrowthGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
@@ -306,14 +308,14 @@ export function UserGrowthChart({data, isLoading, icon, range = 7}: UserGrowthCh
 /**
  * 领取活动趋势图表
  */
-export function ActivityChart({data, isLoading, icon, range = 7}: ActivityChartProps) {
+export function ActivityChart({data, isLoading, icon, range = 7, hideHeader = false}: ActivityChartProps & {hideHeader?: boolean}) {
   const chartData = useMemo(() => generateTimeRangeChartData(data, range), [data, range]);
 
   return (
-    <ChartContainer title="领取活动趋势" icon={icon} isLoading={isLoading}>
+    <ChartContainer title="领取活动趋势" icon={icon} isLoading={isLoading} hideHeader={hideHeader}>
       <div className="h-[300px] transition-all duration-300 ease-in-out" key={`activity-${range}-${data?.length || 0}`}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{top: 10, right: 10, left: -10, bottom: 10}}>
+          <AreaChart data={chartData} margin={{top: 10, right: 10, left: -10, bottom: 0}}>
             <defs>
               <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
@@ -363,9 +365,9 @@ export function ActivityChart({data, isLoading, icon, range = 7}: ActivityChartP
 }
 
 /**
- * 项目标签分布饼图
+ * 项目标签分布柱状图
  */
-export function CategoryChart({data, isLoading, icon}: CategoryChartProps) {
+export function CategoryChart({data, isLoading, icon, hideHeader = false}: CategoryChartProps & {hideHeader?: boolean}) {
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
 
@@ -376,7 +378,7 @@ export function CategoryChart({data, isLoading, icon}: CategoryChartProps) {
 
   if (!isLoading && (!chartData || chartData.length === 0)) {
     return (
-      <ChartContainer title="项目标签分布" icon={icon} isLoading={isLoading}>
+      <ChartContainer title="项目标签" icon={icon} isLoading={isLoading} hideHeader={hideHeader}>
         <div className="flex flex-col items-center justify-center h-[300px] space-y-3">
           <div className="text-4xl opacity-30 text-gray-400">{icon}</div>
           <span className="text-sm text-gray-500 dark:text-gray-400">暂无标签数据</span>
@@ -385,18 +387,92 @@ export function CategoryChart({data, isLoading, icon}: CategoryChartProps) {
     );
   }
 
+  // 使用映射并添加颜色信息
+  const enhancedData = chartData.map((item, index) => ({
+    ...item,
+    color: ENHANCED_COLORS.barChart[index % ENHANCED_COLORS.barChart.length],
+  }));
+
+  return (
+    <ChartContainer title="项目标签" icon={icon} isLoading={isLoading} hideHeader={hideHeader}>
+      <div className="h-[300px] w-full transition-all duration-300 ease-in-out" key={`category-${data?.length || 0}`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={enhancedData} margin={{top: 10, right: 10, left: -10, bottom: 0}}>
+            <XAxis
+              dataKey="name"
+              axisLine={false}
+              tickLine={false}
+              tick={{fontSize: 12, fill: '#6b7280'}}
+              tickMargin={8}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{fontSize: 12, fill: '#6b7280'}}
+              tickMargin={8}
+              allowDecimals={false}
+            />
+            <Tooltip
+              content={<EnhancedTooltip labelFormatter={(label) => `标签: ${label}`} />}
+              cursor={{fill: 'rgba(59, 130, 246, 0.05)'}}
+            />
+            <Bar
+              dataKey="value"
+              radius={[8, 8, 0, 0]}
+              maxBarSize={80}
+              {...ANIMATION_CONFIG.base}
+              {...ANIMATION_CONFIG.bar}
+            >
+              {enhancedData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={ENHANCED_COLORS.barChart[index % ENHANCED_COLORS.barChart.length]}
+                  style={{
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                  }}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </ChartContainer>
+  );
+}
+
+
+/**
+ * 分发模式统计饼图
+ */
+export function DistributeModeChart({data, isLoading, icon, hideHeader = false}: DistributeModeChartProps & {hideHeader?: boolean}) {
+  const chartData = useMemo(() => {
+    return data && data.length > 0 ? data : [];
+  }, [data]);
+
+  if (!isLoading && (!chartData || chartData.length === 0)) {
+    return (
+      <ChartContainer title="分发模式统计" icon={icon} isLoading={isLoading} hideHeader={hideHeader}>
+        <div className="flex flex-col items-center justify-center h-[300px] space-y-3">
+          <div className="text-4xl opacity-30 text-gray-400">{icon}</div>
+          <span className="text-sm text-gray-500 dark:text-gray-400">暂无分发数据</span>
+        </div>
+      </ChartContainer>
+    );
+  }
+
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
   const enhancedData = chartData.map((item, index) => ({
     ...item,
+    name: DISTRIBUTION_MODE_NAMES[item.name] || item.name,
     total,
     color: ENHANCED_COLORS.pieChart[index % ENHANCED_COLORS.pieChart.length],
   }));
 
   return (
-    <ChartContainer title="项目标签分布" icon={icon} isLoading={isLoading}>
-      <div className="h-[300px] w-full transition-all duration-300 ease-in-out" key={`category-${data?.length || 0}`}>
+    <ChartContainer title="分发模式统计" icon={icon} isLoading={isLoading} hideHeader={hideHeader}>
+      <div className="h-[300px] w-full transition-all duration-300 ease-in-out" key={`distribute-${data?.length || 0}`}>
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart margin={{top: 10, right: 10, left: -10, bottom: 50}}>
+          <PieChart margin={{top: 50, right: 10, left: -10, bottom: 50}}>
             <Pie
               data={enhancedData}
               dataKey="value"
@@ -444,7 +520,7 @@ export function CategoryChart({data, isLoading, icon}: CategoryChartProps) {
               iconType="circle"
               wrapperStyle={{
                 position: 'absolute',
-                bottom: '20px',
+                bottom: '-10px',
                 width: '100%',
                 fontSize: '11px',
                 display: 'flex',
@@ -467,80 +543,6 @@ export function CategoryChart({data, isLoading, icon}: CategoryChartProps) {
               )}
             />
           </PieChart>
-        </ResponsiveContainer>
-      </div>
-    </ChartContainer>
-  );
-}
-
-
-/**
- * 分发模式统计柱状图
- */
-export function DistributeModeChart({data, isLoading, icon}: DistributeModeChartProps) {
-  const chartData = useMemo(() => {
-    return data && data.length > 0 ? data : [];
-  }, [data]);
-
-  if (!isLoading && (!chartData || chartData.length === 0)) {
-    return (
-      <ChartContainer title="分发模式统计" icon={icon} isLoading={isLoading}>
-        <div className="flex flex-col items-center justify-center h-[300px] space-y-3">
-          <div className="text-4xl opacity-30 text-gray-400">{icon}</div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">暂无分发数据</span>
-        </div>
-      </ChartContainer>
-    );
-  }
-
-  // 使用映射获取名称并添加颜色信息
-  const enhancedData = chartData.map((item, index) => ({
-    ...item,
-    name: DISTRIBUTION_MODE_NAMES[item.name] || item.name,
-    color: ENHANCED_COLORS.barChart[index % ENHANCED_COLORS.barChart.length],
-  }));
-
-  return (
-    <ChartContainer title="分发模式统计" icon={icon} isLoading={isLoading}>
-      <div className="h-[300px] w-full transition-all duration-300 ease-in-out" key={`distribute-${data?.length || 0}`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={enhancedData} margin={{top: 10, right: 10, left: -10, bottom: 10}}>
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{fontSize: 12, fill: '#6b7280'}}
-              tickMargin={8}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{fontSize: 12, fill: '#6b7280'}}
-              tickMargin={8}
-              allowDecimals={false}
-            />
-            <Tooltip
-              content={<EnhancedTooltip labelFormatter={(label) => `模式: ${label}`} />}
-              cursor={{fill: 'rgba(59, 130, 246, 0.05)'}}
-            />
-            <Bar
-              dataKey="value"
-              radius={[8, 8, 0, 0]}
-              maxBarSize={80}
-              {...ANIMATION_CONFIG.base}
-              {...ANIMATION_CONFIG.bar}
-            >
-              {enhancedData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={ENHANCED_COLORS.barChart[index % ENHANCED_COLORS.barChart.length]}
-                  style={{
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
-                  }}
-                />
-              ))}
-            </Bar>
-          </BarChart>
         </ResponsiveContainer>
       </div>
     </ChartContainer>

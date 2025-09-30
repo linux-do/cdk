@@ -26,10 +26,26 @@ package project
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
 	"time"
 )
+
+// GetProjectFromContext 从Context中获取Project对象
+func GetProjectFromContext(c *gin.Context) (*Project, bool) {
+	project, exists := c.Get(ProjectObjKey)
+	if !exists {
+		return nil, false
+	}
+	p, ok := project.(*Project)
+	return p, ok
+}
+
+// SetProjectToContext 将Project对象存储到Context中
+func SetProjectToContext(c *gin.Context, project *Project) {
+	c.Set(ProjectObjKey, project)
+}
 
 // ProjectWithTags 返回项目及其标签
 type ProjectWithTags struct {
@@ -52,7 +68,7 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string,
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
 			WHERE p.end_time > ? AND p.is_completed = false AND p.status = ? AND p.minimum_trust_level <= ? AND p.risk_level >= ? AND p.hide_from_explore = false AND NOT EXISTS ( SELECT 1 FROM project_items pi WHERE pi.project_id = p.id AND pi.receiver_id = ?)`
 
-	getProjectWithTagsSql := `SELECT 
+	getProjectWithTagsSql := `SELECT
     			p.id,p.name,p.description,p.distribution_type,p.total_items,
        			p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.created_at,
 				IF(COUNT(pt.tag) = 0, NULL, JSON_ARRAYAGG(pt.tag)) AS tags
@@ -103,7 +119,7 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
 			WHERE p.creator_id = ? AND p.status = ?`
 
-	getMyProjectWithTagsSql := `SELECT 
+	getMyProjectWithTagsSql := `SELECT
 				p.id,p.name,p.description,p.distribution_type,p.total_items,
 				p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.hide_from_explore,p.created_at,
 				IF(COUNT(pt.tag) = 0, NULL, JSON_ARRAYAGG(pt.tag)) AS tags

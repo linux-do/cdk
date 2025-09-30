@@ -103,6 +103,79 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/admin/users": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "is_active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "name": "is_admin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "min_violations",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            0,
+                            1,
+                            2,
+                            3,
+                            4
+                        ],
+                        "type": "integer",
+                        "format": "int32",
+                        "x-enum-varnames": [
+                            "TrustLevelNewUser",
+                            "TrustLevelBasicUser",
+                            "TrustLevelUser",
+                            "TrustLevelActiveUser",
+                            "TrustLevelLeader"
+                        ],
+                        "name": "trust_level",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "username",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/admin.listUsersResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/dashboard/stats/all": {
             "get": {
                 "produces": [
@@ -513,6 +586,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{id}/receivers": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "项目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.ProjectResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{id}/report": {
             "post": {
                 "consumes": [
@@ -652,6 +755,28 @@ const docTemplate = `{
                 }
             }
         },
+        "admin.listUsersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "total": {
+                            "type": "integer"
+                        },
+                        "users": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/oauth.User"
+                            }
+                        }
+                    }
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
         "dashboard.DashboardDataResponse": {
             "type": "object",
             "properties": {
@@ -751,6 +876,47 @@ const docTemplate = `{
                 "TrustLevelLeader"
             ]
         },
+        "oauth.User": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_admin": {
+                    "type": "boolean"
+                },
+                "last_login_at": {
+                    "type": "string"
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "trust_level": {
+                    "$ref": "#/definitions/oauth.TrustLevel"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "violation_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "oauth.UserInfoResponse": {
             "type": "object",
             "properties": {
@@ -834,6 +1000,9 @@ const docTemplate = `{
                 },
                 "start_time": {
                     "type": "string"
+                },
+                "topic_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -842,10 +1011,12 @@ const docTemplate = `{
             "format": "int32",
             "enum": [
                 0,
-                1
+                1,
+                2
             ],
             "x-enum-varnames": [
                 "DistributionTypeOneForEach",
+                "DistributionTypeLottery",
                 "DistributionTypeInvite"
             ]
         },

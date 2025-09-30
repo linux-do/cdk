@@ -3,6 +3,7 @@ export {MineProject} from './MineProject';
 export {ProjectCard} from './ProjectCard';
 export {CreateDialog} from './CreateDialog';
 export {EditDialog} from './EditDialog';
+export {ReceiverDialog} from './ReceiverDialog';
 export {ProjectBasicForm} from './ProjectBasicForm';
 export {BulkImportSection} from './BulkImportSection';
 export {DistributionModeSelect} from './DistributionModeSelect';

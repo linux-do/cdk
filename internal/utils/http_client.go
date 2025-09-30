@@ -22,20 +22,48 @@
  * SOFTWARE.
  */
 
-package project
+package utils
 
-const (
-	NoPermission       = "无权限"
-	AlreadyReceived    = "已有用户领取，不允许删除"
-	TimeTooEarly       = "未到开启时间"
-	TimeTooLate        = "已经结束"
-	TrustLevelNotMatch = "需要信任等级 %d"
-	UnknownError       = "未知异常"
-	ScoreNotEnough     = "分数未达标"
-	SameIPReceived     = "已有相同IP领取"
-	NoStock            = "无库存"
-	NotFound           = "项目不存在"
-	AlreadyReported    = "已举报过当前项目"
-	RequirementsFailed = "未达到项目发起者设置的条件"
-	TooManyRequests    = "创建项目太频繁，请稍后再试"
+import (
+	"context"
+	"fmt"
+	"io"
+	"net/http"
+	"time"
 )
+
+// 配置HTTP客户端
+var httpClient = &http.Client{
+	Timeout: 10 * time.Second,
+	Transport: &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 20,
+		IdleConnTimeout:     60 * time.Second,
+	},
+}
+
+func Request(ctx context.Context, method, url string, body io.Reader, headers, cookies map[string]string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	if err != nil {
+		return nil, fmt.Errorf("创建HTTP请求失败: %w", err)
+	}
+
+	if cookies != nil {
+		for key, value := range cookies {
+			req.AddCookie(&http.Cookie{Name: key, Value: value})
+		}
+	}
+
+	if headers != nil {
+		for key, value := range headers {
+			req.Header.Set(key, value)
+		}
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("请求%s接口失败: %w", url, err)
+	}
+
+	return resp, nil
+}

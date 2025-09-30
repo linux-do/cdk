@@ -24,8 +24,10 @@ import {
   Pencil,
   Filter,
   X,
+  Users,
 } from 'lucide-react';
 import {EditDialog, ProjectCard} from '@/components/common/project';
+import {ReceiverDialog} from '@/components/common/project/ReceiverDialog';
 import {EmptyState} from '@/components/common/layout/EmptyState';
 import {TagFilterPopover} from '@/components/ui/tag-filter-popover';
 import services from '@/lib/services';
@@ -215,7 +217,20 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                     e.preventDefault();
                     e.stopPropagation();
                   }}
+                  className="flex gap-1"
                 >
+                  <ReceiverDialog
+                    projectId={project.id}
+                    projectName={project.name}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-white/20 hover:bg-white/30 text-white"
+                    >
+                      <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                    </Button>
+                  </ReceiverDialog>
                   <EditDialog
                     project={project}
                     onProjectUpdated={handleProjectUpdated}

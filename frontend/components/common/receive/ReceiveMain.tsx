@@ -114,7 +114,7 @@ export function ReceiveMain() {
     if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
       router.back();
     } else {
-      router.push('/explore');
+      router.push('/dashboard');
     }
   };
 

@@ -109,9 +109,10 @@ func Serve() {
 			{
 				projectRouter.GET("/mine", project.ListMyProjects)
 				projectRouter.GET("", project.ListProjects)
-				projectRouter.POST("", project.CreateProject)
+				projectRouter.POST("", project.ProjectCreateRateLimitMiddleware(), project.CreateProject)
 				projectRouter.PUT("/:id", project.ProjectCreatorPermMiddleware(), project.UpdateProject)
 				projectRouter.DELETE("/:id", project.ProjectCreatorPermMiddleware(), project.DeleteProject)
+				projectRouter.GET("/:id/receivers", project.ProjectCreatorPermMiddleware(), project.ListProjectReceivers)
 				projectRouter.POST("/:id/receive", project.ReceiveProjectMiddleware(), project.ReceiveProject)
 				projectRouter.POST("/:id/report", project.ReportProject)
 				projectRouter.GET("/received", project.ListReceiveHistory)
@@ -141,6 +142,12 @@ func Serve() {
 				{
 					projectAdminRouter.GET("", admin.GetProjectsList)
 					projectAdminRouter.PUT("/:id/review", admin.ReviewProject)
+				}
+
+				// User
+				userAdminRouter := adminRouter.Group("/users")
+				{
+					userAdminRouter.GET("", admin.ListUsers)
 				}
 			}
 		}

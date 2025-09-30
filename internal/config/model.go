@@ -34,6 +34,7 @@ type configModel struct {
 	Schedule   scheduleConfig   `mapstructure:"schedule"`
 	Worker     workerConfig     `mapstructure:"worker"`
 	ClickHouse clickHouseConfig `mapstructure:"clickhouse"`
+	LinuxDo    linuxDoConfig    `mapstructure:"linuxdo"`
 }
 
 // appConfig 应用基本配置
@@ -52,8 +53,12 @@ type appConfig struct {
 
 // projectAppConfig 项目相关配置
 type projectAppConfig struct {
-	HiddenThreshold     uint8 `mapstructure:"hidden_threshold"`
-	DeductionPerOffense uint8 `mapstructure:"deduction_per_offense"`
+	HiddenThreshold        uint8 `mapstructure:"hidden_threshold"`
+	DeductionPerOffense    uint8 `mapstructure:"deduction_per_offense"`
+	CreateProjectRateLimit []struct {
+		IntervalSeconds int `mapstructure:"interval_seconds"`
+		MaxCount        int `mapstructure:"max_count"`
+	} `mapstructure:"create_project_rate_limit"`
 }
 
 // OAuth2Config OAuth2认证配置
@@ -130,4 +135,9 @@ type scheduleConfig struct {
 // workerConfig 工作配置
 type workerConfig struct {
 	Concurrency int `mapstructure:"concurrency"`
+}
+
+// linuxDoConfig
+type linuxDoConfig struct {
+	ApiKey string `mapstructure:"api_key"`
 }

@@ -7,8 +7,10 @@ import {TrustLevel} from '../core/types';
 export enum DistributionType {
   /** 一码一用 */
   ONE_FOR_EACH = 0,
+  /** 抽奖分发 */
+  LOTTERY = 1,
   /** 邀请制 */
-  INVITE = 1,
+  INVITE = 2,
 }
 
 /**
@@ -41,8 +43,6 @@ export interface Project {
   created_at: string;
   /** 更新时间 */
   updated_at: string;
-  /** 是否在探索页面隐藏 */
-  hide_from_explore: boolean;
 }
 
 /**
@@ -69,8 +69,8 @@ export interface CreateProjectRequest {
   distribution_type: DistributionType;
   /** 项目物品列表 */
   project_items: string[];
-  /** 是否在探索页面隐藏 */
-  hide_from_explore?: boolean;
+  /** L站话题ID（用于抽奖项目） */
+  topic_id?: number;
 }
 
 /**
@@ -95,8 +95,6 @@ export interface UpdateProjectRequest {
   risk_level?: number;
   /** 追加的项目物品列表 */
   project_items?: string[];
-  /** 是否在探索页面隐藏 */
-  hide_from_explore?: boolean;
   /** 是否启用过滤（去重） */
   enable_filter?: boolean;
 }
@@ -270,8 +268,6 @@ export interface ProjectListItem {
   tags: string[] | null;
   /** 创建时间 */
   created_at: string;
-  /** 是否在探索页面隐藏 */
-  hide_from_explore: boolean;
 }
 
 /**
@@ -301,3 +297,20 @@ export interface ReportProjectRequest {
  * 举报项目响应类型
  */
 export type ReportProjectResponse = BackendResponse<null>;
+
+/**
+ * 项目领取者信息
+ */
+export interface ProjectReceiver {
+  /** 用户名 */
+  username: string;
+  /** 用户昵称 */
+  nickname: string;
+  /** 领取到的内容 */
+  content: string;
+}
+
+/**
+ * 项目领取者响应类型
+ */
+export type ProjectReceiversResponse = BackendResponse<ProjectReceiver[] | null>;

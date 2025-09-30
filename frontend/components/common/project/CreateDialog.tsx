@@ -12,11 +12,12 @@ import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {validateProjectForm} from '@/components/common/project';
 import {ProjectBasicForm} from '@/components/common/project/ProjectBasicForm';
 import {BulkImportSection} from '@/components/common/project/BulkImportSection';
 import {DistributionModeSelect} from '@/components/common/project/DistributionModeSelect';
-import {Plus, Copy, ExternalLink, CheckCircle} from 'lucide-react';
+import {Plus, Copy, ExternalLink, CheckCircle, HelpCircle} from 'lucide-react';
 import services from '@/lib/services';
 import {copyToClipboard} from '@/lib/utils';
 import {DistributionType, ProjectListItem} from '@/lib/services/project/types';
@@ -107,18 +108,25 @@ export function CreateDialog({
       return false;
     }
 
-    // 手动邀请模式暂时不可用
+    // 接龙申请模式暂时不可用
     if (formData.distributionType === DistributionType.INVITE) {
-      toast.error('手动邀请功能正在开发中，暂时无法创建');
+      toast.error('接龙申请功能正在开发中，暂时无法创建');
       setActiveTab('distribution');
       return false;
     }
 
     if (
-      formData.distributionType === DistributionType.ONE_FOR_EACH &&
+      (formData.distributionType === DistributionType.ONE_FOR_EACH ||
+       formData.distributionType === DistributionType.LOTTERY) &&
       items.length === 0
     ) {
       toast.error('至少需要添加一个分发内容');
+      setActiveTab('distribution');
+      return false;
+    }
+
+    if (formData.distributionType === DistributionType.LOTTERY && !formData.topicId) {
+      toast.error('抽奖分发必须提供社区话题ID');
       setActiveTab('distribution');
       return false;
     }
@@ -144,11 +152,13 @@ export function CreateDialog({
         allow_same_ip: formData.allowSameIP,
         risk_level: formData.riskLevel,
         distribution_type: formData.distributionType,
-        hide_from_explore: formData.hideFromExplore,
+        topic_id: formData.topicId,
         project_items:
           formData.distributionType === DistributionType.ONE_FOR_EACH ?
             items :
-            ['手动邀请模式'],
+            formData.distributionType === DistributionType.LOTTERY ?
+            items :
+            ['接龙申请模式'],
       };
 
       const result = await services.project.createProjectSafe(projectData);
@@ -177,7 +187,6 @@ export function CreateDialog({
         distribution_type: formData.distributionType,
         total_items: items.length,
         created_at: new Date().toISOString(),
-        hide_from_explore: formData.hideFromExplore,
       };
 
       setCreateSuccess(true);
@@ -287,10 +296,10 @@ export function CreateDialog({
               <TabsTrigger value="distribution">分发内容</TabsTrigger>
             </TabsList>
 
-            <TabsContents className="mx-1 mb-1 -mt-2 rounded-sm h-full bg-background">
+            <TabsContents className="mb-1 -mt-2 rounded-sm h-full bg-background">
               <TabsContent
                 value="basic"
-                className={`space-y-6 py-6 px-1 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
+                className={`space-y-6 py-6 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
               >
                 <ProjectBasicForm
                   formData={formData}
@@ -304,7 +313,7 @@ export function CreateDialog({
 
               <TabsContent
                 value="distribution"
-                className={`space-y-6 py-6 px-1 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
+                className={`space-y-6 py-6 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
               >
                 <DistributionModeSelect
                   distributionType={formData.distributionType}
@@ -313,7 +322,46 @@ export function CreateDialog({
                   }
                 />
 
-                {formData.distributionType === DistributionType.ONE_FOR_EACH ? (
+                {formData.distributionType === DistributionType.LOTTERY && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="topicId">
+                        Linux Do 话题 ID <span className="text-red-500">*</span>
+                      </Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>可以直接粘贴话题链接，系统会自动提取ID</p>
+                            <p>需要添加&ldquo;抽奖&rdquo;标签且抽奖已结束的话题</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <Input
+                      id="topicId"
+                      type="text"
+                      placeholder="填写社区抽奖话题的 ID 或粘贴话题链接"
+                      value={formData.topicId?.toString() || ''}
+                      onChange={(e) => {
+                        let value = e.target.value.trim();
+
+                        const urlMatch = value.match(/linux\.do\/t(?:\/topic)?\/(\d+)(?:[\/\?\#]|$)/i);
+                        if (urlMatch) {
+                          value = urlMatch[1];
+                        }
+
+                        const numValue = value ? parseInt(value) : NaN;
+                        setFormData({...formData, topicId: (!isNaN(numValue) && numValue > 0) ? numValue : undefined});
+                      }}
+                    />
+                  </div>
+                )}
+
+                {(formData.distributionType === DistributionType.ONE_FOR_EACH ||
+                  formData.distributionType === DistributionType.LOTTERY) ? (
                   <BulkImportSection
                     items={items}
                     bulkContent={bulkContent}
@@ -342,7 +390,7 @@ export function CreateDialog({
                         敬请期待
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        手动邀请功能正在开发中
+                        接龙申请功能正在开发中
                       </p>
                     </div>
                   </div>
@@ -371,6 +419,7 @@ export function CreateDialog({
             >
               {loading ? '创建中...' :
                formData.distributionType === DistributionType.INVITE ? '开发中' :
+               formData.distributionType === DistributionType.LOTTERY ? '创建抽奖分发' :
                '创建'}
             </Button>
           )}

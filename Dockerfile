@@ -10,12 +10,8 @@ WORKDIR /app
 # set build arg for platform
 ARG TARGETPLATFORM
 
-# copy all binaries into image
-COPY cdk-server-amd64 .
-COPY cdk-server-arm64 .
-
-# select binary according to platform
-RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then cp cdk-server-amd64 cdk-server; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then cp cdk-server-arm64 cdk-server; fi
+# copy the appropriate binary based on platform
+COPY cdk-server-${TARGETPLATFORM#linux/} ./cdk-server
 
 # copy docs and support files
 COPY docs ./docs
