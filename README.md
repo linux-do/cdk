@@ -1,5 +1,7 @@
 # LINUX DO CDK
 
+[English version](readmes/README_en-US.md)
+
 🚀 Linux Do 社区 CDK (Content Distribution Kit) 快速分享平台
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -35,7 +37,7 @@ LINUX DO CDK 是一个为 Linux Do 社区打造的内容分发工具平台，旨
 
 ## 🏗️ 架构概览
 
-```
+```text
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │    Backend      │    │   Database      │
 │   (Next.js)     │◄──►│     (Go)        │◄──►│  (MySQL/Redis)  │
@@ -50,6 +52,7 @@ LINUX DO CDK 是一个为 Linux Do 社区打造的内容分发工具平台，旨
 ## 🛠️ 技术栈
 
 ### 后端
+
 - **Go 1.24** - 主要开发语言
 - **Gin** - Web 框架
 - **GORM** - ORM 框架
@@ -59,6 +62,7 @@ LINUX DO CDK 是一个为 Linux Do 社区打造的内容分发工具平台，旨
 - **Swagger** - API 文档
 
 ### 前端
+
 - **Next.js 15** - React 框架
 - **React 19** - UI 库
 - **TypeScript** - 类型安全
@@ -129,9 +133,9 @@ pnpm dev
 
 ### 6. 访问应用
 
-- **前端界面**: http://localhost:3000
-- **API 文档**: http://localhost:8000/swagger/index.html
-- **健康检查**: http://localhost:8000/api/health
+- **前端界面**: <http://localhost:3000>
+- **API 文档**: <http://localhost:8000/swagger/index.html>
+- **健康检查**: <http://localhost:8000/api/health>
 
 ## ⚙️ 配置说明
 
@@ -190,7 +194,7 @@ pnpm format
 
 API 文档通过 Swagger 自动生成，启动后端服务后可访问：
 
-```
+```text
 http://localhost:8000/swagger/index.html
 ```
 
@@ -227,11 +231,13 @@ docker run -d -p 8000:8000 linux-do-cdk
 ### 生产环境部署
 
 1. 构建前端资源：
+
    ```bash
    cd frontend && pnpm build
    ```
 
 2. 编译后端程序：
+
    ```bash
    go build -o cdk main.go
    ```
@@ -239,6 +245,7 @@ docker run -d -p 8000:8000 linux-do-cdk
 3. 配置生产环境的 `config.yaml`
 
 4. 启动服务：
+
    ```bash
    ./cdk api
    ```

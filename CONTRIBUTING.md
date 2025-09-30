@@ -1,5 +1,7 @@
 # 贡献指南
 
+[English version](readmes/CONTRIBUTING_en-US.md)
+
 感谢您有兴趣为本项目做出贡献！我们欢迎各种形式的贡献，但请先阅读如下文档，以节省您和我们的时间。
 
 当您在使用 Claude Code, Gemini CLI 等 Vibe-coding 工具时，推荐将此文档内容附加到上下文内。
@@ -53,19 +55,19 @@
 **响应格式**
 
 ```json
-# 响应数据最外层有两个字段，error_msg 和 data
+// 响应数据最外层有两个字段，error_msg 和 data
 {
     "error_msg": "",
     "data": null
 }
 
-# 如果是非列表数据
+// 如果是非列表数据
 {
     "error_msg": "",
     "data": {}
 }
 
-# 如果是分页数据
+// 如果是分页数据
 {
     "error_msg": "",
     "data": {
@@ -102,6 +104,7 @@
 **服务层**
 
 服务层架构是前端与API交互的统一入口，基于以下原则：
+
 1. 关注点分离 - 每个服务负责一个业务领域
 2. 统一入口 - 通过services对象导出所有服务
 3. 类型安全 - 所有请求和响应有明确类型定义
@@ -110,7 +113,8 @@
 **如何新建接口服务**
 
 1. **创建目录结构**:
-   ```
+
+   ```text
    /services/新服务名/
      - types.ts       // 类型定义
      - 服务名.service.ts  // 服务实现
@@ -118,13 +122,14 @@
    ```
 
 2. **实现服务类**:
+
    ```typescript
    // 新服务名/服务名.service.ts
    import {BaseService} from '../core/base.service';
-
+   
    export class 新服务类 extends BaseService {
      protected static readonly basePath = '/api/v1/路径';
-
+   
      static async 方法名(参数): Promise<返回类型> {
        return this.get<返回类型>('/endpoint');
      }
@@ -132,9 +137,10 @@
    ```
 
 3. **在services/index.ts注册**:
+
    ```typescript
    import {新服务类} from './新服务名';
-
+   
    const services = {
      auth: AuthService,
      新服务名: 新服务类
