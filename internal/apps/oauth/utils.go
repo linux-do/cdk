@@ -123,7 +123,7 @@ func doOAuth(ctx context.Context, code string) (*User, error) {
 				span.SetStatus(codes.Error, err.Error())
 				return nil, err
 			}
-		} else if errors.Is(txByUsername.Error, gorm.ErrRecordNotFound) {
+		} else if errors.Is(txByID.Error, gorm.ErrRecordNotFound) {
 			user = User{
 				ID:          userInfo.Id,
 				Username:    userInfo.Username,
@@ -140,8 +140,8 @@ func doOAuth(ctx context.Context, code string) (*User, error) {
 			user.EnqueueBadgeScoreTask(ctx)
 		} else {
 			// query failed
-			span.SetStatus(codes.Error, txByUsername.Error.Error())
-			return nil, txByUsername.Error
+			span.SetStatus(codes.Error, txByID.Error.Error())
+			return nil, txByID.Error
 		}
 	} else {
 		if user.ID != userInfo.Id {
