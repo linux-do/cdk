@@ -117,3 +117,55 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
+
+  update_helm_values:
+    runs-on: ubuntu-latest
+    needs: [build_image, build_frontend_image]
+    if: github.ref_type == 'tag'
+    steps:
+      # configure SSH agent with deploy key
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      # add github.com to known_hosts to avoid host verification prompt
+      - name: Add GitHub to known_hosts
+        run: ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      # clone the helm charts repository
+      - name: Clone Helm Charts repository
+        run: git clone ${{ vars.HELM_CHARTS_REPO }} helm-charts
+
+      # install yq for yaml editing
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      # update image tags in values/cdk.yaml
+      - name: Update image tags in values/cdk.yaml
+        run: |
+          cd helm-charts
+          yq -i '.image.tag = "${{ github.ref_name }}"' values/cdk.yaml
+          yq -i '.image.webTag = "${{ github.ref_name }}"' values/cdk.yaml
+
+      # commit and push to a new branch, then open a PR for review
+      - name: Commit, push and create PR
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          cd helm-charts
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b update/cdk-${{ github.ref_name }}
+          git add values/cdk.yaml
+          git commit -m "chore: update cdk image tag to ${{ github.ref_name }}"
+          git push origin update/cdk-${{ github.ref_name }}
+          HELM_REPO=$(echo "${{ vars.HELM_CHARTS_REPO }}" | sed 's/git@github.com://;s/\.git$//')
+          gh pr create \
+            --repo "${HELM_REPO}" \
+            --title "chore: update cdk image tag to ${{ github.ref_name }}" \
+            --body "Automated PR: update \`values/cdk.yaml\` image tags to \`${{ github.ref_name }}\` after Docker image build." \
+            --base main \
+            --head update/cdk-${{ github.ref_name }}
