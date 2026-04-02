@@ -10,6 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  FRONTEND_IMAGE_NAME: ${{ github.repository }}-web
 
 # add permission for package publishing
 permissions:
@@ -94,17 +95,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # extract metadata for docker (web- prefix)
+      # extract metadata for docker (frontend)
       - name: Extract Docker metadata (frontend)
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
           tags: |
-            type=raw,value=web-latest,enable=${{ github.ref == 'refs/heads/master' }}
-            type=semver,pattern=web-{{version}}
-            type=semver,pattern=web-{{major}}.{{minor}}
-            type=sha,format=short,prefix=web-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=tag
+            type=sha,format=short,prefix=
 
       # build and push frontend docker image
       - name: Build Frontend Docker image
