@@ -33,13 +33,14 @@ import (
 	"github.com/linux-do/cdk/internal/otel_trace"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // taskLoggingMiddleware 记录任务日志中间件
 func taskLoggingMiddleware(h asynq.Handler) asynq.Handler {
 	return asynq.HandlerFunc(func(ctx context.Context, t *asynq.Task) error {
 		// 初始化 Trace
-		ctx, span := otel_trace.Start(ctx, "TaskProcess_"+t.Type())
+		ctx, span := otel_trace.Start(ctx, "TaskProcess_"+t.Type(), trace.WithSpanKind(trace.SpanKindConsumer))
 		defer span.End()
 
 		// 添加任务信息到 Span

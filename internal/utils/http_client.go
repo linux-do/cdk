@@ -30,16 +30,18 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // 配置HTTP客户端
 var httpClient = &http.Client{
 	Timeout: 10 * time.Second,
-	Transport: &http.Transport{
+	Transport: otelhttp.NewTransport(&http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 20,
 		IdleConnTimeout:     60 * time.Second,
-	},
+	}),
 }
 
 func Request(ctx context.Context, method, url string, body io.Reader, headers, cookies map[string]string) (*http.Response, error) {
