@@ -53,6 +53,8 @@ database:
   max_open_conn: 100
   conn_max_lifetime: 3600
   log_level: "info"  # error, warn, info, debug, silent
+  slow_threshold: 200ms
+  ignore_record_not_found_error: false
 
 # clickhouse
 clickhouse:

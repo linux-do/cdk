@@ -60,7 +60,17 @@ func init() {
 		config.Config.Database.Port,
 		config.Config.Database.Database,
 	)
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
+	db, err = gorm.Open(
+		mysql.Open(dsn),
+		&gorm.Config{
+			DisableForeignKeyConstraintWhenMigrating: true,
+			Logger: &gormZapLogger{
+				logLevel:                  parseLogLevel(config.Config.Database.LogLevel),
+				slowThreshold:             config.Config.Database.SlowThreshold,
+				ignoreRecordNotFoundError: config.Config.Database.IgnoreRecordNotFoundError,
+			},
+		},
+	)
 	if err != nil {
 		log.Fatalf("[MySQL] init connection failed: %v\n", err)
 	}

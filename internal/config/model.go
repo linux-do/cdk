@@ -24,6 +24,8 @@
 
 package config
 
+import "time"
+
 type configModel struct {
 	App        appConfig        `mapstructure:"app"`
 	ProjectApp projectAppConfig `mapstructure:"projectApp"`
@@ -74,16 +76,18 @@ type OAuth2Config struct {
 
 // databaseConfig 数据库配置
 type databaseConfig struct {
-	Enabled         bool   `mapstructure:"enabled"`
-	Host            string `mapstructure:"host"`
-	Port            int    `mapstructure:"port"`
-	Username        string `mapstructure:"username"`
-	Password        string `mapstructure:"password"`
-	Database        string `mapstructure:"database"`
-	MaxIdleConn     int    `mapstructure:"max_idle_conn"`
-	MaxOpenConn     int    `mapstructure:"max_open_conn"`
-	ConnMaxLifetime int    `mapstructure:"conn_max_lifetime"`
-	LogLevel        string `mapstructure:"log_level"`
+	Enabled                   bool          `mapstructure:"enabled"`
+	Host                      string        `mapstructure:"host"`
+	Port                      int           `mapstructure:"port"`
+	Username                  string        `mapstructure:"username"`
+	Password                  string        `mapstructure:"password"`
+	Database                  string        `mapstructure:"database"`
+	MaxIdleConn               int           `mapstructure:"max_idle_conn"`
+	MaxOpenConn               int           `mapstructure:"max_open_conn"`
+	ConnMaxLifetime           int           `mapstructure:"conn_max_lifetime"`
+	LogLevel                  string        `mapstructure:"log_level"`
+	SlowThreshold             time.Duration `mapstructure:"slow_threshold"`
+	IgnoreRecordNotFoundError bool          `mapstructure:"ignore_record_not_found_error"`
 }
 
 // clickhouse 配置
