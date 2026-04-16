@@ -36,7 +36,7 @@ import (
 )
 
 func newTracerProvider() (*sdktrace.TracerProvider, error) {
-	// 获取主机名
+	// 获取主机名和容器信息
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -49,6 +49,9 @@ func newTracerProvider() (*sdktrace.TracerProvider, error) {
 			semconv.SchemaURL,
 			semconv.ServiceName(config.Config.App.AppName),
 			semconv.HostName(hostname),
+			semconv.K8SNamespaceName(os.Getenv("KUBERNETES_NAMESPACE")),
+			semconv.K8SPodName(os.Getenv("KUBERNETES_POD_NAME")),
+			semconv.K8SPodUID(os.Getenv("KUBERNETES_POD_UID")),
 		),
 	)
 	if err != nil {
