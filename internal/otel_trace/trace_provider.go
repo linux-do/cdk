@@ -26,6 +26,7 @@ package otel_trace
 
 import (
 	"context"
+	"os"
 
 	"github.com/linux-do/cdk/internal/config"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -35,12 +36,22 @@ import (
 )
 
 func newTracerProvider() (*sdktrace.TracerProvider, error) {
+	// 获取主机名和容器信息
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
 	// 初始化 Resource
 	r, err := resource.Merge(
 		resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceName(config.Config.App.AppName),
+			semconv.HostName(hostname),
+			semconv.K8SNamespaceName(os.Getenv("KUBERNETES_NAMESPACE")),
+			semconv.K8SPodName(os.Getenv("KUBERNETES_POD_NAME")),
+			semconv.K8SPodUID(os.Getenv("KUBERNETES_POD_UID")),
 		),
 	)
 	if err != nil {
