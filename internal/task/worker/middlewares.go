@@ -34,6 +34,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
 // taskLoggingMiddleware 记录任务日志中间件
@@ -60,30 +61,31 @@ func taskLoggingMiddleware(h asynq.Handler) asynq.Handler {
 		latency := time.Since(start)
 
 		if err != nil {
-			// 处理出错，记录错误日志
-			logger.ErrorF(
+			logger.Error(
 				ctx,
-				"[TaskMiddleware] 任务处理失败 Type: %s\nStartTime: %s\nLatency: %d ms\nError: %v",
-				t.Type(),
-				start.Format(time.RFC3339),
-				latency.Milliseconds(),
-				err,
+				"task processing failed",
+				zap.String("task_type", t.Type()),
+				zap.String("task_id", t.ResultWriter().TaskID()),
+				zap.Int("payload_size", len(t.Payload())),
+				zap.String("start_time", start.Format(time.RFC3339)),
+				zap.Int64("latency_ms", latency.Milliseconds()),
+				zap.Error(err),
 			)
 
-			// 设置 Span 错误状态
 			span.SetStatus(codes.Error, err.Error())
 			span.RecordError(err)
 			return err
 		}
 
-		// 处理成功，记录成功日志
-		logger.InfoF(
+		logger.Info(
 			ctx,
-			"[TaskMiddleware] 任务处理完成 Type: %s\nStartTime: %s\nEndTime: %s\nLatency: %d ms",
-			t.Type(),
-			start.Format(time.RFC3339),
-			time.Now().Format(time.RFC3339),
-			latency.Milliseconds(),
+			"task processing completed",
+			zap.String("task_type", t.Type()),
+			zap.String("task_id", t.ResultWriter().TaskID()),
+			zap.Int("payload_size", len(t.Payload())),
+			zap.String("start_time", start.Format(time.RFC3339)),
+			zap.String("end_time", time.Now().Format(time.RFC3339)),
+			zap.Int64("latency_ms", latency.Milliseconds()),
 		)
 
 		return nil

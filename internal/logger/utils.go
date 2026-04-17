@@ -33,6 +33,7 @@ import (
 	"sync"
 
 	"github.com/linux-do/cdk/internal/config"
+	"github.com/linux-do/cdk/internal/requestid"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -122,11 +123,23 @@ func getLogLevel() zapcore.Level {
 	}
 }
 
-func getTraceIDFields(ctx context.Context) []zap.Field {
+func getContextFields(ctx context.Context) []zap.Field {
+	fields := make([]zap.Field, 0, 3)
+
+	if requestID := requestid.FromContext(ctx); requestID != "" {
+		fields = append(fields, zap.String("request_id", requestID))
+	}
+
 	span := trace.SpanFromContext(ctx)
 	spanContext := span.SpanContext()
-	return []zap.Field{
-		zap.String("traceID", spanContext.TraceID().String()),
-		zap.String("spanID", spanContext.SpanID().String()),
+
+	if spanContext.HasTraceID() {
+		fields = append(fields, zap.String("trace_id", spanContext.TraceID().String()))
 	}
+
+	if spanContext.HasSpanID() {
+		fields = append(fields, zap.String("span_id", spanContext.SpanID().String()))
+	}
+
+	return fields
 }

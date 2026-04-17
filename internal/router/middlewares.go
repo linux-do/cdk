@@ -25,56 +25,61 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/linux-do/cdk/internal/logger"
-	"github.com/linux-do/cdk/internal/otel_trace"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/trace"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/linux-do/cdk/internal/logger"
+	"github.com/linux-do/cdk/internal/requestid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
+
+func requestIDMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		requestID := requestid.GetOrNew(c.GetHeader(requestid.HeaderName))
+		ctx := requestid.WithContext(c.Request.Context(), requestID)
+
+		c.Request = c.Request.WithContext(ctx)
+		c.Writer.Header().Set(requestid.HeaderName, requestID)
+		c.Next()
+	}
+}
 
 func loggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 初始化 Trace
-		ctx, span := otel_trace.Start(c.Request.Context(), "LoggerMiddleware")
-		defer span.End()
-
-		// 开始计时
+		ctx := c.Request.Context()
+		span := trace.SpanFromContext(ctx)
 		start := time.Now()
 
-		// 记录请求路径和 Query
-		path := c.Request.URL.Path
-		raw := c.Request.URL.RawQuery
-		if raw != "" {
-			path = path + "?" + raw
-		}
-
-		// 执行请求
 		c.Next()
 
-		// 停止计时
-		end := time.Now()
-		latency := end.Sub(start)
+		status := c.Writer.Status()
+		latency := time.Since(start)
+		fields := []zap.Field{
+			zap.String("method", c.Request.Method),
+			zap.String("path", c.Request.URL.Path),
+			zap.Int("status", status),
+			zap.Int64("latency_ms", latency.Milliseconds()),
+			zap.String("client_ip", c.ClientIP()),
+			zap.Int("response_size", c.Writer.Size()),
+		}
+		if rawQuery := c.Request.URL.RawQuery; rawQuery != "" {
+			fields = append(fields, zap.String("query", rawQuery))
+		}
 
-		// 打印日志
-		logger.InfoF(
-			ctx,
-			"[LoggerMiddleware] %s %s\nStartTime: %s\nEndTime: %s\nLatency: %d\nClientIP: %s\nResponse: %d %d",
-			c.Request.Method,
-			path,
-			start.Format(time.RFC3339),
-			end.Format(time.RFC3339),
-			latency.Milliseconds(),
-			c.ClientIP(),
-			c.Writer.Status(),
-			c.Writer.Size(),
-		)
+		logger.Info(ctx, "http request completed", fields...)
 
-		// 设置 Span 状态
-		if c.Writer.Status() >= 400 {
-			span := trace.SpanFromContext(ctx)
-			span.SetStatus(codes.Error, strconv.Itoa(c.Writer.Status()))
+		if span.SpanContext().IsValid() {
+			if requestID := requestid.FromContext(ctx); requestID != "" {
+				span.SetAttributes(attribute.String("request.id", requestID))
+			}
+		}
+
+		if status >= 400 {
+			span.SetStatus(codes.Error, strconv.Itoa(status))
 		}
 	}
 }

@@ -26,6 +26,8 @@ export interface PaginatedResponse<T = unknown> {
 export interface ApiError {
   /** 错误信息 */
   error_msg: string;
+  /** 请求ID */
+  request_id?: string;
 }
 
 /**

@@ -1,5 +1,10 @@
 import axios, {AxiosError, AxiosResponse} from 'axios';
 import {ApiError, ApiResponse} from './types';
+import {
+  createApiClientError,
+  createApiClientErrorFromResponse,
+  extractRequestId,
+} from './api-error';
 
 /**
  * API客户端实例
@@ -31,7 +36,10 @@ apiClient.interceptors.request.use(
  */
 function initiateLogin(currentPath: string): Promise<never> {
   // 防止循环重定向
-  if (!currentPath.startsWith('/login') && !currentPath.startsWith('/callback')) {
+  if (
+    !currentPath.startsWith('/login') &&
+    !currentPath.startsWith('/callback')
+  ) {
     // 动态导入AuthService避免循环依赖
     import('../auth/auth.service').then(({AuthService}) => {
       // 直接调用登录方法，传入当前路径作为重定向目标
@@ -55,29 +63,54 @@ apiClient.interceptors.response.use(
         return initiateLogin(window.location.pathname);
       }
 
+      const requestId = extractRequestId(error.response);
+
       // 处理后端返回的错误信息
       if (error.response?.data?.error_msg) {
-        const apiError = new Error(error.response.data.error_msg);
-        apiError.name = 'ApiError';
-        return Promise.reject(apiError);
+        return Promise.reject(
+            createApiClientErrorFromResponse(
+                error.response.data.error_msg,
+                error.response,
+            ),
+        );
       }
 
       // 处理网络错误
       if (error.code === 'ECONNABORTED') {
-        return Promise.reject(new Error('请求超时，请检查网络连接'));
+        return Promise.reject(
+            createApiClientError('请求超时，请检查网络连接', {
+              requestId,
+              status: error.response?.status,
+            }),
+        );
       }
 
       // 处理权限错误
       if (error.response?.status === 403) {
-        return Promise.reject(new Error('权限不足'));
+        return Promise.reject(
+            createApiClientError('权限不足', {
+              requestId,
+              status: error.response.status,
+            }),
+        );
       }
 
       // 处理服务器错误
       if (error.response && error.response.status >= 500) {
-        return Promise.reject(new Error('服务器内部错误，请稍后重试'));
+        return Promise.reject(
+            createApiClientError('服务器内部错误，请稍后重试', {
+              requestId,
+              status: error.response.status,
+            }),
+        );
       }
 
-      return Promise.reject(new Error(error.message || '网络请求失败'));
+      return Promise.reject(
+          createApiClientError(error.message || '网络请求失败', {
+            requestId,
+            status: error.response?.status,
+          }),
+      );
     },
 );
 

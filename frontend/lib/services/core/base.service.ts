@@ -1,5 +1,7 @@
+import {AxiosResponse} from 'axios';
 import apiClient from './api-client';
 import {ApiResponse} from './types';
+import {throwIfApiResponseError} from './api-error';
 
 /**
  * 服务基类
@@ -19,6 +21,13 @@ export abstract class BaseService {
     return `${this.basePath}${path}`;
   }
 
+  protected static unwrapApiResponse<T>(
+      response: AxiosResponse<ApiResponse<T>>,
+  ): T {
+    throwIfApiResponseError(response);
+    return response.data.data;
+  }
+
   /**
    * GET请求
    * @template T - 响应数据类型
@@ -26,9 +35,15 @@ export abstract class BaseService {
    * @param params - 查询参数
    * @returns 响应数据
    */
-  protected static async get<T>(path: string, params?: Record<string, unknown>): Promise<T> {
-    const response = await apiClient.get<ApiResponse<T>>(this.getFullPath(path), {params});
-    return response.data.data;
+  protected static async get<T>(
+      path: string,
+      params?: Record<string, unknown>,
+  ): Promise<T> {
+    const response = await apiClient.get<ApiResponse<T>>(
+        this.getFullPath(path),
+        {params},
+    );
+    return this.unwrapApiResponse(response);
   }
 
   /**
@@ -39,8 +54,11 @@ export abstract class BaseService {
    * @returns 响应数据
    */
   protected static async post<T>(path: string, data?: unknown): Promise<T> {
-    const response = await apiClient.post<ApiResponse<T>>(this.getFullPath(path), data);
-    return response.data.data;
+    const response = await apiClient.post<ApiResponse<T>>(
+        this.getFullPath(path),
+        data,
+    );
+    return this.unwrapApiResponse(response);
   }
 
   /**
@@ -51,8 +69,11 @@ export abstract class BaseService {
    * @returns 响应数据
    */
   protected static async put<T>(path: string, data?: unknown): Promise<T> {
-    const response = await apiClient.put<ApiResponse<T>>(this.getFullPath(path), data);
-    return response.data.data;
+    const response = await apiClient.put<ApiResponse<T>>(
+        this.getFullPath(path),
+        data,
+    );
+    return this.unwrapApiResponse(response);
   }
 
   /**
@@ -62,8 +83,14 @@ export abstract class BaseService {
    * @param params - 查询参数
    * @returns 响应数据
    */
-  protected static async delete<T>(path: string, params?: Record<string, unknown>): Promise<T> {
-    const response = await apiClient.delete<ApiResponse<T>>(this.getFullPath(path), {params});
-    return response.data.data;
+  protected static async delete<T>(
+      path: string,
+      params?: Record<string, unknown>,
+  ): Promise<T> {
+    const response = await apiClient.delete<ApiResponse<T>>(
+        this.getFullPath(path),
+        {params},
+    );
+    return this.unwrapApiResponse(response);
   }
 }

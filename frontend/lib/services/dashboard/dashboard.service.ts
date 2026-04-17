@@ -38,12 +38,7 @@ export class DashboardService extends BaseService {
           params: {days: Math.max(1, Math.min(30, days))},
         },
     );
-
-    if (response.data.error_msg) {
-      throw new Error(response.data.error_msg);
-    }
-
-    return this.normalizeData(response.data.data);
+    return this.normalizeData(this.unwrapApiResponse(response));
   }
 
   /**
@@ -63,7 +58,8 @@ export class DashboardService extends BaseService {
         data,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取仪表盘数据失败';
+      const errorMessage =
+        error instanceof Error ? error.message : '获取仪表盘数据失败';
       return {
         success: false,
         data: this.getDefaultData(),
@@ -93,12 +89,30 @@ export class DashboardService extends BaseService {
 
     // 解析各个JSON字段
     const userGrowth = parseJsonField<UserGrowthData[]>(rawData.userGrowth, []);
-    const activityData = parseJsonField<ActivityData[]>(rawData.activityData, []);
-    const projectTags = parseJsonField<ProjectTagsData[]>(rawData.projectTags, []);
-    const distributeModes = parseJsonField<DistributeModeData[]>(rawData.distributeModes, []);
-    const hotProjects = parseJsonField<HotProjectData[]>(rawData.hotProjects, []);
-    const activeCreators = parseJsonField<RawActiveCreatorData[]>(rawData.activeCreators, []);
-    const activeReceivers = parseJsonField<RawActiveReceiverData[]>(rawData.activeReceivers, []);
+    const activityData = parseJsonField<ActivityData[]>(
+        rawData.activityData,
+        [],
+    );
+    const projectTags = parseJsonField<ProjectTagsData[]>(
+        rawData.projectTags,
+        [],
+    );
+    const distributeModes = parseJsonField<DistributeModeData[]>(
+        rawData.distributeModes,
+        [],
+    );
+    const hotProjects = parseJsonField<HotProjectData[]>(
+        rawData.hotProjects,
+        [],
+    );
+    const activeCreators = parseJsonField<RawActiveCreatorData[]>(
+        rawData.activeCreators,
+        [],
+    );
+    const activeReceivers = parseJsonField<RawActiveReceiverData[]>(
+        rawData.activeReceivers,
+        [],
+    );
     const summary = parseJsonField<StatsSummary>(rawData.summary, {
       totalUsers: 0,
       newUsers: 0,
@@ -108,25 +122,31 @@ export class DashboardService extends BaseService {
     });
 
     // 处理热门项目数据，转换tags数组为单个tag字符串用于显示
-    const normalizedHotProjects: HotProjectData[] = hotProjects.map((project) => ({
-      name: project.name,
-      tags: Array.isArray(project.tags) ? project.tags : [], // 保持原始tags数组
-      receiveCount: project.receiveCount,
-    }));
+    const normalizedHotProjects: HotProjectData[] = hotProjects.map(
+        (project) => ({
+          name: project.name,
+          tags: Array.isArray(project.tags) ? project.tags : [], // 保持原始tags数组
+          receiveCount: project.receiveCount,
+        }),
+    );
 
     // 处理活跃创建者数据，转换nickname或username为name
-    const normalizedActiveCreators: ActiveCreatorData[] = activeCreators.map((activeCreator) => ({
-      avatar: activeCreator.avatar,
-      name: activeCreator.nickname || activeCreator.username,
-      projectCount: activeCreator.projectCount,
-    }));
+    const normalizedActiveCreators: ActiveCreatorData[] = activeCreators.map(
+        (activeCreator) => ({
+          avatar: activeCreator.avatar,
+          name: activeCreator.nickname || activeCreator.username,
+          projectCount: activeCreator.projectCount,
+        }),
+    );
 
     // 处理活跃领取者数据，转换nickname或username为name
-    const normalizedActiveReceivers: ActiveReceiverData[] = activeReceivers.map((activeReceiver) => ({
-      avatar: activeReceiver.avatar,
-      name: activeReceiver.nickname || activeReceiver.username,
-      receiveCount: activeReceiver.receiveCount,
-    }));
+    const normalizedActiveReceivers: ActiveReceiverData[] = activeReceivers.map(
+        (activeReceiver) => ({
+          avatar: activeReceiver.avatar,
+          name: activeReceiver.nickname || activeReceiver.username,
+          receiveCount: activeReceiver.receiveCount,
+        }),
+    );
 
     return {
       userGrowth,

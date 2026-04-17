@@ -54,22 +54,38 @@ func init() {
 	logger.Level()
 }
 
+func Debug(ctx context.Context, msg string, fields ...zap.Field) {
+	logger.Ctx(ctx).Debug(msg, append(fields, getContextFields(ctx)...)...)
+}
+
 func DebugF(ctx context.Context, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
-	logger.Ctx(ctx).Debug(msg, getTraceIDFields(ctx)...)
+	Debug(ctx, msg)
+}
+
+func Info(ctx context.Context, msg string, fields ...zap.Field) {
+	logger.Ctx(ctx).Info(msg, append(fields, getContextFields(ctx)...)...)
 }
 
 func InfoF(ctx context.Context, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
-	logger.Ctx(ctx).Info(msg, getTraceIDFields(ctx)...)
+	Info(ctx, msg)
+}
+
+func Warn(ctx context.Context, msg string, fields ...zap.Field) {
+	logger.Ctx(ctx).Warn(msg, append(fields, getContextFields(ctx)...)...)
 }
 
 func WarnF(ctx context.Context, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
-	logger.Ctx(ctx).Warn(msg, getTraceIDFields(ctx)...)
+	Warn(ctx, msg)
+}
+
+func Error(ctx context.Context, msg string, fields ...zap.Field) {
+	logger.Ctx(ctx).Error(msg, append(fields, getContextFields(ctx)...)...)
 }
 
 func ErrorF(ctx context.Context, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
-	logger.Ctx(ctx).Error(msg, getTraceIDFields(ctx)...)
+	Error(ctx, msg)
 }
