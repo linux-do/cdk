@@ -43,6 +43,7 @@ import (
 	"github.com/linux-do/cdk/internal/apps/oauth"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/redis/go-redis/v9"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
@@ -62,9 +63,15 @@ type Project struct {
 	Status            ProjectStatus    `json:"status" gorm:"default:0;index;index:idx_projects_end_completed_trust_risk,priority:3"`
 	ReportCount       uint8            `json:"report_count" gorm:"default:0"`
 	HideFromExplore   bool             `json:"hide_from_explore" gorm:"default:false"`
+	Price             decimal.Decimal  `json:"price" gorm:"type:decimal(10,2);default:0;not null"`
 	Creator           oauth.User       `json:"-" gorm:"foreignKey:CreatorID"`
 	CreatedAt         time.Time        `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt         time.Time        `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
+// IsPaid 是否为付费项目
+func (p *Project) IsPaid() bool {
+	return p.Price.GreaterThan(decimal.Zero)
 }
 
 func (p *Project) Exact(tx *gorm.DB, id string, isNormal bool) error {
@@ -79,7 +86,12 @@ func (p *Project) Exact(tx *gorm.DB, id string, isNormal bool) error {
 }
 
 func (p *Project) ItemsKey() string {
-	return fmt.Sprintf("project:%s:items", p.ID)
+	return ProjectItemsKey(p.ID)
+}
+
+// ProjectItemsKey 包级别的 Redis key 构造函数,便于不持有 Project 实例时拼接 key。
+func ProjectItemsKey(projectID string) string {
+	return fmt.Sprintf("project:%s:items", projectID)
 }
 
 func (p *Project) RefreshTags(tx *gorm.DB, tags []string) error {
@@ -456,6 +468,46 @@ func (p *ProjectItem) Exact(tx *gorm.DB, id uint64) error {
 	if err := tx.Where("id = ?", id).First(p).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+// FulfillForReceiver 执行领取结算事务:将 item 标记为已领取、库存耗尽则标记项目完成、
+// 若不允许同 IP 领取则写 Redis SetNX 锁、抽奖模式从 Redis HDel 用户。
+// 由免费领取与付费回调两条路径共用;失败时上游需决定是否回退 itemID。
+func (p *Project) FulfillForReceiver(ctx context.Context, tx *gorm.DB, item *ProjectItem, receiverID uint64, clientIP string) error {
+	now := time.Now()
+	item.ReceiverID = &receiverID
+	item.ReceivedAt = &now
+	if err := tx.Save(item).Error; err != nil {
+		return err
+	}
+
+	if hasStock, err := p.HasStock(ctx); err != nil {
+		return err
+	} else if !hasStock {
+		p.IsCompleted = true
+		if err := tx.Save(p).Error; err != nil {
+			return err
+		}
+	}
+
+	if !p.AllowSameIP && clientIP != "" {
+		if err := db.Redis.SetNX(ctx, p.SameIPCacheKey(clientIP), clientIP, p.EndTime.Sub(now)).Err(); err != nil {
+			return err
+		}
+	}
+
+	if p.DistributionType == DistributionTypeLottery {
+		// 付费领取限定 OneForEach,此处保留仅为免费 Lottery 路径的兼容
+		var user oauth.User
+		if err := user.Exact(tx, receiverID); err != nil {
+			return err
+		}
+		if err := db.Redis.HDel(ctx, p.ItemsKey(), user.Username).Err(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

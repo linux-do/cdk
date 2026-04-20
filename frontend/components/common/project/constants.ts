@@ -9,7 +9,31 @@ export const FORM_LIMITS = {
   MAX_TAGS: 10,
   DESCRIPTION_MAX_LENGTH: 1024,
   CONTENT_ITEM_MAX_LENGTH: 1024,
+  PRICE_MAX: 99999999.99,
 } as const;
+
+/**
+ * 平台货币单位
+ */
+export const CURRENCY_LABEL = 'LDC' as const;
+
+/**
+ * 校验价格字符串,返回 null 或错误消息
+ */
+export const validatePriceString = (value: string): string | null => {
+  if (value === '' || value === undefined || value === null) return null;
+  if (!/^\d+(\.\d{1,2})?$/.test(value)) {
+    return '价格最多保留 2 位小数';
+  }
+  const num = Number(value);
+  if (Number.isNaN(num) || num < 0) {
+    return '价格必须大于等于 0';
+  }
+  if (num > FORM_LIMITS.PRICE_MAX) {
+    return '价格超出允许范围';
+  }
+  return null;
+};
 
 /**
  * 默认表单值

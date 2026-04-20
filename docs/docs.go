@@ -1032,6 +1032,9 @@ const docTemplate = `{
                     "maxLength": 32,
                     "minLength": 1
                 },
+                "price": {
+                    "type": "number"
+                },
                 "project_items": {
                     "type": "array",
                     "minItems": 1,
@@ -1120,6 +1123,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "price": {
+                    "type": "number"
+                },
                 "received_content": {
                     "type": "string"
                 },
@@ -1203,6 +1209,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "price": {
+                    "type": "number"
                 },
                 "risk_level": {
                     "type": "integer"
@@ -1389,6 +1398,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 32,
                     "minLength": 1
+                },
+                "price": {
+                    "type": "number"
                 },
                 "project_items": {
                     "type": "array",

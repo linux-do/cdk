@@ -49,7 +49,7 @@ export function CardList({title, icon, list, type}: Omit<CardListProps, 'iconBg'
         <Avatar className="h-6 w-6 rounded-full flex-shrink-0">
           <AvatarImage src={item.avatar} />
           <AvatarFallback>
-            {item.name.charAt(0)}
+            {item.name?.charAt(0)}
           </AvatarFallback>
         </Avatar>
       );

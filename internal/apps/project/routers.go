@@ -25,6 +25,7 @@
 package project
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -36,8 +37,46 @@ import (
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/utils"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
+
+// maxProjectPrice 付费项目的最大单价上限
+var maxProjectPrice = decimal.RequireFromString("99999999.99")
+
+// validateProjectPrice 校验 Price 字段合法性。
+// 规则:
+//   - Price 必须非负,最多 2 位小数,不超过上限
+//   - Price > 0 仅允许 DistributionTypeOneForEach
+//   - Price > 0 时必须确认全局支付功能已启用且创建者已配置 clientID/clientSecret
+func validateProjectPrice(ctx context.Context, price decimal.Decimal, dt DistributionType, creatorID uint64) error {
+	if price.IsNegative() {
+		return errors.New(InvalidPrice)
+	}
+	if price.Exponent() < -2 {
+		return errors.New(InvalidPriceDecimals)
+	}
+	if price.GreaterThan(maxProjectPrice) {
+		return errors.New(PriceTooLarge)
+	}
+	if price.IsZero() {
+		return nil
+	}
+	if dt != DistributionTypeOneForEach {
+		return errors.New(PriceOnlyOneForEach)
+	}
+	if !config.Config.Payment.Enabled {
+		return errors.New(PaymentDisabled)
+	}
+	var cnt int64
+	if err := db.DB(ctx).Table("user_payment_configs").Where("user_id = ?", creatorID).Count(&cnt).Error; err != nil {
+		return err
+	}
+	if cnt == 0 {
+		return errors.New(CreatorNotConfigured)
+	}
+	return nil
+}
 
 type ProjectResponse struct {
 	ErrorMsg string      `json:"error_msg"`
@@ -54,6 +93,7 @@ type ProjectRequest struct {
 	AllowSameIP       bool             `json:"allow_same_ip"`
 	RiskLevel         int8             `json:"risk_level" binding:"min=0,max=100"`
 	HideFromExplore   bool             `json:"hide_from_explore"`
+	Price             decimal.Decimal  `json:"price"`
 }
 type GetProjectResponseData struct {
 	Project             `json:",inline"` // 内嵌所有 Project 字段
@@ -163,6 +203,12 @@ func CreateProject(c *gin.Context) {
 	// init session
 	currentUser, _ := oauth.GetUserFromContext(c)
 
+	// validate price
+	if err := validateProjectPrice(c.Request.Context(), req.Price, req.DistributionType, currentUser.ID); err != nil {
+		c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
 	// init project
 	project := Project{
 		ID:                uuid.NewString(),
@@ -178,6 +224,7 @@ func CreateProject(c *gin.Context) {
 		CreatorID:         currentUser.ID,
 		IsCompleted:       false,
 		HideFromExplore:   req.HideFromExplore,
+		Price:             req.Price,
 	}
 
 	// create project
@@ -233,6 +280,12 @@ func UpdateProject(c *gin.Context) {
 	// load project
 	project, _ := GetProjectFromContext(c)
 
+	// validate price (复用创建者 ID + 原分发类型)
+	if err := validateProjectPrice(c.Request.Context(), req.Price, project.DistributionType, project.CreatorID); err != nil {
+		c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
 	// init project
 	project.Name = req.Name
 	project.Description = req.Description
@@ -242,6 +295,7 @@ func UpdateProject(c *gin.Context) {
 	project.AllowSameIP = req.AllowSameIP
 	project.RiskLevel = req.RiskLevel
 	project.HideFromExplore = req.HideFromExplore
+	project.Price = req.Price
 
 	if project.DistributionType == DistributionTypeLottery {
 		// save project
@@ -711,6 +765,7 @@ type ListProjectsResponseDataResult struct {
 	AllowSameIP       bool              `json:"allow_same_ip"`
 	RiskLevel         int8              `json:"risk_level"`
 	HideFromExplore   bool              `json:"hide_from_explore"`
+	Price             decimal.Decimal   `json:"price"`
 	Tags              utils.StringArray `json:"tags"`
 	CreatedAt         time.Time         `json:"created_at"`
 }

@@ -1023,6 +1023,9 @@
                     "maxLength": 32,
                     "minLength": 1
                 },
+                "price": {
+                    "type": "number"
+                },
                 "project_items": {
                     "type": "array",
                     "minItems": 1,
@@ -1111,6 +1114,9 @@
                 "name": {
                     "type": "string"
                 },
+                "price": {
+                    "type": "number"
+                },
                 "received_content": {
                     "type": "string"
                 },
@@ -1194,6 +1200,9 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "price": {
+                    "type": "number"
                 },
                 "risk_level": {
                     "type": "integer"
@@ -1380,6 +1389,9 @@
                     "type": "string",
                     "maxLength": 32,
                     "minLength": 1
+                },
+                "price": {
+                    "type": "number"
                 },
                 "project_items": {
                     "type": "array",

@@ -13,7 +13,7 @@ import {Button} from '@/components/ui/button';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
-import {validateProjectForm} from '@/components/common/project';
+import {validateProjectForm, validatePriceString, CURRENCY_LABEL} from '@/components/common/project';
 import {ProjectBasicForm} from '@/components/common/project/ProjectBasicForm';
 import {BulkImportSection} from '@/components/common/project/BulkImportSection';
 import {DistributionModeSelect} from '@/components/common/project/DistributionModeSelect';
@@ -131,6 +131,20 @@ export function CreateDialog({
       return false;
     }
 
+    // 价格校验
+    const priceError = validatePriceString(formData.price);
+    if (priceError) {
+      toast.error(priceError);
+      setActiveTab('basic');
+      return false;
+    }
+    const priceNum = Number(formData.price || '0');
+    if (priceNum > 0 && formData.distributionType !== DistributionType.ONE_FOR_EACH) {
+      toast.error(`仅"一码一用"分发支持设置 ${CURRENCY_LABEL} 金额`);
+      setActiveTab('basic');
+      return false;
+    }
+
     return true;
   };
 
@@ -139,6 +153,24 @@ export function CreateDialog({
    */
   const handleSubmit = async () => {
     if (!validateForm()) return;
+
+    // 若设置了付费,先确认已配置支付凭据,避免后端强制校验失败
+    const priceNum = Number(formData.price || '0');
+    if (priceNum > 0) {
+      const cfgResult = await services.payment.getConfigSafe();
+      if (!cfgResult.success) {
+        toast.error(cfgResult.error || '无法获取支付配置');
+        return;
+      }
+      if (!cfgResult.data?.payment_enabled) {
+        toast.error('平台支付功能当前未启用');
+        return;
+      }
+      if (!cfgResult.data?.has_config) {
+        toast.error('请先在"支付设置"中配置 clientID 与 clientSecret');
+        return;
+      }
+    }
 
     setLoading(true);
     try {
@@ -153,6 +185,7 @@ export function CreateDialog({
         risk_level: formData.riskLevel,
         distribution_type: formData.distributionType,
         topic_id: formData.topicId,
+        price: formData.price || '0',
         project_items:
           formData.distributionType === DistributionType.ONE_FOR_EACH ?
             items :

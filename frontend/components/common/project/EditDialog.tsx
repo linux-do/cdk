@@ -10,7 +10,7 @@ import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
-import {validateProjectForm} from '@/components/common/project';
+import {validateProjectForm, validatePriceString, CURRENCY_LABEL} from '@/components/common/project';
 import {ProjectBasicForm} from '@/components/common/project/ProjectBasicForm';
 import {BulkImportSection} from '@/components/common/project/BulkImportSection';
 import {Pencil, CheckCircle} from 'lucide-react';
@@ -108,6 +108,17 @@ export function EditDialog({
       return false;
     }
 
+    const priceError = validatePriceString(formData.price);
+    if (priceError) {
+      toast.error(priceError);
+      return false;
+    }
+    const priceNum = Number(formData.price || '0');
+    if (priceNum > 0 && project.distribution_type !== DistributionType.ONE_FOR_EACH) {
+      toast.error(`仅"一码一用"分发支持设置 ${CURRENCY_LABEL} 金额`);
+      return false;
+    }
+
     return true;
   };
 
@@ -119,6 +130,26 @@ export function EditDialog({
 
     setLoading(true);
     try {
+      const priceNum = Number(formData.price || '0');
+      if (priceNum > 0) {
+        const cfgResult = await services.payment.getConfigSafe();
+        if (!cfgResult.success) {
+          toast.error(cfgResult.error || '无法获取支付配置');
+          setLoading(false);
+          return;
+        }
+        if (!cfgResult.data?.payment_enabled) {
+          toast.error('平台支付功能当前未启用');
+          setLoading(false);
+          return;
+        }
+        if (!cfgResult.data?.has_config) {
+          toast.error('请先在"支付设置"中配置 clientID 与 clientSecret');
+          setLoading(false);
+          return;
+        }
+      }
+
       const updateData: UpdateProjectRequest = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
@@ -128,6 +159,7 @@ export function EditDialog({
         minimum_trust_level: formData.minimumTrustLevel,
         allow_same_ip: formData.allowSameIP,
         risk_level: formData.riskLevel,
+        price: formData.price || '0',
         // 只有非抽奖项目才允许更新项目内容
         ...(project.distribution_type !== DistributionType.LOTTERY && {
           project_items: newItems.length > 0 ? newItems : undefined,

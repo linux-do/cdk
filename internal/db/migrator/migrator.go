@@ -32,6 +32,7 @@ import (
 	"strings"
 
 	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/apps/payment"
 	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/db"
 )
@@ -47,6 +48,8 @@ func Migrate() {
 		&project.ProjectItem{},
 		&project.ProjectTag{},
 		&project.ProjectReport{},
+		&payment.UserPaymentConfig{},
+		&payment.PaymentOrder{},
 	); err != nil {
 		log.Fatalf("[MySQL] auto migrate failed: %v\n", err)
 	}

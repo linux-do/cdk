@@ -2,12 +2,12 @@
 
 import React, {useState, useEffect, useRef} from 'react';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
-import {TRUST_LEVEL_OPTIONS} from '@/components/common/project';
-import {ArrowLeftIcon, Copy, Tag, Gift, Clock, AlertCircle, Package} from 'lucide-react';
+import {CURRENCY_LABEL, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
+import {ArrowLeftIcon, Copy, Tag, Gift, Clock, AlertCircle, Package, Coins, Loader2} from 'lucide-react';
 import ContentRender from '@/components/common/markdown/ContentRender';
 import {ReportButton} from '@/components/common/receive/ReportButton';
 import {ReceiveVerify, ReceiveVerifyRef} from '@/components/common/receive/ReceiveVerify';
@@ -133,6 +133,9 @@ const ReceiveButton = ({
     );
   }
 
+  const priceNum = Number(project.price || '0');
+  const isPaid = priceNum > 0;
+
   return (
     <Button
       onClick={onReceive}
@@ -143,6 +146,11 @@ const ReceiveButton = ({
         <>
           <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent mr-2" />
           验证中...
+        </>
+      ) : isPaid ? (
+        <>
+          <Coins className="w-4 h-4 mr-2" />
+          支付 {priceNum} {CURRENCY_LABEL} 并领取
         </>
       ) : (
         <>
@@ -171,11 +179,14 @@ interface ReceiveContentProps {
 export function ReceiveContent({data}: ReceiveContentProps) {
   const {project, user, projectId} = data;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const incomingTradeNo = searchParams.get('trade_no') || '';
   const [currentTime, setCurrentTime] = useState(new Date());
   const [hasReceived, setHasReceived] = useState(project.is_received);
   const [receivedContent, setReceivedContent] = useState<string | null>(project.received_content || null);
   const [currentProject, setCurrentProject] = useState(project);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isAwaitingPayment, setIsAwaitingPayment] = useState(Boolean(incomingTradeNo) && !project.is_received);
   const verifyRef = useRef<ReceiveVerifyRef>(null);
 
   /**
@@ -217,23 +228,30 @@ export function ReceiveContent({data}: ReceiveContentProps) {
     // 调用领取接口
     const result = await services.project.receiveProjectSafe(projectId, token);
 
-    if (result.success) {
-      const content = result.data?.itemContent || '领取成功，但未获取到兑换内容';
-
-      setCurrentProject((prev) => ({
-        ...prev,
-        available_items_count: prev.available_items_count - 1,
-        is_received: true,
-        received_content: content,
-      }));
-
-      setHasReceived(true);
-      setReceivedContent(content);
-      toast.success('领取成功！');
-    } else {
+    if (!result.success) {
       toast.error(result.error || '领取失败');
       throw new Error(result.error || '领取失败');
     }
+
+    // 付费项目:后端返回支付跳转 URL,浏览器直接跳转
+    if (result.data?.require_payment && result.data.pay_url) {
+      toast.info('正在跳转支付页面...');
+      window.location.href = result.data.pay_url;
+      return;
+    }
+
+    const content = result.data?.itemContent || '领取成功，但未获取到兑换内容';
+
+    setCurrentProject((prev) => ({
+      ...prev,
+      available_items_count: prev.available_items_count - 1,
+      is_received: true,
+      received_content: content,
+    }));
+
+    setHasReceived(true);
+    setReceivedContent(content);
+    toast.success('领取成功！');
   };
 
   /**
@@ -262,6 +280,38 @@ export function ReceiveContent({data}: ReceiveContentProps) {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // 从支付系统回跳后,轮询项目详情直到发放到账或超时
+  useEffect(() => {
+    if (!isAwaitingPayment || !projectId) return;
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 15; // ~30 秒
+    const tick = async () => {
+      if (cancelled) return;
+      attempts += 1;
+      const res = await services.project.getProjectSafe(projectId);
+      if (cancelled) return;
+      if (res.success && res.data?.is_received) {
+        setCurrentProject(res.data);
+        setHasReceived(true);
+        setReceivedContent(res.data.received_content || null);
+        setIsAwaitingPayment(false);
+        toast.success('付款完成,CDK 已发放');
+        return;
+      }
+      if (attempts >= maxAttempts) {
+        setIsAwaitingPayment(false);
+        toast.info('付款处理中,稍后请手动刷新查看');
+        return;
+      }
+      setTimeout(tick, 2000);
+    };
+    tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAwaitingPayment, projectId]);
 
   const trustLevelConfig = TRUST_LEVEL_OPTIONS.find((option) => option.value === currentProject.minimum_trust_level);
 
@@ -319,6 +369,16 @@ export function ReceiveContent({data}: ReceiveContentProps) {
           返回
         </Button>
       </motion.div>
+
+      {isAwaitingPayment && (
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/40 dark:border-blue-900 px-4 py-3 text-sm text-blue-900 dark:text-blue-200"
+        >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>付款处理中,CDK 将在回调成功后自动发放。如长时间未到账,可刷新页面重试。</span>
+        </motion.div>
+      )}
 
       <motion.div className="flex items-start justify-between gap-4" variants={itemVariants}>
         <div className="text-left space-y-4">

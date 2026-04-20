@@ -70,7 +70,7 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string,
 
 	getProjectWithTagsSql := `SELECT
     			p.id,p.name,p.description,p.distribution_type,p.total_items,
-       			p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.created_at,
+       			p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.price,p.created_at,
 				IF(COUNT(pt.tag) = 0, NULL, JSON_ARRAYAGG(pt.tag)) AS tags
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
@@ -121,7 +121,7 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 
 	getMyProjectWithTagsSql := `SELECT
 				p.id,p.name,p.description,p.distribution_type,p.total_items,
-				p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.hide_from_explore,p.created_at,
+				p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.hide_from_explore,p.price,p.created_at,
 				IF(COUNT(pt.tag) = 0, NULL, JSON_ARRAYAGG(pt.tag)) AS tags
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id

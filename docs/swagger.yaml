@@ -194,6 +194,8 @@ definitions:
         maxLength: 32
         minLength: 1
         type: string
+      price:
+        type: number
       project_items:
         items:
           type: string
@@ -260,6 +262,8 @@ definitions:
         $ref: '#/definitions/oauth.TrustLevel'
       name:
         type: string
+      price:
+        type: number
       received_content:
         type: string
       report_count:
@@ -315,6 +319,8 @@ definitions:
         $ref: '#/definitions/oauth.TrustLevel'
       name:
         type: string
+      price:
+        type: number
       risk_level:
         type: integer
       start_time:
@@ -436,6 +442,8 @@ definitions:
         maxLength: 32
         minLength: 1
         type: string
+      price:
+        type: number
       project_items:
         items:
           type: string

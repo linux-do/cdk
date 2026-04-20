@@ -22,27 +22,19 @@
  * SOFTWARE.
  */
 
-package project
+package payment
 
 const (
-	NoPermission       = "无权限"
-	AlreadyReceived    = "已有用户领取，不允许删除"
-	TimeTooEarly       = "未到开启时间"
-	TimeTooLate        = "已经结束"
-	TrustLevelNotMatch = "需要信任等级 %d"
-	UnknownError       = "未知异常"
-	ScoreNotEnough     = "分数未达标"
-	SameIPReceived     = "已有相同IP领取"
-	NoStock            = "无库存"
-	NotFound           = "项目不存在"
-	AlreadyReported    = "已举报过当前项目"
-	RequirementsFailed = "未达到项目发起者设置的条件"
-	TooManyRequests    = "创建项目太频繁，请稍后再试"
-	// Payment 相关
-	InvalidPrice         = "金额必须大于等于 0"
-	InvalidPriceDecimals = "金额最多保留 2 位小数"
-	PriceTooLarge        = "金额超出允许范围"
-	PriceOnlyOneForEach  = "仅一码一用分发支持设置金额"
-	PaymentDisabled      = "平台支付功能未启用"
-	CreatorNotConfigured = "请先在账户设置中配置支付凭据"
+	ErrPaymentDisabled          = "支付功能未启用"
+	ErrInvalidAmount            = "金额必须大于 0 且最多 2 位小数"
+	ErrPriceRequiresOneForEach  = "仅一码一用分发支持设置金额"
+	ErrCreatorNotConfigured     = "项目创建者尚未配置支付凭据,无法发起支付"
+	ErrPaymentConfigNotFound    = "尚未配置支付凭据"
+	ErrEncryptionKeyMissing     = "服务端未配置支付密钥加密密钥"
+	ErrInvalidClientCredentials = "clientID 与 clientSecret 不能为空"
+	ErrOrderNotFound            = "订单不存在"
+	ErrOrderExpired             = "订单已过期"
+	ErrCannotDeleteHasActive    = "存在未结束的付费项目,无法删除支付配置"
+	ErrInvalidPriceDecimals     = "金额最多保留 2 位小数"
+	ErrPriceTooLarge            = "金额超出允许范围"
 )

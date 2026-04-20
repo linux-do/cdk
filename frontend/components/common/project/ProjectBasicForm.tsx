@@ -10,8 +10,9 @@ import {DateTimePicker} from '@/components/ui/DateTimePicker';
 import {Checkbox} from '@/components/animate-ui/radix/checkbox';
 import MarkdownEditor from '@/components/common/markdown/Editor';
 import {HelpCircle} from 'lucide-react';
-import {FORM_LIMITS, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
+import {CURRENCY_LABEL, FORM_LIMITS, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
 import {TrustLevel} from '@/lib/services/core/types';
+import {DistributionType} from '@/lib/services/project/types';
 import {ProjectFormData} from '@/hooks/use-project-form';
 
 interface ProjectBasicFormProps {
@@ -171,6 +172,24 @@ export function ProjectBasicForm({
             </p>
           </div>
         </div>
+
+        {formData.distributionType === DistributionType.ONE_FOR_EACH && (
+          <div className="space-y-2">
+            <Label htmlFor="price">领取单价 ({CURRENCY_LABEL})</Label>
+            <Input
+              id="price"
+              type="number"
+              step={0.01}
+              min={0}
+              placeholder="0 表示免费"
+              value={formData.price}
+              onChange={(e) => updateField('price', e.target.value)}
+            />
+            <p className="text-muted-foreground text-xs">
+              仅&ldquo;一码一用&rdquo;分发支持设置金额,最多保留 2 位小数。领取者付款后自动发放,发放失败会自动退款
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
