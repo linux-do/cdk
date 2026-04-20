@@ -136,6 +136,7 @@ type scheduleConfig struct {
 	UserBadgeScoreDispatchIntervalSeconds int    `mapstructure:"user_badge_score_dispatch_interval_seconds"`
 	UpdateUserBadgeScoresTaskCron         string `mapstructure:"update_user_badges_scores_task_cron"`
 	UpdateAllBadgesTaskCron               string `mapstructure:"update_all_badges_task_cron"`
+	ExpireStalePaymentOrdersCron          string `mapstructure:"expire_stale_payment_orders_cron"`
 }
 
 // workerConfig 工作配置

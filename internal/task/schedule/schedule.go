@@ -68,6 +68,15 @@ func StartScheduler() error {
 			return
 		}
 
+		// 每分钟扫描一次未付款超时订单
+		expireCron := config.Config.Schedule.ExpireStalePaymentOrdersCron
+		if expireCron == "" {
+			expireCron = "*/1 * * * *"
+		}
+		if _, err = scheduler.Register(expireCron, asynq.NewTask(task.ExpireStalePaymentOrdersTask, nil)); err != nil {
+			return
+		}
+
 		// 启动调度器
 		err = scheduler.Run()
 	})
