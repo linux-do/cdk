@@ -589,36 +589,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/projects/{id}/receive": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "project"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/project.ProjectResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/projects/{id}/receivers": {
             "get": {
                 "consumes": [
