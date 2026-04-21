@@ -415,6 +415,16 @@ func (p *Project) HasStock(ctx context.Context) (bool, error) {
 	return stock > 0, nil
 }
 
+func (p *Project) ValidateRequirement(user *oauth.User) error {
+	if user.TrustLevel < p.MinimumTrustLevel {
+		return fmt.Errorf(TrustLevelNotMatch, p.MinimumTrustLevel)
+	}
+	if user.RiskLevel() > p.RiskLevel {
+		return fmt.Errorf(ScoreNotEnough, 100-int(p.RiskLevel))
+	}
+	return nil
+}
+
 func (p *Project) IsReceivable(ctx context.Context, now time.Time, user *oauth.User, ip string) error {
 	// check time
 	if now.Before(p.StartTime) {
@@ -422,13 +432,9 @@ func (p *Project) IsReceivable(ctx context.Context, now time.Time, user *oauth.U
 	} else if p.EndTime.Before(now) {
 		return errors.New(TimeTooLate)
 	}
-	// check trust level
-	if user.TrustLevel < p.MinimumTrustLevel {
-		return fmt.Errorf(TrustLevelNotMatch, p.MinimumTrustLevel)
-	}
-	// check risk level
-	if user.RiskLevel() > p.RiskLevel {
-		return errors.New(ScoreNotEnough)
+	// check requirements
+	if err := p.ValidateRequirement(user); err != nil {
+		return err
 	}
 	// check same ip
 	if sameIPReceived, err := p.CheckSameIPReceived(ctx, ip); err != nil {

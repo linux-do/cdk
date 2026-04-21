@@ -80,13 +80,17 @@ func GetProject(c *gin.Context) {
 
 	var project Project // Project struct is in the same package
 	if err := db.DB(c.Request.Context()).Model(&Project{}).
-		Where("id = ? AND status = ? AND minimum_trust_level <= ? AND risk_level >= ?", c.Param("id"),
-			ProjectStatusNormal, currentUser.TrustLevel, currentUser.RiskLevel()).First(&project).Error; err != nil {
+		Where("id = ? AND status = ?", c.Param("id"), ProjectStatusNormal).
+		First(&project).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: RequirementsFailed})
+			c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: NotFound})
 		} else {
 			c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
 		}
+		return
+	}
+	if err := project.ValidateRequirement(currentUser); err != nil {
+		c.JSON(http.StatusForbidden, ProjectResponse{ErrorMsg: err.Error()})
 		return
 	}
 
