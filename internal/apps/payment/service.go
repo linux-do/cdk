@@ -227,9 +227,17 @@ func InitiatePayment(ctx context.Context, p *project.Project, payer *oauth.User,
 		name := truncateRuneLen("CDK-"+p.Name, 60)
 		init = PaymentInitiation{
 			OutTradeNo: outTradeNo,
-			PayURL:     submitURL(cfg.ClientID, secret, name, moneyString(p.Price), outTradeNo, callbackNotifyURL(), callbackReturnURL()),
-			Amount:     moneyString(p.Price),
-			ExpireAt:   expireAt,
+			PayURL: submitURL(
+				cfg.ClientID,
+				secret,
+				name,
+				moneyString(p.Price),
+				outTradeNo,
+				callbackNotifyURL(),
+				callbackReturnURL(p.ID),
+			),
+			Amount:   moneyString(p.Price),
+			ExpireAt: expireAt,
 		}
 		return nil
 	})
@@ -385,7 +393,7 @@ func fulfillPaidOrder(ctx context.Context, order *PaymentOrder) error {
 
 // CallbackURLs 返回当前平台配置的回调地址,用于前端展示给用户。
 func CallbackURLs() (notifyURL, returnURL string) {
-	return callbackNotifyURL(), callbackReturnURL()
+	return callbackNotifyURL(), callbackReturnURL("")
 }
 
 // ErrOrderNotFoundSentinel 外部判断
