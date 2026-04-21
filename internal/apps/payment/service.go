@@ -38,6 +38,7 @@ import (
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // GetUserPaymentConfig 读取指定用户的支付配置,不存在返回 (nil, nil)。
@@ -156,12 +157,6 @@ func InitiatePayment(ctx context.Context, p *project.Project, payer *oauth.User,
 		return nil, err
 	}
 
-	// 预占 item(Redis LPOP 原子)
-	itemID, err := p.PrepareReceive(ctx, payer.Username)
-	if err != nil {
-		return nil, err
-	}
-
 	// 订单过期时间
 	expireMin := config.Config.Payment.OrderExpireMinutes
 	if expireMin <= 0 {
@@ -169,35 +164,73 @@ func InitiatePayment(ctx context.Context, p *project.Project, payer *oauth.User,
 	}
 	expireAt := time.Now().Add(time.Duration(expireMin) * time.Minute)
 
-	outTradeNo := genOutTradeNo()
-	order := PaymentOrder{
-		OutTradeNo:    outTradeNo,
-		ProjectID:     p.ID,
-		ItemID:        itemID,
-		PayerID:       payer.ID,
-		PayeeID:       p.CreatorID,
-		PayeeClientID: cfg.ClientID,
-		Amount:        p.Price,
-		Status:        OrderStatusPending,
-		ExpireAt:      expireAt,
-		ClientIP:      clientIP,
-	}
-	if err := db.DB(ctx).Create(&order).Error; err != nil {
-		// 回滚预占
-		db.Redis.RPush(ctx, p.ItemsKey(), itemID)
+	var (
+		itemID uint64
+		init   PaymentInitiation
+	)
+	err = db.DB(ctx).Transaction(func(tx *gorm.DB) error {
+		// 通过锁定用户行串行化同一用户的下单请求，避免并发创建多个待支付订单。
+		var lockUser oauth.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Select("id").
+			Where("id = ?", payer.ID).
+			First(&lockUser).Error; err != nil {
+			return err
+		}
+
+		var pendingCount int64
+		if err := tx.Model(&PaymentOrder{}).
+			Where("payer_id = ? AND status = ?", payer.ID, OrderStatusPending).
+			Count(&pendingCount).Error; err != nil {
+			return err
+		}
+		if pendingCount > 0 {
+			return errors.New(ErrPendingOrderExists)
+		}
+
+		// 预占 item(Redis LPOP 原子)
+		reservedItemID, err := p.PrepareReceive(ctx, payer.Username)
+		if err != nil {
+			return err
+		}
+		itemID = reservedItemID
+
+		outTradeNo := genOutTradeNo()
+		order := PaymentOrder{
+			OutTradeNo:    outTradeNo,
+			ProjectID:     p.ID,
+			ItemID:        itemID,
+			PayerID:       payer.ID,
+			PayeeID:       p.CreatorID,
+			PayeeClientID: cfg.ClientID,
+			Amount:        p.Price,
+			Status:        OrderStatusPending,
+			ExpireAt:      expireAt,
+			ClientIP:      clientIP,
+		}
+		if err := tx.Create(&order).Error; err != nil {
+			return err
+		}
+
+		// 构造支付跳转 URL(名称最长 64)
+		name := truncateRuneLen("CDK-"+p.Name, 60)
+		init = PaymentInitiation{
+			OutTradeNo: outTradeNo,
+			PayURL:     submitURL(cfg.ClientID, secret, name, moneyString(p.Price), outTradeNo, callbackNotifyURL(), callbackReturnURL()),
+			Amount:     moneyString(p.Price),
+			ExpireAt:   expireAt,
+		}
+		return nil
+	})
+	if err != nil {
+		// 仅在已成功预占 item 的情况下回滚库存。
+		if itemID > 0 {
+			db.Redis.RPush(ctx, p.ItemsKey(), itemID)
+		}
 		return nil, err
 	}
 
-	// 构造支付跳转 URL(名称最长 64)
-	name := truncateRuneLen("CDK-"+p.Name, 60)
-	payURL := submitURL(cfg.ClientID, secret, name, moneyString(p.Price), outTradeNo, callbackNotifyURL(), callbackReturnURL())
-
-	return &PaymentInitiation{
-		OutTradeNo: outTradeNo,
-		PayURL:     payURL,
-		Amount:     moneyString(p.Price),
-		ExpireAt:   expireAt,
-	}, nil
+	return &init, nil
 }
 
 // truncateRuneLen 按 rune 长度截断字符串,避免多字节字符被拦腰截断
