@@ -64,7 +64,7 @@ export function ProjectCard({
         className="w-full"
       >
         <div
-          className="group flex h-full cursor-pointer flex-col rounded-[22px] bg-gray-50 p-3.5 transition-colors duration-200 hover:bg-gray-100/80 dark:bg-gray-800 dark:hover:bg-gray-800/80 sm:p-4"
+          className="group flex h-full cursor-pointer flex-col rounded-[22px] bg-muted p-3.5 transition-colors duration-200 hover:bg-muted/80 sm:p-4"
           onClick={() => onClick?.(project)}
         >
           <div className="flex flex-1 flex-col">
@@ -83,13 +83,13 @@ export function ProjectCard({
                 >
                   {editButton ||
                     (onEdit && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="size-[22px] rounded-full p-0 text-gray-500 hover:bg-black/5 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/[0.06] dark:hover:text-gray-200 sm:size-6"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="size-[22px] rounded-full p-0 text-gray-500 hover:bg-black/5 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/[0.06] dark:hover:text-gray-200 sm:size-6"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           onEdit(project);
                         }}
                       >

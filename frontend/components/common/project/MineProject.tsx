@@ -170,7 +170,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
   const renderContent = () => {
     if ((!(projects || []).length && !loading) || error) {
       return (
-        <div className="flex h-full min-h-0 flex-1 items-center justify-center rounded-[22px] bg-gray-50 px-6 py-12 text-center dark:bg-gray-800">
+        <div className="flex h-full min-h-0 flex-1 items-center justify-center rounded-[22px] bg-muted px-6 py-12 text-center">
           <EmptyState
             icon={FolderOpen}
             title="暂无分发项目"
@@ -258,7 +258,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                 size="sm"
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
-                className="size-8 rounded-full bg-gray-100 p-0 hover:bg-gray-200 disabled:opacity-40 dark:bg-white/[0.05] dark:hover:bg-white/[0.1]"
+                className="size-8 rounded-full bg-muted p-0 hover:bg-muted/80 disabled:opacity-40"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -267,7 +267,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                 size="sm"
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className="size-8 rounded-full bg-gray-100 p-0 hover:bg-gray-200 disabled:opacity-40 dark:bg-white/[0.05] dark:hover:bg-white/[0.1]"
+                className="size-8 rounded-full bg-muted p-0 hover:bg-muted/80 disabled:opacity-40"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -313,7 +313,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
       >
         <div className="flex items-center gap-2.5">
           <h2 className="text-sm font-medium text-foreground">所有项目</h2>
-          <div className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground dark:bg-white/[0.05]">
+          <div className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground">
             {total}
           </div>
         </div>
@@ -323,7 +323,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 rounded-full bg-gray-100 px-3 text-xs text-foreground hover:bg-gray-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.1]"
+              className="h-8 rounded-full bg-muted px-3 text-xs text-foreground hover:bg-muted/80"
             >
               <Filter className="h-4 w-4" />
               筛选标签
@@ -350,7 +350,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
             <Badge
               key={tag}
               variant="secondary"
-              className="h-7 cursor-pointer rounded-full bg-gray-100 px-2.5 py-0 text-[11px] font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-white/[0.06] dark:text-gray-300 dark:hover:bg-white/[0.1]"
+              className="h-7 cursor-pointer rounded-full bg-muted px-2.5 py-0 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/80"
               onClick={() => onTagToggle(tag)}
             >
               {tag}
@@ -360,7 +360,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 rounded-full px-3 text-xs text-muted-foreground hover:bg-gray-100 dark:hover:bg-white/[0.05]"
+            className="h-7 rounded-full px-3 text-xs text-muted-foreground hover:bg-muted/80"
             onClick={onClearAllFilters}
           >
             清除全部

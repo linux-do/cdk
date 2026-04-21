@@ -3,6 +3,7 @@
 import {motion} from 'motion/react';
 import {useState} from 'react';
 import {StatCard, CardList, UserGrowthChart, ActivityChart, CategoryChart, DistributeModeChart} from '@/components/common/dashboard/';
+import {Tabs, TabsList, TabsTrigger} from '@/components/animate-ui/radix/tabs';
 import {
   UsersIcon,
   DownloadIcon,
@@ -155,22 +156,19 @@ export function DashboardMain() {
 
         {/* 时间范围选择器 */}
         <div className="flex items-center self-start lg:self-end">
-          <div className="inline-flex items-center gap-1 rounded-full bg-gray-50 p-1 dark:bg-gray-800">
-            {timeRangeOptions.map((option) => (
-              <button
-                key={option.value}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-200 ${
-                  range === option.value ?
-                    'bg-white text-foreground dark:bg-white/[0.08]' :
-                    'text-muted-foreground hover:text-foreground hover:bg-white/70 dark:hover:bg-white/[0.05]'
-                }`}
-                onClick={() => setRange(option.value)}
-                title={`查看最近 ${option.value} 天的数据`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            value={String(range)}
+            onValueChange={(value) => setRange(Number(value))}
+            variant="pill"
+          >
+            <TabsList>
+              {timeRangeOptions.map((option) => (
+                <TabsTrigger key={option.value} value={String(option.value)}>
+                  {option.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
       </motion.div>
       {/* 统计卡片 - 响应式网格 */}
@@ -194,7 +192,7 @@ export function DashboardMain() {
       <motion.div className="grid grid-cols-1 gap-4 lg:grid-cols-3" variants={itemVariants}>
         {/* 左侧标签页图表 - 2/3 宽度 */}
         <div className="min-h-0 lg:col-span-2">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-[22px] h-full min-h-0 flex flex-col">
+          <div className="h-full min-h-0 rounded-[22px] bg-muted flex flex-col">
             {/* 标签页导航 */}
             <div className="flex flex-col gap-3 p-4 pb-2 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-center gap-2.5">
@@ -205,41 +203,27 @@ export function DashboardMain() {
                   核心趋势
                 </div>
               </div>
-              <div className="inline-flex items-center gap-1 self-start rounded-full">
-                <button
-                  className={`flex items-center gap-1 border-b px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
-                    activeTab === 'activity' ?
-                      'border-foreground/25 text-foreground' :
-                      'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setActiveTab('activity')}
-                >
-                  <ChartLineIcon className="size-3.5" />
-                  领取趋势
-                </button>
-                <button
-                  className={`flex items-center gap-1 border-b px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
-                    activeTab === 'users' ?
-                      'border-foreground/25 text-foreground' :
-                      'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setActiveTab('users')}
-                >
-                  <ChartAreaIcon className="size-3.5" />
-                  用户增长
-                </button>
-                <button
-                  className={`flex items-center gap-1 border-b px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
-                    activeTab === 'tags' ?
-                      'border-foreground/25 text-foreground' :
-                      'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setActiveTab('tags')}
-                >
-                  <ChartColumnBigIcon className="size-3.5" />
-                  标签分布
-                </button>
-              </div>
+              <Tabs
+                value={activeTab}
+                onValueChange={(value) => setActiveTab(value as 'activity' | 'users' | 'tags')}
+                variant="fill"
+                className="self-start"
+              >
+                <TabsList>
+                  <TabsTrigger value="activity">
+                    <ChartLineIcon className="size-3.5" />
+                    领取趋势
+                  </TabsTrigger>
+                  <TabsTrigger value="users">
+                    <ChartAreaIcon className="size-3.5" />
+                    用户增长
+                  </TabsTrigger>
+                  <TabsTrigger value="tags">
+                    <ChartColumnBigIcon className="size-3.5" />
+                    标签分布
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
 
             {/* 标签页内容 */}

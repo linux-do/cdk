@@ -15,7 +15,7 @@ const PAGE_SIZE = 18;
 const LoadingSkeleton = () => (
   <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
     {Array.from({length: PAGE_SIZE}).map((_, index) => (
-      <div key={index} className="rounded-[22px] bg-gray-50 p-4 dark:bg-gray-800">
+      <div key={index} className="rounded-[22px] bg-muted p-4">
         <div className="flex items-center justify-between gap-3">
           <Skeleton className="h-4 w-16 rounded-full" />
           <div className="flex gap-1.5">
@@ -236,7 +236,10 @@ export function ProjectMain() {
     >
       <motion.div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end" variants={itemVariants}>
         <div className="min-w-0">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">我的项目</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">我的项目</h1>
+          <div className="mt-1 text-muted-foreground">
+            查看和管理您创建的分发项目与内容
+          </div>
         </div>
         <div className="self-start lg:self-end">
           <CreateDialog onProjectCreated={handleProjectCreated} />

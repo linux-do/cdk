@@ -4,6 +4,7 @@ import {Label} from '@/components/ui/label';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
 import {Badge} from '@/components/ui/badge';
+import {ScrollArea} from '@/components/ui/scroll-area';
 import {FileUpload} from '@/components/ui/file-upload';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
@@ -67,7 +68,7 @@ export function BulkImportSection({
   onCancelUpload,
 }: BulkImportSectionProps) {
   const isEditMode = mode === 'edit';
-  const contentLabel = isEditMode ? '追加分发内容' : '导入分发内容';
+  const contentLabel = '分发内容';
   const itemsLabel = isEditMode ? '待添加内容' : '已添加内容';
   const placeholderPrefix = isEditMode ? '要追加的' : '';
   const emptyStateText = isEditMode ? '暂无待添加内容，请在上方导入' : '暂无分发内容，请在上方导入';
@@ -103,15 +104,15 @@ export function BulkImportSection({
                   <TooltipTrigger asChild>
                     <Badge
                       variant="secondary"
-                      className={`cursor-pointer ${
+                      className={`cursor-pointer text-[11px] ${
                         !allowDuplicates ?
-                          'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' :
-                          'bg-muted hover:bg-muted/80'
+                          'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-950/30 dark:text-green-400' :
+                          'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                       onClick={() => setAllowDuplicates(!allowDuplicates)}
                     >
                       {isEditMode && <Filter className="h-3 w-3 mr-1" />}
-                      {!allowDuplicates ? '已开启过滤' : '辅助过滤'}
+                      辅助过滤
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
@@ -128,43 +129,45 @@ export function BulkImportSection({
               </TooltipProvider>
               <Badge
                 variant="secondary"
-                className="text-xs cursor-pointer hover:bg-gray-300"
+                className="cursor-pointer text-[11px] text-muted-foreground hover:bg-muted/80"
                 onClick={() => onFileUploadOpenChange(true)}
               >
                 文件导入
               </Badge>
-              <Badge variant="secondary" className="bg-muted">
-                {isEditMode ? '待添加' : '已添加'}: {items.length}个
+              <Badge variant="secondary" className="bg-muted text-[11px] text-muted-foreground">
+                共 {items.length} 个
               </Badge>
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Textarea
-            placeholder={`请输入${placeholderPrefix}分发内容，支持以下格式批量导入：\n• JSON 数组格式：[{}, {}, {}]\n• 每行一个内容\n• 逗号分隔（中英文逗号均可）\n导入重复内容请关闭右上角的 '过滤功能'`}
-            value={bulkContent}
-            onChange={(e) => setBulkContent(e.target.value)}
-            className="h-[120px] break-all overflow-x-auto whitespace-pre-wrap"
-          />
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              onClick={onBulkImport}
-              size="sm"
-              className="mt-1 text-sm"
-            >
-              导入
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="mt-1 text-xs text-muted-foreground hover:text-destructive"
-              onClick={onClearBulkContent}
-            >
-              清空
-            </Button>
+          <div className="relative">
+            <Textarea
+              placeholder={`请输入${placeholderPrefix}分发内容，支持以下格式批量导入：\n• JSON 数组格式：[{}, {}, {}]\n• 每行一个内容\n• 逗号分隔（中英文逗号均可）\n导入重复内容请关闭右上角的 '过滤功能'`}
+              value={bulkContent}
+              onChange={(e) => setBulkContent(e.target.value)}
+              className="h-[120px] break-all overflow-x-auto whitespace-pre-wrap pb-10 placeholder:text-xs"
+            />
+            <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+              <Button
+                type="button"
+                onClick={onBulkImport}
+                size="sm"
+                className="h-7 rounded-lg px-2.5 text-xs shadow-none"
+              >
+                导入
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 rounded-lg px-2 text-xs text-muted-foreground hover:bg-transparent hover:text-destructive"
+                onClick={onClearBulkContent}
+              >
+                清空
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -185,32 +188,34 @@ export function BulkImportSection({
           </div>
 
           {items.length > 0 ? (
-            <div className="space-y-2 h-[150px] overflow-y-auto overflow-x-auto border rounded-md p-2">
-              {items.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 p-2 bg-muted/30 rounded-md"
-                >
-                  <div className="w-6 h-6 flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1 min-w-0 break-all overflow-x-auto text-sm">
-                    {item}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                    onClick={() => onRemoveItem(index)}
+            <ScrollArea className="h-[176px] rounded-2xl bg-muted/35 dark:bg-white/[0.03]">
+              <div className="space-y-1.5 p-2">
+                {items.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 rounded-xl bg-background/80 px-2.5 py-1.5 dark:bg-white/[0.04]"
                   >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
+                    <div className="flex size-5 shrink-0 items-center justify-center text-[11px] text-muted-foreground">
+                      {index + 1}
+                    </div>
+                    <div className="min-w-0 flex-1 break-all overflow-x-auto text-xs text-foreground/90">
+                      {item}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="size-7 p-0 text-muted-foreground hover:bg-transparent hover:text-destructive"
+                      onClick={() => onRemoveItem(index)}
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           ) : (
-            <div className="w-full h-[150px] flex items-center justify-center py-8 text-sm text-center border rounded-md text-muted-foreground">
+            <div className="flex h-[176px] w-full items-center justify-center rounded-2xl bg-muted/35 py-8 text-center text-sm text-muted-foreground dark:bg-white/[0.03]">
               {emptyStateText}
             </div>
           )}
@@ -223,21 +228,11 @@ export function BulkImportSection({
           <DialogHeader>
             <DialogTitle>文件导入</DialogTitle>
             <DialogDescription className="text-xs">
-              支持 .txt 和 .jsonl 格式 • 每行一个内容 • 空行自动忽略 • 大小限制：5MB
+            支持 .txt 和 .jsonl 格式 • 每行一个内容 • 空行自动忽略 • 大小限制：5MB
             </DialogDescription>
           </DialogHeader>
 
           <FileUpload onChange={onFileUpload} />
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => onFileUploadOpenChange(false)}
-              className="w-full"
-            >
-              取消
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

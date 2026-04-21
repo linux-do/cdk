@@ -3,17 +3,27 @@
 import {useEffect, useState} from 'react';
 import {Label} from '@/components/ui/label';
 import {Input} from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {TagSelector} from '@/components/ui/tag-selector';
 import {DateTimePicker} from '@/components/ui/DateTimePicker';
-import {Checkbox} from '@/components/animate-ui/radix/checkbox';
 import MarkdownEditor from '@/components/common/markdown/Editor';
-import {HelpCircle} from 'lucide-react';
-import {CURRENCY_LABEL, FORM_LIMITS, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
+import {HelpCircle, Wallet} from 'lucide-react';
+import {FORM_LIMITS, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
 import {TrustLevel} from '@/lib/services/core/types';
 import {DistributionType} from '@/lib/services/project/types';
 import {ProjectFormData} from '@/hooks/use-project-form';
+import services from '@/lib/services';
 
 interface ProjectBasicFormProps {
   formData: ProjectFormData;
@@ -33,9 +43,40 @@ export function ProjectBasicForm({
   isMobile,
 }: ProjectBasicFormProps) {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentDialogMessage, setPaymentDialogMessage] = useState('');
+  const [paymentConfigChecked, setPaymentConfigChecked] = useState<boolean | null>(null);
 
   const updateField = <K extends keyof ProjectFormData>(field: K, value: ProjectFormData[K]) => {
     onFormDataChange({...formData, [field]: value});
+  };
+
+  const ensurePaymentConfig = async () => {
+    const res = await services.payment.getConfigSafe();
+
+    if (!res.success || !res.data) {
+      setPaymentDialogMessage(res.error || '无法获取支付配置，请稍后重试。');
+      setPaymentDialogOpen(true);
+      setPaymentConfigChecked(false);
+      return false;
+    }
+
+    if (!res.data.payment_enabled) {
+      setPaymentDialogMessage('平台支付功能当前未启用，暂时无法设置领取消耗积分。');
+      setPaymentDialogOpen(true);
+      setPaymentConfigChecked(false);
+      return false;
+    }
+
+    if (!res.data.has_config) {
+      setPaymentDialogMessage('请先在支付设置中配置 clientID 与 clientSecret，然后再设置领取消耗积分。');
+      setPaymentDialogOpen(true);
+      setPaymentConfigChecked(false);
+      return false;
+    }
+
+    setPaymentConfigChecked(true);
+    return true;
   };
 
   useEffect(() => {
@@ -52,6 +93,12 @@ export function ProjectBasicForm({
       return () => clearTimeout(timer);
     }
   }, []);
+
+  useEffect(() => {
+    if (formData.distributionType !== DistributionType.ONE_FOR_EACH) {
+      setPaymentConfigChecked(null);
+    }
+  }, [formData.distributionType]);
 
   return (
     <>
@@ -106,7 +153,7 @@ export function ProjectBasicForm({
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <div className="space-y-2">
-          <Label>最低信任等级</Label>
+          <Label>最低社区等级</Label>
           <Select
             value={formData.minimumTrustLevel.toString()}
             onValueChange={(value) => updateField('minimumTrustLevel', parseInt(value) as TrustLevel)}
@@ -126,7 +173,7 @@ export function ProjectBasicForm({
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="riskLevel">最低用户分数</Label>
+            <Label htmlFor="riskLevel">最低社区分数</Label>
             <TooltipProvider>
               <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
                 <TooltipTrigger asChild>
@@ -135,7 +182,7 @@ export function ProjectBasicForm({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>注：此参数使用方法已更新 2025/07/22 <br /> 低于此分数的用户将无法查看、领取该项目的所有内容！</p>
+                  <p>注：此功能已于 2025/07/22 更新  <br /> 低于此分数的用户无法领取项目内容！</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -159,37 +206,78 @@ export function ProjectBasicForm({
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <div className="space-y-2">
-          <Label htmlFor="allowSameIP">允许相同 IP 领取</Label>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="allowSameIP"
-              checked={formData.allowSameIP}
-              onCheckedChange={(checked) => updateField('allowSameIP', checked === true)}
-              className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
-            />
-            <p className="text-muted-foreground text-sm">
-              开启后，相同 IP 可重复领取此项目
-            </p>
-          </div>
+          <Label>限制相同 IP</Label>
+          <Select
+            value={formData.allowSameIP ? 'off' : 'on'}
+            onValueChange={(value) => updateField('allowSameIP', value === 'off')}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="on">开启</SelectItem>
+              <SelectItem value="off">关闭</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {formData.distributionType === DistributionType.ONE_FOR_EACH && (
-          <div className="space-y-2">
-            <Label htmlFor="price">领取单价 ({CURRENCY_LABEL})</Label>
-            <Input
-              id="price"
-              type="number"
-              step={0.01}
-              min={0}
-              placeholder="0 表示免费"
-              value={formData.price}
-              onChange={(e) => updateField('price', e.target.value)}
-            />
-            <p className="text-muted-foreground text-xs">
-              仅&ldquo;一码一用&rdquo;分发支持设置金额,最多保留 2 位小数。领取者付款后自动发放,发放失败会自动退款
-            </p>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="price">领取消耗积分</Label>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="cursor-help text-muted-foreground hover:text-foreground">
+                    <HelpCircle size={14} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>将在积分流转完成后发放 CDK，期间发生异常情况将自动退款。</p>
+                  <p>仅「一码一用」分发模式支持设置积分金额，最多支持 2 位小数。</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-        )}
+          <Input
+            id="price"
+            type="number"
+            step={0.01}
+            min={0}
+            placeholder="0 表示免费"
+            value={formData.price}
+            onFocus={async () => {
+              if (formData.distributionType !== DistributionType.ONE_FOR_EACH) return;
+              if (paymentConfigChecked === true) return;
+              await ensurePaymentConfig();
+            }}
+            onChange={async (e) => {
+              const nextValue = e.target.value;
+              const priceNum = Number(nextValue || '0');
+
+              if (priceNum <= 0 || Number.isNaN(priceNum)) {
+                updateField('price', nextValue);
+                return;
+              }
+
+              if (formData.distributionType !== DistributionType.ONE_FOR_EACH) {
+                return;
+              }
+
+              const paymentReady = paymentConfigChecked === true ? true : await ensurePaymentConfig();
+              if (!paymentReady) {
+                return;
+              }
+
+              updateField('price', nextValue);
+            }}
+            disabled={formData.distributionType !== DistributionType.ONE_FOR_EACH}
+          />
+          {formData.distributionType !== DistributionType.ONE_FOR_EACH && (
+            <p className="text-muted-foreground text-xs">
+              仅「一码一用」分发模式可设置积分金额
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -202,6 +290,32 @@ export function ProjectBasicForm({
           className="w-full"
         />
       </div>
+
+      <AlertDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Wallet className="size-4 text-amber-500" />
+              请先完成支付设置
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {paymentDialogMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="h-8 text-xs border-none shadow-none">取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="h-8 text-xs"
+              onClick={() => {
+                setPaymentDialogOpen(false);
+                window.dispatchEvent(new Event('linux-do-cdk:open-payment-settings'));
+              }}
+            >
+              去设置
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

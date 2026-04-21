@@ -24,7 +24,7 @@ export function StatCard({
 
   return (
     <div
-      className="min-h-[88px] bg-gray-50 dark:bg-gray-800 rounded-[20px] px-3.5 py-3 sm:min-h-[96px] sm:px-4"
+      className="min-h-[88px] rounded-[20px] bg-muted px-3.5 py-3 sm:min-h-[96px] sm:px-4"
       title={desc || title}
     >
       <div className="flex items-start justify-between gap-3">
@@ -227,7 +227,7 @@ export function CardList({title, icon, list, type}: Omit<CardListProps, 'iconBg'
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-[22px] h-full flex flex-col">
+    <div className="h-full rounded-[22px] bg-muted flex flex-col">
       <div className="flex items-center justify-between gap-3 px-4 pb-1.5 pt-4">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="text-gray-500 dark:text-gray-400 w-3.5 h-3.5 flex items-center justify-center flex-shrink-0">
@@ -269,7 +269,7 @@ export function CardList({title, icon, list, type}: Omit<CardListProps, 'iconBg'
  */
 export function TagsDisplay({title, tags, icon}: Omit<TagsDisplayProps, 'iconBg'>) {
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg">
+    <div className="rounded-lg bg-muted">
       <div className="p-4 pb-2">
         <div className="flex items-center gap-3">
           {icon && (
@@ -286,7 +286,7 @@ export function TagsDisplay({title, tags, icon}: Omit<TagsDisplayProps, 'iconBg'
             tags.map((tag, idx) => (
               <span
                 key={`${tag.name}-${idx}`}
-                className="inline-flex items-center rounded-lg px-3 py-1.5 font-semibold text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-muted hover:text-muted-foreground transition-all duration-200 shadow-sm hover:shadow-md"
+                className="inline-flex items-center rounded-lg bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all duration-200 shadow-sm hover:bg-muted/80 hover:shadow-md"
               >
                 {tag.name}
                 <span className="ml-1 text-gray-600 dark:text-gray-400">{tag.count}</span>

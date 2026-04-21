@@ -106,14 +106,14 @@ export function DateTimePicker({
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="outline"
+            variant="ghost"
             className={cn(
-                'w-full justify-start text-left font-normal',
-                !selectedDate && 'text-muted-foreground',
+                'h-9 w-full justify-start rounded-xl border-none bg-muted/55 px-3 text-left font-normal shadow-none hover:bg-muted/70 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]',
+                selectedDate ? 'text-sm text-foreground' : 'text-xs text-muted-foreground',
             )}
             disabled={disabled}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
             {selectedDate ? (
               format(selectedDate, 'yyyy年MM月dd日 HH:mm:ss', {locale: zhCN})
             ) : (
@@ -141,9 +141,9 @@ export function DateTimePicker({
               locale={zhCN}
             />
 
-            <Separator className="my-2" />
+            <Separator className="my-1" />
 
-            <div className="flex flex-col p-3 gap-3 ">
+            <div className="flex flex-col gap-2 px-3 py-2">
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export function DateTimePicker({
                   variant="ghost"
                   size="sm"
                   onClick={setCurrentTime}
-                  className="text-xs text-muted-foreground"
+                  className="px-1.5 py-0 text-xs text-muted-foreground"
                 >
                   当前时间
                 </Button>

@@ -237,7 +237,7 @@ const PieTooltip = ({active, payload}: TooltipProps) => {
  */
 function DashboardChartContainer({title, icon, isLoading, children, hideHeader = false}: ChartContainerProps & {hideHeader?: boolean}) {
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-[22px] transition-colors h-full flex flex-col">
+    <div className="h-full rounded-[22px] bg-muted transition-colors flex flex-col">
       {!hideHeader && (
         <div className="p-4 pb-2">
           <div className="flex items-center gap-2.5">

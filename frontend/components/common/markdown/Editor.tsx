@@ -329,15 +329,14 @@ export function MarkdownEditor({
 
   const primaryButtons = getPrimaryButtons();
   const secondaryButtons = getSecondaryButtons();
+  const editorSurfaceClass = 'bg-muted/55 dark:bg-white/[0.04]';
 
   return (
-    <div className={`border rounded-lg overflow-hidden w-full ${className}`}>
-      {/* 工具栏 */}
-      <div className="border-b bg-gray-50 dark:bg-gray-900 px-3 py-2">
-        <div className="flex items-center justify-between">
+    <div className={`w-full overflow-hidden rounded-xl ${className}`}>
+      <div className={`${editorSurfaceClass} px-2 py-1`}>
+        <div className="flex items-center">
           <div className="flex items-center gap-1 flex-1 overflow-hidden">
             <TooltipProvider>
-              {/* 主要按钮 */}
               {primaryButtons.map((button, index) => (
                 <Tooltip key={index}>
                   <TooltipTrigger asChild>
@@ -357,7 +356,6 @@ export function MarkdownEditor({
                 </Tooltip>
               ))}
 
-              {/* 更多按钮下拉菜单 */}
               {secondaryButtons.length > 0 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -387,16 +385,15 @@ export function MarkdownEditor({
             </TooltipProvider>
           </div>
 
-          {/* 模式切换 */}
           <div className="flex-shrink-0 ml-2">
-            <Tabs value={mode} onValueChange={(value) => setMode(value as 'edit' | 'preview')}>
-              <TabsList className="h-8">
-                <TabsTrigger value="edit" className="text-xs px-2 py-1">
-                  <Edit3 className="h-3 w-3 md:mr-1" />
+            <Tabs value={mode} onValueChange={(value) => setMode(value as 'edit' | 'preview')} variant="fill">
+              <TabsList>
+                <TabsTrigger value="edit">
+                  <Edit3 className="size-3 md:mr-1" />
                   <span className="hidden md:inline">编辑</span>
                 </TabsTrigger>
-                <TabsTrigger value="preview" className="text-xs px-2 py-1">
-                  <Eye className="h-3 w-3 md:mr-1" />
+                <TabsTrigger value="preview">
+                  <Eye className="size-3 md:mr-1" />
                   <span className="hidden md:inline">预览</span>
                 </TabsTrigger>
               </TabsList>
@@ -405,14 +402,12 @@ export function MarkdownEditor({
         </div>
       </div>
 
-      {/* 内容区域 */}
       <div className="relative">
         {mode === 'edit' ? (
           <div className="relative flex">
-            {/* 行号区域 */}
             <div
               ref={lineNumbersRef}
-              className={`flex-shrink-0 ${getLineNumberWidth()} bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden text-right ${isMobile ? 'pr-1' : 'pr-2'} font-mono text-muted-foreground select-none`}
+              className={`flex-shrink-0 ${getLineNumberWidth()} ${editorSurfaceClass} overflow-hidden text-right ${isMobile ? 'pr-1' : 'pr-2'} font-mono text-muted-foreground select-none`}
               style={{
                 overflowY: 'hidden',
                 minHeight: '300px',
@@ -455,7 +450,6 @@ export function MarkdownEditor({
                   {i + 1}
                 </div>
               ))}
-              {/* 填充空行以保持最小高度 */}
               {displayLineCount < 15 && Array.from({length: 15 - displayLineCount}, (_, i) => (
                 <div
                   key={`empty-${i}`}
@@ -467,15 +461,14 @@ export function MarkdownEditor({
               ))}
             </div>
 
-            {/* 文本编辑区域 */}
-            <div className="flex-1 relative">
+            <div className={`relative flex-1 ${editorSurfaceClass}`}>
               <Textarea
                 ref={textareaRef}
                 value={value}
                 onChange={handleInputChange}
                 onScroll={handleScroll}
                 placeholder={placeholder}
-                className={`resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none min-h-[300px] font-mono text-sm ${isMobile ? 'pl-2' : 'pl-3'} whitespace-pre-wrap break-all`}
+                className={`resize-none border-0 !bg-transparent hover:!bg-transparent focus-visible:!bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none min-h-[300px] font-mono text-sm ${isMobile ? 'pl-2' : 'pl-3'} whitespace-pre-wrap break-all`}
                 maxLength={maxLength}
                 disabled={disabled}
                 style={{
@@ -489,7 +482,7 @@ export function MarkdownEditor({
                 }}
               />
               {maxLength && (
-                <div className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+                <div className="absolute bottom-2 right-2 rounded px-2 py-1 text-xs text-muted-foreground">
                   {value.length}/{maxLength}
                 </div>
               )}
@@ -497,7 +490,7 @@ export function MarkdownEditor({
           </div>
         ) : (
           <div
-            className="min-h-[300px] p-4 bg-background overflow-auto break-all"
+            className={`min-h-[300px] overflow-auto break-all ${editorSurfaceClass} p-4`}
             style={{
               wordWrap: 'break-word',
               overflowWrap: 'anywhere',

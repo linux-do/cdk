@@ -45,7 +45,7 @@ const LoadingSkeleton = () => (
     {/* 项目信息卡片 */}
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div key={i} className="rounded-lg bg-muted p-3">
           <Skeleton className="h-3 w-16 mb-1" />
           <Skeleton className="h-5 w-24" />
         </div>
@@ -60,7 +60,7 @@ const LoadingSkeleton = () => (
     {/* 项目描述 */}
     <div className="pt-6 border-t border-gray-200">
       <Skeleton className="h-6 w-24 mb-3" />
-      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <div className="rounded-lg bg-muted p-4">
         <div className="space-y-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
