@@ -69,13 +69,20 @@ func SaveUserPaymentConfig(ctx context.Context, userID uint64, clientID, clientS
 	if len(last4) > 4 {
 		last4 = last4[len(last4)-4:]
 	}
-	cfg := UserPaymentConfig{
-		UserID:          userID,
-		ClientID:        clientID,
-		ClientSecretEnc: enc,
-		SecretLast4:     last4,
+	cfg := &UserPaymentConfig{}
+	queryErr := db.DB(ctx).Where("user_id = ?", userID).First(cfg).Error
+	if errors.Is(queryErr, gorm.ErrRecordNotFound) {
+		cfg.UserID = userID
+		cfg.ClientID = clientID
+		cfg.ClientSecretEnc = enc
+		cfg.SecretLast4 = last4
+		return db.DB(ctx).Create(cfg).Error
+	} else if queryErr != nil {
+		return queryErr
 	}
-	// Upsert:按主键冲突时更新
+	cfg.ClientID = clientID
+	cfg.ClientSecretEnc = enc
+	cfg.SecretLast4 = last4
 	return db.DB(ctx).Save(&cfg).Error
 }
 

@@ -47,7 +47,6 @@ type GetPaymentConfigResponseData struct {
 	HasConfig         bool   `json:"has_config"`
 	ClientID          string `json:"client_id"`
 	SecretLast4       string `json:"secret_last4"`
-	LastVerifiedAt    string `json:"last_verified_at,omitempty"`
 	CallbackNotifyURL string `json:"callback_notify_url"`
 	CallbackReturnURL string `json:"callback_return_url"`
 	PaymentEnabled    bool   `json:"payment_enabled"`
@@ -72,9 +71,6 @@ func GetPaymentConfig(c *gin.Context) {
 		resp.HasConfig = true
 		resp.ClientID = cfg.ClientID
 		resp.SecretLast4 = cfg.SecretLast4
-		if cfg.LastVerifiedAt != nil {
-			resp.LastVerifiedAt = cfg.LastVerifiedAt.Format("2006-01-02 15:04:05")
-		}
 	}
 	c.JSON(http.StatusOK, Response{Data: resp})
 }

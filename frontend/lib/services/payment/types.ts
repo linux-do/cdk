@@ -10,8 +10,6 @@ export interface PaymentConfigData {
   client_id: string;
   /** clientSecret 末 4 位,展示用 */
   secret_last4: string;
-  /** 上次校验成功时间 */
-  last_verified_at?: string;
   /** 应该填写在 LDC 商户后台的异步通知地址 */
   callback_notify_url: string;
   /** 应该填写在 LDC 商户后台的同步回跳地址 */

@@ -48,14 +48,12 @@ const (
 
 // UserPaymentConfig 用户的商户凭据(一对一绑定 User)
 type UserPaymentConfig struct {
-	UserID           uint64     `gorm:"primaryKey" json:"user_id"`
-	ClientID         string     `gorm:"size:64;not null" json:"client_id"`
-	ClientSecretEnc  string     `gorm:"size:512;not null" json:"-"`
-	SecretLast4      string     `gorm:"size:8" json:"secret_last4"`
-	LastVerifiedAt   *time.Time `json:"last_verified_at"`
-	LastVerifyStatus int8       `gorm:"default:0" json:"last_verify_status"`
-	CreatedAt        time.Time  `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt        time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
+	UserID          uint64    `gorm:"primaryKey" json:"user_id"`
+	ClientID        string    `gorm:"size:64;not null" json:"client_id"`
+	ClientSecretEnc string    `gorm:"size:512;not null" json:"-"`
+	SecretLast4     string    `gorm:"size:8" json:"secret_last4"`
+	CreatedAt       time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt       time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // PaymentOrder 支付订单(一次付费领取 = 一个订单)

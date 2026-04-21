@@ -28,6 +28,7 @@ import {
 } from '@/components/animate-ui/radix/dialog';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {TrustLevel} from '@/lib/services/core';
+import {DialogClose} from "@/components/ui/dialog";
 
 const IconOptions = {
   className: 'h-4 w-4',
@@ -193,18 +194,20 @@ export function ManagementBar() {
               <div>
                 <h4 className="text-sm font-semibold mb-3 text-muted-foreground">账户设置</h4>
                 <div className="grid grid-cols-1 gap-2">
-                  <Link
-                    href="/settings/payment"
-                    className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors group"
-                  >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-md bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
-                      <Wallet className="h-4 w-4 text-indigo-500" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">支付设置</span>
-                      <span className="text-xs text-muted-foreground">配置你作为收款商户的 clientID / clientSecret</span>
-                    </div>
-                  </Link>
+                  <DialogClose asChild>
+                    <Link
+                      href="/settings/payment"
+                      className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors group"
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
+                        <Wallet className="h-4 w-4 text-indigo-500" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">支付设置</span>
+                        <span className="text-xs text-muted-foreground">配置你作为收款商户的 clientID / clientSecret</span>
+                      </div>
+                    </Link>
+                  </DialogClose>
                 </div>
               </div>
 
