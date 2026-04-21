@@ -60,6 +60,7 @@ type UserPaymentConfig struct {
 //
 // 联合索引：
 //   - idx_project_payer_status (project_id, payer_id, status)：查询某用户在某项目的待支付订单
+//   - idx_payer_status         (payer_id, status)：按用户快速查询待支付订单
 //   - idx_status_expire        (status, expire_at)：清理任务扫描超时 PENDING 订单
 type PaymentOrder struct {
 	ID            uint64          `gorm:"primaryKey;autoIncrement" json:"id"`
@@ -67,11 +68,11 @@ type PaymentOrder struct {
 	TradeNo       string          `gorm:"size:64;index" json:"trade_no"`
 	ProjectID     string          `gorm:"size:64;not null;index:idx_project_payer_status,priority:1" json:"project_id"`
 	ItemID        uint64          `gorm:"index;not null" json:"item_id"`
-	PayerID       uint64          `gorm:"not null;index:idx_project_payer_status,priority:2" json:"payer_id"`
+	PayerID       uint64          `gorm:"not null;index:idx_project_payer_status,priority:2;index:idx_payer_status,priority:1" json:"payer_id"`
 	PayeeID       uint64          `gorm:"index;not null" json:"payee_id"`
 	PayeeClientID string          `gorm:"size:64" json:"payee_client_id"`
 	Amount        decimal.Decimal `gorm:"type:decimal(10,2);not null" json:"amount"`
-	Status        OrderStatus     `gorm:"default:0;index:idx_project_payer_status,priority:3;index:idx_status_expire,priority:1" json:"status"`
+	Status        OrderStatus     `gorm:"default:0;index:idx_project_payer_status,priority:3;index:idx_payer_status,priority:2;index:idx_status_expire,priority:1" json:"status"`
 	PaidAt        *time.Time      `json:"paid_at"`
 	RefundedAt    *time.Time      `json:"refunded_at"`
 	FailReason    string          `gorm:"size:255" json:"fail_reason"`

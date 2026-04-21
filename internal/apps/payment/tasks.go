@@ -31,16 +31,14 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/db"
-	"go.uber.org/zap"
+	"github.com/linux-do/cdk/internal/logger"
 )
 
 // HandleExpireStaleOrders 清理长时间未付款的 PENDING 订单。
 // 查询条件:status=PENDING 且 expire_at 超时超过 5 分钟。
 // 额外 5 分钟宽限期确保 epay 的异步 notify 回调在此之前已到达，
 // 避免"cleanup 先置 FAILED + RPush，notify 随后到达发现已无 PENDING 订单"的竞态。
-func HandleExpireStaleOrders(_ context.Context, _ *asynq.Task) error {
-	ctx := context.Background()
-
+func HandleExpireStaleOrders(ctx context.Context, _ *asynq.Task) error {
 	// expire_at 已超过 5 分钟才认为真正超时
 	deadline := time.Now().Add(-5 * time.Minute)
 
@@ -49,9 +47,10 @@ func HandleExpireStaleOrders(_ context.Context, _ *asynq.Task) error {
 		Where("status = ? AND expire_at < ?", OrderStatusPending, deadline).
 		Limit(200).
 		Find(&orders).Error; err != nil {
-		zap.L().Error("payment cleanup: query failed", zap.Error(err))
+		logger.ErrorF(ctx, "payment cleanup: failed to query stale orders: %v", err)
 		return err
 	}
+	logger.InfoF(ctx, "payment cleanup: found %d stale orders", len(orders))
 
 	for _, order := range orders {
 		expireOrder(ctx, &order)
@@ -67,16 +66,15 @@ func expireOrder(ctx context.Context, order *PaymentOrder) {
 		Where("out_trade_no = ? AND status = ?", order.OutTradeNo, OrderStatusPending).
 		Update("status", OrderStatusFailed).
 		RowsAffected
+
+	// 另一协程（notify 回调）已处理，跳过
 	if rows == 0 {
-		// 另一协程（notify 回调）已处理，跳过
+		logger.InfoF(ctx, "payment cleanup: order %s already processed, skipping", order.OutTradeNo)
 		return
 	}
 
 	// 归还预占的 item，恢复项目库存
 	db.Redis.RPush(ctx, project.ProjectItemsKey(order.ProjectID), order.ItemID)
-
-	zap.L().Info("payment cleanup: order expired",
-		zap.String("out_trade_no", order.OutTradeNo),
-		zap.Uint64("item_id", order.ItemID),
-	)
+	logger.InfoF(ctx, "payment cleanup: returned item %d to project %s stock", order.ItemID, order.ProjectID)
+	logger.InfoF(ctx, "payment cleanup: order %s expired and marked as FAILED", order.OutTradeNo)
 }

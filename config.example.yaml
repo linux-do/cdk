@@ -116,7 +116,8 @@ otel:
 # Payment (LDC Credit EasyPay-compatible)
 payment:
   enabled: false
-  api_url: "https://credit.linux.do/epay"        # 易支付网关地址
-  notify_base_url: "https://your-domain.com"      # 本项目公网基址,用于拼接回调 URL
-  config_encryption_key: "<32-char-secret-key!!>" # AES-256 密钥,恰好 32 字节,首次部署后不可更改
-  order_expire_minutes: 10                        # 订单未付款超时时间（分钟）
+  api_url: "https://credit.linux.do/epay"                  # 易支付网关地址
+  notify_base_url: "http://cdk.cdk.svc.cluster.local"      # CDK 的内网或公网地址，供支付网关回调使用
+  redirect_base_url: "https://cdk.linux.do"                # 支付完成后跳转的 URL 基址
+  config_encryption_key: "<32-char-secret-key!!>"          # AES-256 密钥,恰好 32 字节,首次部署后不可更改
+  order_expire_minutes: 10                                 # 订单未付款超时时间（分钟）

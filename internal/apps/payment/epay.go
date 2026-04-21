@@ -64,8 +64,12 @@ func callbackNotifyURL() string {
 }
 
 // callbackReturnURL 返回同步回跳地址。
-func callbackReturnURL() string {
-	return strings.TrimRight(config.Config.Payment.NotifyBaseURL, "/") + "/received"
+func callbackReturnURL(projectID string) string {
+	baseURL := strings.TrimRight(config.Config.Payment.RedirectBaseURL, "/")
+	if projectID == "" {
+		return baseURL + "/received"
+	}
+	return baseURL + "/receive/" + projectID
 }
 
 // refundResponse 易支付退款接口响应
