@@ -169,7 +169,7 @@ func InitiatePayment(ctx context.Context, p *project.Project, payer *oauth.User,
 		init   PaymentInitiation
 	)
 	err = db.DB(ctx).Transaction(func(tx *gorm.DB) error {
-		// 通过锁定用户行串行化同一用户的下单请求，避免并发创建多个待支付订单。
+		// 通过锁定用户行串行化同一用户的下单请求，避免并发重复建单。
 		var lockUser oauth.User
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 			Select("id").
@@ -178,13 +178,22 @@ func InitiatePayment(ctx context.Context, p *project.Project, payer *oauth.User,
 			return err
 		}
 
-		var pendingCount int64
+		var existedCount int64
 		if err := tx.Model(&PaymentOrder{}).
-			Where("payer_id = ? AND status = ?", payer.ID, OrderStatusPending).
-			Count(&pendingCount).Error; err != nil {
+			Where(
+				"project_id = ? AND payer_id = ? AND status IN ?",
+				p.ID,
+				payer.ID,
+				[]OrderStatus{
+					OrderStatusPending,
+					OrderStatusPaid,
+					OrderStatusCompleted,
+				},
+			).
+			Count(&existedCount).Error; err != nil {
 			return err
 		}
-		if pendingCount > 0 {
+		if existedCount > 0 {
 			return errors.New(ErrPendingOrderExists)
 		}
 

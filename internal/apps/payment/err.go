@@ -29,7 +29,7 @@ const (
 	ErrInvalidAmount            = "金额必须大于 0 且最多 2 位小数"
 	ErrPriceRequiresOneForEach  = "仅一码一用分发支持设置金额"
 	ErrCreatorNotConfigured     = "项目创建者尚未配置支付凭据,无法发起支付"
-	ErrPendingOrderExists       = "当前存在待付款订单,请先完成或等待过期"
+	ErrPendingOrderExists       = "当前项目存在进行中或已完成订单,不可重复创建"
 	ErrPaymentConfigNotFound    = "尚未配置支付凭据"
 	ErrEncryptionKeyMissing     = "服务端未配置支付密钥加密密钥"
 	ErrInvalidClientCredentials = "clientID 与 clientSecret 不能为空"

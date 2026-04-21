@@ -141,6 +141,10 @@ func DispatchReceive(c *gin.Context) {
 	if p.IsPaid() {
 		init, err := InitiatePayment(ctx, p, currentUser, c.ClientIP())
 		if err != nil {
+			if err.Error() == ErrPendingOrderExists {
+				c.JSON(http.StatusBadRequest, Response{ErrorMsg: err.Error()})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, Response{ErrorMsg: err.Error()})
 			return
 		}
