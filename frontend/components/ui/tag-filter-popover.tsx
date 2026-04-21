@@ -20,6 +20,7 @@ interface TagFilterPopoverProps {
   isOpen: boolean;
   align?: 'start' | 'center' | 'end';
   onTagToggle: (tag: string) => void;
+  onClearAllTags?: () => void;
   onTagSearchKeywordChange: (keyword: string) => void;
   onOpenChange: (open: boolean) => void;
 }
@@ -32,6 +33,7 @@ export function TagFilterPopover({
   isOpen,
   align = 'end',
   onTagToggle,
+  onClearAllTags,
   onTagSearchKeywordChange,
   onOpenChange,
 }: TagFilterPopoverProps) {
@@ -39,8 +41,9 @@ export function TagFilterPopover({
     tag.toLowerCase().includes(tagSearchKeyword.toLowerCase()),
   );
 
-  const handleClearAllTags = () => {
-    (selectedTags || []).forEach(onTagToggle);
+  const handleClearSelectedTags = () => {
+    onClearAllTags?.();
+    onTagSearchKeywordChange('');
   };
 
   const handleSelectAllTags = () => {
@@ -55,16 +58,16 @@ export function TagFilterPopover({
     <Popover open={isOpen} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className="w-80 p-0" align={align}>
-        <div className="p-3 space-y-3">
+        <div className="space-y-3 p-3">
           <div className="flex flex-col space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">标签筛选</span>
+              <span className="text-sm font-medium text-foreground">标签筛选</span>
               {(selectedTags || []).length > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
-                  onClick={handleClearAllTags}
+                  className="h-6 rounded-full px-2 text-xs text-muted-foreground hover:bg-black/[0.04] hover:text-foreground dark:hover:bg-white/[0.06]"
+                  onClick={handleClearSelectedTags}
                 >
                   清除全部
                 </Button>
@@ -77,7 +80,7 @@ export function TagFilterPopover({
                 placeholder="搜索标签..."
                 value={tagSearchKeyword}
                 onChange={(e) => onTagSearchKeywordChange(e.target.value)}
-                className="pl-7 h-8 text-xs"
+                className="h-8 pl-7 text-xs"
               />
             </div>
           </div>
@@ -93,7 +96,7 @@ export function TagFilterPopover({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-xs text-primary"
+                      className="h-6 rounded-full px-2 text-xs text-muted-foreground hover:bg-black/[0.04] hover:text-foreground dark:hover:bg-white/[0.06]"
                       onClick={handleSelectAllTags}
                     >
                       全选
@@ -108,22 +111,22 @@ export function TagFilterPopover({
                       <div
                         key={tag}
                         className={cn(
-                            'flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors hover:bg-muted',
+                            'flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-muted/80',
                             isSelected &&
-                            'bg-primary/10 border border-primary/20',
+                            'bg-muted',
                         )}
                         onClick={() => onTagToggle(tag)}
                       >
                         <span
                           className={cn(
                               'text-xs font-medium',
-                            isSelected ? 'text-primary' : 'text-foreground',
+                            isSelected ? 'text-foreground' : 'text-muted-foreground',
                           )}
                         >
                           {tag}
                         </span>
                         {isSelected && (
-                          <Check className="h-3 w-3 text-primary" />
+                          <Check className="h-3 w-3 text-muted-foreground" />
                         )}
                       </div>
                     );
@@ -142,7 +145,7 @@ export function TagFilterPopover({
           {(selectedTags || []).length > 0 && (
             <div className="pt-2 border-t">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium">已选择的标签</span>
+                <span className="text-xs font-medium text-foreground">已选择的标签</span>
                 <span className="text-xs text-muted-foreground">
                   {(selectedTags || []).length} 个标签
                 </span>
@@ -151,8 +154,8 @@ export function TagFilterPopover({
                 {(selectedTags || []).map((tag) => (
                   <Badge
                     key={tag}
-                    variant="outline"
-                    className="px-2 py-0 h-6 bg-primary/5 text-xs text-primary border-primary/20 flex items-center gap-1 select-none cursor-pointer hover:bg-primary/10 transition-colors"
+                    variant="secondary"
+                    className="flex h-6 cursor-pointer select-none items-center gap-1 rounded-full px-2 py-0 text-xs font-medium transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       onTagToggle(tag);
