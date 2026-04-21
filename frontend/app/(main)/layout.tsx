@@ -15,7 +15,7 @@ export default function ProjectLayout({
       <MemoizedManagementBar />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-4 mb-8 px-6 py-6 md:gap-6">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 px-6 py-6 md:gap-6">
             {children}
           </div>
         </div>

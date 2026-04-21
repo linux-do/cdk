@@ -3,7 +3,20 @@
 import {motion} from 'motion/react';
 import {useState} from 'react';
 import {StatCard, CardList, UserGrowthChart, ActivityChart, CategoryChart, DistributeModeChart} from '@/components/common/dashboard/';
-import {UsersIcon, DownloadIcon, FolderIcon, TrendingUpIcon, ChartPieIcon, ChartColumnBigIcon, ChartAreaIcon, ChartLineIcon, FlameIcon} from 'lucide-react';
+import {
+  UsersIcon,
+  DownloadIcon,
+  FolderIcon,
+  TrendingUpIcon,
+  ChartColumnBigIcon,
+  ChartAreaIcon,
+  ChartLineIcon,
+  Flame,
+  TrendingUpDown,
+  ChartPie,
+  LayersPlus,
+  HandCoins,
+} from 'lucide-react';
 import {useDashboard} from '@/hooks/use-dashboard';
 import {useAuth} from '@/hooks/use-auth';
 
@@ -86,19 +99,19 @@ export function DashboardMain() {
   const listCards = [
     {
       title: '热门项目',
-      icon: <FlameIcon className="h-4 w-4" />,
+      icon: <Flame className="h-4 w-4" />,
       list: data?.hotProjects || [],
       type: 'project' as const,
     },
     {
       title: '活跃创建者',
-      icon: <FlameIcon className="h-4 w-4" />,
+      icon: <LayersPlus className="h-4 w-4" />,
       list: data?.activeCreators || [],
       type: 'creator' as const,
     },
     {
       title: '活跃领取者',
-      icon: <DownloadIcon className="h-4 w-4" />,
+      icon: <HandCoins className="h-4 w-4" />,
       list: data?.activeReceivers || [],
       type: 'receiver' as const,
     },
@@ -178,26 +191,26 @@ export function DashboardMain() {
       </motion.div>
 
       {/* 图表区域 - 1x3 网格布局 */}
-      <motion.div className="grid gap-4 lg:grid-cols-[minmax(0,1.75fr)_minmax(280px,1fr)]" variants={itemVariants}>
+      <motion.div className="grid grid-cols-1 gap-4 lg:grid-cols-3" variants={itemVariants}>
         {/* 左侧标签页图表 - 2/3 宽度 */}
-        <div className="min-h-0">
+        <div className="min-h-0 lg:col-span-2">
           <div className="bg-gray-50 dark:bg-gray-800 rounded-[22px] h-full min-h-0 flex flex-col">
             {/* 标签页导航 */}
-            <div className="flex flex-col gap-3 p-4 pb-0 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-3 p-4 pb-2 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-3.5 w-3.5 items-center justify-center text-gray-500 dark:text-gray-400">
-                  <ChartLineIcon className="size-3.5" />
+                  <TrendingUpDown className="size-3.5" />
                 </div>
                 <div className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
                   核心趋势
                 </div>
               </div>
-              <div className="inline-flex items-center gap-1 self-start rounded-full bg-white/65 dark:bg-white/[0.05]">
+              <div className="inline-flex items-center gap-1 self-start rounded-full">
                 <button
-                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
+                  className={`flex items-center gap-1 border-b px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
                     activeTab === 'activity' ?
-                      'text-foreground' :
-                      'text-muted-foreground hover:text-foreground hover:bg-white/70 dark:hover:bg-white/[0.05]'
+                      'border-foreground/25 text-foreground' :
+                      'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setActiveTab('activity')}
                 >
@@ -205,10 +218,10 @@ export function DashboardMain() {
                   领取趋势
                 </button>
                 <button
-                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
+                  className={`flex items-center gap-1 border-b px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
                     activeTab === 'users' ?
-                      'text-foreground' :
-                      'text-muted-foreground hover:text-foreground hover:bg-white/70 dark:hover:bg-white/[0.05]'
+                      'border-foreground/25 text-foreground' :
+                      'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setActiveTab('users')}
                 >
@@ -216,10 +229,10 @@ export function DashboardMain() {
                   用户增长
                 </button>
                 <button
-                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
+                  className={`flex items-center gap-1 border-b px-2 py-0.5 text-xs font-medium transition-colors duration-200 ${
                     activeTab === 'tags' ?
-                      'text-foreground' :
-                      'text-muted-foreground hover:text-foreground hover:bg-white/70 dark:hover:bg-white/[0.05]'
+                      'border-foreground/25 text-foreground' :
+                      'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setActiveTab('tags')}
                 >
@@ -230,7 +243,7 @@ export function DashboardMain() {
             </div>
 
             {/* 标签页内容 */}
-            <div className="flex-1 min-h-0 px-3 pt-3 pb-0">
+            <div className="flex-1 min-h-0 p-4 pt-1.5">
               {activeTab === 'activity' && (
                 <div className="h-full min-h-0">
                   <ActivityChart
@@ -268,11 +281,11 @@ export function DashboardMain() {
         </div>
 
         {/* 右侧饼图 - 1/3 宽度 */}
-        <div className="h-full min-h-0">
+        <div className="h-full min-h-0 lg:col-span-1">
           <DistributeModeChart
             data={data?.distributeModes}
             isLoading={isLoading}
-            icon={<ChartPieIcon className="h-4 w-4" />}
+            icon={<ChartPie className="h-4 w-4" />}
           />
         </div>
       </motion.div>

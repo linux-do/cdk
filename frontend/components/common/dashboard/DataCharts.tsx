@@ -5,6 +5,7 @@ import {DISTRIBUTION_MODE_NAMES} from '../project/constants';
 import {ChartContainerProps, UserGrowthChartProps, ActivityChartProps, CategoryChartProps, DistributeModeChartProps, TooltipProps} from '@/lib/services/dashboard/types';
 import {AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend, CartesianGrid} from 'recharts';
 import {ChartConfig, ChartContainer as UIChartContainer, ChartTooltip, ChartTooltipContent} from '@/components/ui/chart';
+import {DashboardEmptyState} from './DashboardEmptyState';
 
 function formatDateTick(value: string): string {
   return value.replace('/', '.');
@@ -410,10 +411,7 @@ export function CategoryChart({data, isLoading, icon, hideHeader = false}: Categ
   if (!isLoading && (!chartData || chartData.length === 0)) {
     return (
       <DashboardChartContainer title="项目标签" icon={icon} isLoading={isLoading} hideHeader={hideHeader}>
-        <div className="flex h-[300px] flex-col items-center justify-center space-y-3">
-          <div className="text-4xl opacity-30 text-gray-400">{icon}</div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">暂无标签数据</span>
-        </div>
+        <DashboardEmptyState icon={icon} className="h-[300px]" />
       </DashboardChartContainer>
     );
   }
@@ -480,10 +478,7 @@ export function DistributeModeChart({data, isLoading, icon, hideHeader = false}:
   if (!isLoading && (!chartData || chartData.length === 0)) {
     return (
       <DashboardChartContainer title="分发模式统计" icon={icon} isLoading={isLoading} hideHeader={hideHeader}>
-        <div className="flex flex-col items-center justify-center h-[300px] space-y-3">
-          <div className="text-4xl opacity-30 text-gray-400">{icon}</div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">暂无分发数据</span>
-        </div>
+        <DashboardEmptyState icon={icon} className="h-[300px]" />
       </DashboardChartContainer>
     );
   }

@@ -5,9 +5,9 @@ import {
   SendIcon,
   BarChartIcon,
   FolderIcon,
+  FolderGit2,
   ShoppingBag,
   PlusCircle,
-  Github,
   ExternalLinkIcon,
   User,
   LogOutIcon,
@@ -233,7 +233,7 @@ export function ManagementBar() {
                     className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors group"
                   >
                     <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-500/10 group-hover:bg-gray-500/20 transition-colors">
-                      <Github className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                      <FolderGit2 className="h-4 w-4 text-gray-700 dark:text-gray-300" />
                     </div>
                     <span className="text-sm font-medium">GitHub 仓库</span>
                   </Link>

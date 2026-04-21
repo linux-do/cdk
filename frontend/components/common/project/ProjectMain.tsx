@@ -229,16 +229,16 @@ export function ProjectMain() {
 
   return (
     <motion.div
-      className="space-y-5"
+      className="flex min-h-0 flex-1 flex-col gap-6"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
-      <motion.div className="flex items-center justify-between gap-4" variants={itemVariants}>
+      <motion.div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end" variants={itemVariants}>
         <div className="min-w-0">
-          <h1 className="text-[30px] font-bold tracking-tight text-foreground">我的项目</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">我的项目</h1>
         </div>
-        <div className="shrink-0">
+        <div className="self-start lg:self-end">
           <CreateDialog onProjectCreated={handleProjectCreated} />
         </div>
       </motion.div>
@@ -247,7 +247,7 @@ export function ProjectMain() {
         <div className="h-px w-full bg-black/6 dark:bg-white/[0.06]" />
       </motion.div>
 
-      <motion.div variants={itemVariants}>
+      <motion.div className="flex min-h-0 flex-1 flex-col" variants={itemVariants}>
         <MineProject
           data={{
             projects,

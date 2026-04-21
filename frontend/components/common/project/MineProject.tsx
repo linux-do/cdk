@@ -152,6 +152,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
   };
 
   const totalPages = Math.ceil(total / pageSize);
+  const isEmptyState = ((!(projects || []).length && !loading) || !!error);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -169,7 +170,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
   const renderContent = () => {
     if ((!(projects || []).length && !loading) || error) {
       return (
-        <div className="rounded-[22px] bg-gray-50 px-6 py-12 text-center dark:bg-gray-800">
+        <div className="flex h-full min-h-0 flex-1 items-center justify-center rounded-[22px] bg-gray-50 px-6 py-12 text-center dark:bg-gray-800">
           <EmptyState
             icon={FolderOpen}
             title="暂无分发项目"
@@ -178,7 +179,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                 '未找到符合条件的分发项目' :
                 '点击右上方按钮创建您的第一个分发项目'
             }
-            className="p-12 text-center"
+            className="flex w-full flex-col items-center justify-center p-12 text-center"
           >
             {(selectedTags || []).length > 0 && (
               <Button
@@ -301,7 +302,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
 
   return (
     <motion.div
-      className="space-y-4"
+      className={`flex min-h-0 flex-1 flex-col gap-4 ${isEmptyState ? 'overflow-hidden' : ''}`}
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -368,7 +369,9 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
       )}
 
       {/* 内容区域 */}
-      <motion.div variants={itemVariants}>{renderContent()}</motion.div>
+      <motion.div className={`flex min-h-0 flex-1 flex-col ${isEmptyState ? 'overflow-hidden' : ''}`} variants={itemVariants}>
+        {renderContent()}
+      </motion.div>
 
       <AlertDialog
         open={deleteDialogOpen}

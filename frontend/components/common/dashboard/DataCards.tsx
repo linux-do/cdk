@@ -3,6 +3,8 @@
 import {Avatar, AvatarImage, AvatarFallback} from '@/components/ui/avatar';
 import {CountingNumber} from '@/components/animate-ui/text/counting-number';
 import {StatCardProps, CardListProps, TagsDisplayProps, ListItemData} from '@/lib/services/dashboard/types';
+import {Tags} from 'lucide-react';
+import {DashboardEmptyState} from './DashboardEmptyState';
 
 /**
  * 统计卡片组件
@@ -254,9 +256,7 @@ export function CardList({title, icon, list, type}: Omit<CardListProps, 'iconBg'
           ))}
 
           {displayedList.length === 0 && (
-            <div className="flex h-[220px] items-center justify-center text-sm text-gray-500 dark:text-gray-400">
-              暂无数据
-            </div>
+            <DashboardEmptyState icon={icon} />
           )}
         </div>
       </div>
@@ -293,7 +293,7 @@ export function TagsDisplay({title, tags, icon}: Omit<TagsDisplayProps, 'iconBg'
               </span>
             ))
           ) : (
-            <span className="text-gray-500 dark:text-gray-400 text-sm">暂无标签数据</span>
+            <DashboardEmptyState icon={icon || <Tags className="size-4" />} className="h-[160px]" />
           )}
         </div>
       </div>
