@@ -264,4 +264,3 @@ export interface TooltipProps {
   label?: string;
   labelFormatter?: (label: string, payload?: Record<string, unknown>[]) => ReactNode;
 }
-
