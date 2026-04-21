@@ -26,9 +26,14 @@ package project
 
 import (
 	"context"
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
+	"github.com/shopspring/decimal"
+
 	"time"
 )
 
@@ -70,7 +75,7 @@ func ListProjectsWithTags(ctx context.Context, offset, limit int, tags []string,
 
 	getProjectWithTagsSql := `SELECT
     			p.id,p.name,p.description,p.distribution_type,p.total_items,
-       			p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.created_at,
+       			p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.price,p.created_at,
 				IF(COUNT(pt.tag) = 0, NULL, JSON_ARRAYAGG(pt.tag)) AS tags
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
@@ -121,7 +126,7 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 
 	getMyProjectWithTagsSql := `SELECT
 				p.id,p.name,p.description,p.distribution_type,p.total_items,
-				p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.hide_from_explore,p.created_at,
+				p.start_time,p.end_time,p.minimum_trust_level,p.allow_same_ip,p.risk_level,p.hide_from_explore,p.price,p.created_at,
 				IF(COUNT(pt.tag) = 0, NULL, JSON_ARRAYAGG(pt.tag)) AS tags
 			FROM projects p
 			LEFT JOIN project_tags pt ON p.id = pt.project_id
@@ -162,4 +167,41 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 		Total:   total,
 		Results: &listProjectsResponseDataResult,
 	}, nil
+}
+
+// maxProjectPrice 付费项目的最大单价上限
+var maxProjectPrice = decimal.RequireFromString("99999999.99")
+
+// validateProjectPrice 校验 Price 字段合法性。
+// 规则:
+//   - Price 必须非负,最多 2 位小数,不超过上限
+//   - Price > 0 仅允许 DistributionTypeOneForEach
+//   - Price > 0 时必须确认全局支付功能已启用且创建者已配置 clientID/clientSecret
+func validateProjectPrice(ctx context.Context, price decimal.Decimal, dt DistributionType, creatorID uint64) error {
+	if price.IsNegative() {
+		return errors.New(InvalidPrice)
+	}
+	if price.Exponent() < -2 {
+		return errors.New(InvalidPriceDecimals)
+	}
+	if price.GreaterThan(maxProjectPrice) {
+		return errors.New(PriceTooLarge)
+	}
+	if price.IsZero() {
+		return nil
+	}
+	if dt != DistributionTypeOneForEach {
+		return errors.New(PriceOnlyOneForEach)
+	}
+	if !config.Config.Payment.Enabled {
+		return errors.New(PaymentDisabled)
+	}
+	var cnt int64
+	if err := db.DB(ctx).Table("user_payment_configs").Where("user_id = ?", creatorID).Count(&cnt).Error; err != nil {
+		return err
+	}
+	if cnt == 0 {
+		return errors.New(CreatorNotConfigured)
+	}
+	return nil
 }

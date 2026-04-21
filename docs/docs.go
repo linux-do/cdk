@@ -589,36 +589,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/projects/{id}/receive": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "project"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/project.ProjectResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/projects/{id}/receivers": {
             "get": {
                 "consumes": [
@@ -1032,6 +1002,9 @@ const docTemplate = `{
                     "maxLength": 32,
                     "minLength": 1
                 },
+                "price": {
+                    "type": "number"
+                },
                 "project_items": {
                     "type": "array",
                     "minItems": 1,
@@ -1120,6 +1093,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "price": {
+                    "type": "number"
+                },
                 "received_content": {
                     "type": "string"
                 },
@@ -1203,6 +1179,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "price": {
+                    "type": "number"
                 },
                 "risk_level": {
                     "type": "integer"
@@ -1389,6 +1368,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 32,
                     "minLength": 1
+                },
+                "price": {
+                    "type": "number"
                 },
                 "project_items": {
                     "type": "array",

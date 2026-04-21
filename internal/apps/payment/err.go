@@ -22,12 +22,19 @@
  * SOFTWARE.
  */
 
-package task
+package payment
 
 const (
-	UpdateAllBadgesTask            = "user:badge:update_badges_task"
-	UpdateUserBadgeScoresTask      = "user:badge:update_scores_task"
-	UpdateSingleUserBadgeScoreTask = "user:badge:update_single_score_task"
-
-	ExpireStalePaymentOrdersTask = "payment:expire_stale_orders"
+	ErrPaymentDisabled          = "支付功能未启用"
+	ErrInvalidAmount            = "金额必须大于 0 且最多 2 位小数"
+	ErrPriceRequiresOneForEach  = "仅一码一用分发支持设置金额"
+	ErrCreatorNotConfigured     = "项目创建者尚未配置支付凭据,无法发起支付"
+	ErrPaymentConfigNotFound    = "尚未配置支付凭据"
+	ErrEncryptionKeyMissing     = "服务端未配置支付密钥加密密钥"
+	ErrInvalidClientCredentials = "clientID 与 clientSecret 不能为空"
+	ErrOrderNotFound            = "订单不存在"
+	ErrOrderExpired             = "订单已过期"
+	ErrCannotDeleteHasActive    = "存在未结束的付费项目,无法删除支付配置"
+	ErrInvalidPriceDecimals     = "金额最多保留 2 位小数"
+	ErrPriceTooLarge            = "金额超出允许范围"
 )

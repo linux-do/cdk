@@ -38,4 +38,11 @@ const (
 	AlreadyReported    = "已举报过当前项目"
 	RequirementsFailed = "未达到项目发起者设置的条件"
 	TooManyRequests    = "创建项目太频繁，请稍后再试"
+	// Payment 相关
+	InvalidPrice         = "金额必须大于等于 0"
+	InvalidPriceDecimals = "金额最多保留 2 位小数"
+	PriceTooLarge        = "金额超出允许范围"
+	PriceOnlyOneForEach  = "仅一码一用分发支持设置金额"
+	PaymentDisabled      = "平台支付功能未启用"
+	CreatorNotConfigured = "请先在账户设置中配置支付凭据"
 )

@@ -38,6 +38,7 @@ type configModel struct {
 	ClickHouse clickHouseConfig `mapstructure:"clickhouse"`
 	LinuxDo    linuxDoConfig    `mapstructure:"linuxdo"`
 	Otel       otelConfig       `mapstructure:"otel"`
+	Payment    PaymentConfig    `mapstructure:"payment"`
 }
 
 // appConfig 应用基本配置
@@ -135,6 +136,7 @@ type scheduleConfig struct {
 	UserBadgeScoreDispatchIntervalSeconds int    `mapstructure:"user_badge_score_dispatch_interval_seconds"`
 	UpdateUserBadgeScoresTaskCron         string `mapstructure:"update_user_badges_scores_task_cron"`
 	UpdateAllBadgesTaskCron               string `mapstructure:"update_all_badges_task_cron"`
+	ExpireStalePaymentOrdersCron          string `mapstructure:"expire_stale_payment_orders_cron"`
 }
 
 // workerConfig 工作配置
@@ -150,4 +152,20 @@ type linuxDoConfig struct {
 // otelConfig OpenTelemetry 配置
 type otelConfig struct {
 	SamplingRate float64 `mapstructure:"sampling_rate"`
+}
+
+// PaymentConfig 支付相关全局配置
+type PaymentConfig struct {
+	// Enabled 是否启用付费功能。关闭时创建/领取付费项目会被拒绝
+	Enabled bool `mapstructure:"enabled"`
+	// ApiUrl LDC 易支付兼容接口基址,例如 https://credit.linux.do/epay
+	ApiUrl string `mapstructure:"api_url"`
+	// NotifyBaseURL 本项目对外可访问的基址(不含路径),例如 https://cdk.linux.do
+	// 用于拼接 notify_url / return_url 并提示用户在 LDC 商户后台填写
+	NotifyBaseURL string `mapstructure:"notify_base_url"`
+	// ConfigEncryptionKey 用于加密用户 clientSecret 的密钥,必须是 32 字节长度
+	// 建议直接填 32 字符 ASCII 字符串或 base64 解码得 32 字节
+	ConfigEncryptionKey string `mapstructure:"config_encryption_key"`
+	// OrderExpireMinutes 订单 PENDING 状态的最长保留时间(分钟),默认 10
+	OrderExpireMinutes int `mapstructure:"order_expire_minutes"`
 }

@@ -10,6 +10,7 @@ require (
 	github.com/hibiken/asynq v0.25.1
 	github.com/redis/go-redis/extra/redisotel/v9 v9.9.0
 	github.com/redis/go-redis/v9 v9.10.0
+	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/swaggo/files v1.0.1
@@ -89,7 +90,6 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
-	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
 	github.com/spf13/cast v1.9.2 // indirect

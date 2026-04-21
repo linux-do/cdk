@@ -4,8 +4,8 @@ import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {MotionEffect} from '@/components/animate-ui/effects/motion-effect';
-import {DISTRIBUTION_MODE_NAMES, TRUST_LEVEL_CONFIG, getTrustLevelGradient} from '@/components/common/project';
-import {Shield, Clock, Package, Trash2, Calendar, Pencil} from 'lucide-react';
+import {CURRENCY_LABEL, DISTRIBUTION_MODE_NAMES, TRUST_LEVEL_CONFIG, getTrustLevelGradient} from '@/components/common/project';
+import {Shield, Clock, Package, Trash2, Calendar, Pencil, Coins} from 'lucide-react';
 import {formatDate, formatDateTimeWithSeconds} from '@/lib/utils';
 import {ProjectListItem} from '@/lib/services/project/types';
 
@@ -29,6 +29,8 @@ export function ProjectCard({
   editButton,
 }: ProjectCardProps) {
   const gradientTheme = getTrustLevelGradient(project.minimum_trust_level);
+  const priceNum = Number(project.price || '0');
+  const isPaid = priceNum > 0;
 
   const now = new Date();
   const startTime = new Date(project.start_time);
@@ -137,6 +139,15 @@ export function ProjectCard({
               <h3 className="text-2xl font-bold text-white text-center leading-tight line-clamp-2">
                 {project.name}
               </h3>
+
+              {isPaid && (
+                <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-white/20 backdrop-blur px-2 py-0.5 rounded-full">
+                  <Coins className="h-3 w-3 text-white drop-shadow-md" />
+                  <span className="text-xs font-semibold text-white">
+                    {priceNum} {CURRENCY_LABEL}
+                  </span>
+                </div>
+              )}
 
               <div className="absolute bottom-3 right-3 text-xs text-white">
                 <Tooltip>

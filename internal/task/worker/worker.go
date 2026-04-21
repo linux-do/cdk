@@ -28,6 +28,7 @@ import (
 	"context"
 	"github.com/hibiken/asynq"
 	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/apps/payment"
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/task"
@@ -69,6 +70,7 @@ func StartWorker() error {
 	mux.HandleFunc(task.UpdateAllBadgesTask, oauth.HandleUpdateAllBadges)
 	mux.HandleFunc(task.UpdateUserBadgeScoresTask, oauth.HandleUpdateUserBadgeScores)
 	mux.HandleFunc(task.UpdateSingleUserBadgeScoreTask, oauth.HandleUpdateSingleUserBadgeScore)
+	mux.HandleFunc(task.ExpireStalePaymentOrdersTask, payment.HandleExpireStaleOrders)
 	// 启动服务器
 	return asynqServer.Run(mux)
 }

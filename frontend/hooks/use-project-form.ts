@@ -15,6 +15,8 @@ export interface ProjectFormData {
   riskLevel: number;
   distributionType: DistributionType;
   topicId?: number;
+  /** 付费领取单价,字符串,两位小数,"0" 表示免费 */
+  price: string;
 }
 
 export interface UseProjectFormOptions {
@@ -37,6 +39,7 @@ export function useProjectForm(options: UseProjectFormOptions) {
         allowSameIP: project.allow_same_ip,
         riskLevel: project.risk_level,
         distributionType: project.distribution_type,
+        price: project.price ?? '0',
       };
     }
 
@@ -49,6 +52,7 @@ export function useProjectForm(options: UseProjectFormOptions) {
       allowSameIP: false,
       riskLevel: DEFAULT_FORM_VALUES.RISK_LEVEL,
       distributionType: DistributionType.ONE_FOR_EACH,
+      price: '0',
     };
   }, [initialData, mode, project]);
 

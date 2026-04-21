@@ -38,6 +38,7 @@ import (
 	"github.com/linux-do/cdk/internal/apps/dashboard"
 	"github.com/linux-do/cdk/internal/apps/health"
 	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/apps/payment"
 	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/otel_trace"
@@ -114,11 +115,26 @@ func Serve() {
 				projectRouter.PUT("/:id", project.ProjectCreatorPermMiddleware(), project.UpdateProject)
 				projectRouter.DELETE("/:id", project.ProjectCreatorPermMiddleware(), project.DeleteProject)
 				projectRouter.GET("/:id/receivers", project.ProjectCreatorPermMiddleware(), project.ListProjectReceivers)
-				projectRouter.POST("/:id/receive", project.ReceiveProjectMiddleware(), project.ReceiveProject)
+				projectRouter.POST("/:id/receive", project.ReceiveProjectMiddleware(), payment.DispatchReceive)
 				projectRouter.POST("/:id/report", project.ReportProject)
 				projectRouter.GET("/received/chart", project.ListReceiveHistoryChart)
 				projectRouter.GET("/received", project.ListReceiveHistory)
 				projectRouter.GET("/:id", project.GetProject)
+			}
+
+			// User (支付配置等用户级设置)
+			userRouter := apiV1Router.Group("/users")
+			userRouter.Use(oauth.LoginRequired())
+			{
+				userRouter.GET("/payment-config", payment.GetPaymentConfig)
+				userRouter.PUT("/payment-config", payment.UpsertPaymentConfig)
+				userRouter.DELETE("/payment-config", payment.DeletePaymentConfig)
+			}
+
+			// Payment 回调(易支付 GET 请求,无 session)
+			paymentRouter := apiV1Router.Group("/payment")
+			{
+				paymentRouter.GET("/notify", payment.HandleNotifyHTTP)
 			}
 
 			// Tag

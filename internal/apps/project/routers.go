@@ -36,6 +36,7 @@ import (
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/utils"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
@@ -54,6 +55,7 @@ type ProjectRequest struct {
 	AllowSameIP       bool             `json:"allow_same_ip"`
 	RiskLevel         int8             `json:"risk_level" binding:"min=0,max=100"`
 	HideFromExplore   bool             `json:"hide_from_explore"`
+	Price             decimal.Decimal  `json:"price"`
 }
 type GetProjectResponseData struct {
 	Project             `json:",inline"` // 内嵌所有 Project 字段
@@ -163,6 +165,12 @@ func CreateProject(c *gin.Context) {
 	// init session
 	currentUser, _ := oauth.GetUserFromContext(c)
 
+	// validate price
+	if err := validateProjectPrice(c.Request.Context(), req.Price, req.DistributionType, currentUser.ID); err != nil {
+		c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
 	// init project
 	project := Project{
 		ID:                uuid.NewString(),
@@ -178,6 +186,7 @@ func CreateProject(c *gin.Context) {
 		CreatorID:         currentUser.ID,
 		IsCompleted:       false,
 		HideFromExplore:   req.HideFromExplore,
+		Price:             req.Price,
 	}
 
 	// create project
@@ -233,6 +242,12 @@ func UpdateProject(c *gin.Context) {
 	// load project
 	project, _ := GetProjectFromContext(c)
 
+	// validate price (复用创建者 ID + 原分发类型)
+	if err := validateProjectPrice(c.Request.Context(), req.Price, project.DistributionType, project.CreatorID); err != nil {
+		c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: err.Error()})
+		return
+	}
+
 	// init project
 	project.Name = req.Name
 	project.Description = req.Description
@@ -242,6 +257,7 @@ func UpdateProject(c *gin.Context) {
 	project.AllowSameIP = req.AllowSameIP
 	project.RiskLevel = req.RiskLevel
 	project.HideFromExplore = req.HideFromExplore
+	project.Price = req.Price
 
 	if project.DistributionType == DistributionTypeLottery {
 		// save project
@@ -407,96 +423,6 @@ func ListProjectReceivers(c *gin.Context) {
 
 	// response
 	c.JSON(http.StatusOK, ProjectResponse{Data: receivers})
-}
-
-// ReceiveProject
-// @Tags project
-// @Accept json
-// @Produce json
-// @Param id path string true "project id"
-// @Success 200 {object} ProjectResponse
-// @Router /api/v1/projects/{id}/receive [post]
-func ReceiveProject(c *gin.Context) {
-	// init
-	currentUser, _ := oauth.GetUserFromContext(c)
-
-	// load project
-	project := &Project{}
-	if err := project.Exact(db.DB(c.Request.Context()), c.Param("id"), true); err != nil {
-		c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
-		return
-	}
-
-	// prepare item
-	itemID, err := project.PrepareReceive(c.Request.Context(), currentUser.Username)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
-		return
-	}
-
-	// load item
-	item := &ProjectItem{}
-	if err := item.Exact(db.DB(c.Request.Context()), itemID); err != nil {
-		c.JSON(http.StatusNotFound, ProjectResponse{ErrorMsg: err.Error()})
-		return
-	}
-
-	// do receive
-	if err := db.DB(c.Request.Context()).Transaction(
-		func(tx *gorm.DB) error {
-			now := time.Now()
-			// save to db
-			item.ReceiverID = &currentUser.ID
-			item.ReceivedAt = &now
-			if err := tx.Save(item).Error; err != nil {
-				return err
-			}
-
-			// query remaining items
-			if hasStock, err := project.HasStock(c.Request.Context()); err != nil {
-				return err
-			} else if !hasStock {
-				// if remaining is 0, mark project as completed
-				project.IsCompleted = true
-				if err := tx.Save(project).Error; err != nil {
-					return err
-				}
-			}
-
-			// check for ip
-			if !project.AllowSameIP {
-				if err := db.Redis.SetNX(
-					c.Request.Context(),
-					project.SameIPCacheKey(c.ClientIP()),
-					c.ClientIP(),
-					project.EndTime.Sub(time.Now()),
-				).Err(); err != nil {
-					return err
-				}
-			}
-
-			// if lottery, remove user from redis set
-			if project.DistributionType == DistributionTypeLottery {
-				if err := db.Redis.HDel(c.Request.Context(), project.ItemsKey(), currentUser.Username).Err(); err != nil {
-					return err
-				}
-			}
-
-			return nil
-		},
-	); err != nil {
-		if project.DistributionType == DistributionTypeOneForEach {
-			// push items to redis
-			db.Redis.RPush(c.Request.Context(), project.ItemsKey(), itemID)
-		}
-		// response
-		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, ProjectResponse{
-		Data: map[string]interface{}{"itemContent": item.Content},
-	})
 }
 
 type ReportProjectRequestBody struct {
@@ -711,6 +637,7 @@ type ListProjectsResponseDataResult struct {
 	AllowSameIP       bool              `json:"allow_same_ip"`
 	RiskLevel         int8              `json:"risk_level"`
 	HideFromExplore   bool              `json:"hide_from_explore"`
+	Price             decimal.Decimal   `json:"price"`
 	Tags              utils.StringArray `json:"tags"`
 	CreatedAt         time.Time         `json:"created_at"`
 }

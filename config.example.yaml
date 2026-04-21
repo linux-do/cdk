@@ -99,6 +99,7 @@ schedule:
   user_badge_score_dispatch_interval_seconds: 1
   update_user_badges_scores_task_cron: "0 2 * * *"
   update_all_badges_task_cron: "0 1 * * *"
+  expire_stale_payment_orders_cron: "*/1 * * * *"  # 扫描超时未付款订单的频率
 
 # Worker
 worker:
@@ -111,3 +112,11 @@ linuxDo:
 # OpenTelemetry 配置
 otel:
   sampling_rate: 0.1  # 采样率 0.0-1.0
+
+# Payment (LDC Credit EasyPay-compatible)
+payment:
+  enabled: false
+  api_url: "https://credit.linux.do/epay"        # 易支付网关地址
+  notify_base_url: "https://your-domain.com"      # 本项目公网基址,用于拼接回调 URL
+  config_encryption_key: "<32-char-secret-key!!>" # AES-256 密钥,恰好 32 字节,首次部署后不可更改
+  order_expire_minutes: 10                        # 订单未付款超时时间（分钟）

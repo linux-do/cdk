@@ -115,6 +115,8 @@ func ReceiveProjectMiddleware() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, ProjectResponse{ErrorMsg: err.Error()})
 			return
 		}
+		// 将 project 注入 context 供 handler 复用,避免重复加载
+		SetProjectToContext(c, project)
 		// do next
 		c.Next()
 	}

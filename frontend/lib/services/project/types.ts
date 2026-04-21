@@ -37,6 +37,8 @@ export interface Project {
   allow_same_ip: boolean;
   /** 风险等级 */
   risk_level: number;
+  /** 领取单价,字符串形式的两位小数。"0" 或空表示免费 */
+  price?: string;
   /** 创建者ID */
   creator_id: number;
   /** 创建时间 */
@@ -71,6 +73,8 @@ export interface CreateProjectRequest {
   project_items: string[];
   /** L站话题ID（用于抽奖项目） */
   topic_id?: number;
+  /** 领取单价,字符串形式,两位小数,"0" 表示免费。仅 ONE_FOR_EACH 支持 >0 */
+  price?: string;
 }
 
 /**
@@ -97,6 +101,8 @@ export interface UpdateProjectRequest {
   project_items?: string[];
   /** 是否启用过滤（去重） */
   enable_filter?: boolean;
+  /** 领取单价,字符串形式,两位小数 */
+  price?: string;
 }
 
 /**
@@ -183,11 +189,21 @@ export interface ReceiveHistoryRequest {
 export type ReceiveHistoryResponse = BackendResponse<ReceiveHistoryData>;
 
 /**
- * 领取项目成功时的响应数据类型
+ * 领取项目响应数据:免费直接返回 itemContent;付费返回跳转信息
  */
 export interface ReceiveProjectData {
   /** 领取的内容 */
-  itemContent: string;
+  itemContent?: string;
+  /** 付费项目是否需要付款 */
+  require_payment?: boolean;
+  /** 付款跳转地址(付费项目返回) */
+  pay_url?: string;
+  /** 本地订单号 */
+  out_trade_no?: string;
+  /** 支付金额(字符串,两位小数) */
+  amount?: string;
+  /** 订单过期时间 */
+  expire_at?: string;
 }
 
 /**
@@ -266,6 +282,8 @@ export interface ProjectListItem {
   allow_same_ip: boolean;
   /** 风险等级 */
   risk_level: number;
+  /** 领取单价,字符串,两位小数 */
+  price?: string;
   /** 项目标签列表 */
   tags: string[] | null;
   /** 创建时间 */
