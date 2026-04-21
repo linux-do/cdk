@@ -3,7 +3,21 @@
 import {motion} from 'motion/react';
 import {useState} from 'react';
 import {StatCard, CardList, UserGrowthChart, ActivityChart, CategoryChart, DistributeModeChart} from '@/components/common/dashboard/';
-import {UsersIcon, DownloadIcon, FolderIcon, TrendingUpIcon, ChartPieIcon, ChartColumnBigIcon, ChartAreaIcon, ChartLineIcon, FlameIcon} from 'lucide-react';
+import {Tabs, TabsList, TabsTrigger} from '@/components/animate-ui/radix/tabs';
+import {
+  UsersIcon,
+  DownloadIcon,
+  FolderIcon,
+  TrendingUpIcon,
+  ChartColumnBigIcon,
+  ChartAreaIcon,
+  ChartLineIcon,
+  Flame,
+  TrendingUpDown,
+  ChartPie,
+  LayersPlus,
+  HandCoins,
+} from 'lucide-react';
 import {useDashboard} from '@/hooks/use-dashboard';
 import {useAuth} from '@/hooks/use-auth';
 
@@ -53,28 +67,28 @@ export function DashboardMain() {
     {
       title: '总用户数',
       value: data?.summary?.totalUsers,
-      icon: <UsersIcon className="h-4 w-4" />,
+      icon: <UsersIcon className='h-3 w-3 sm:h-3.5 sm:w-3.5' />,
       desc: `+${data?.summary?.newUsers || 0} 新用户`,
       descColor: 'text-green-600 dark:text-green-400',
     },
     {
       title: '总项目数',
       value: data?.summary?.totalProjects,
-      icon: <FolderIcon className="h-4 w-4" />,
+      icon: <FolderIcon className='h-3 w-3 sm:h-3.5 sm:w-3.5' />,
       desc: '项目总数',
       descColor: 'text-muted-foreground',
     },
     {
       title: '总领取数',
       value: data?.summary?.totalReceived,
-      icon: <DownloadIcon className="h-4 w-4" />,
+      icon: <DownloadIcon className='h-3 w-3 sm:h-3.5 sm:w-3.5' />,
       desc: '历史累计',
       descColor: 'text-muted-foreground',
     },
     {
       title: '最近领取数',
       value: data?.summary?.recentReceived,
-      icon: <TrendingUpIcon className="h-4 w-4" />,
+      icon: <TrendingUpIcon className='h-3 w-3 sm:h-3.5 sm:w-3.5' />,
       desc: `最近${range}天`,
       descColor: 'text-blue-600 dark:text-blue-400',
     },
@@ -86,19 +100,19 @@ export function DashboardMain() {
   const listCards = [
     {
       title: '热门项目',
-      icon: <FlameIcon className="h-4 w-4" />,
+      icon: <Flame className="h-4 w-4" />,
       list: data?.hotProjects || [],
       type: 'project' as const,
     },
     {
       title: '活跃创建者',
-      icon: <FlameIcon className="h-4 w-4" />,
+      icon: <LayersPlus className="h-4 w-4" />,
       list: data?.activeCreators || [],
       type: 'creator' as const,
     },
     {
       title: '活跃领取者',
-      icon: <DownloadIcon className="h-4 w-4" />,
+      icon: <HandCoins className="h-4 w-4" />,
       list: data?.activeReceivers || [],
       type: 'receiver' as const,
     },
@@ -125,48 +139,41 @@ export function DashboardMain() {
     },
   };
 
-
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-6"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
       {/* 问候语标题和时间选择器 */}
-      <motion.div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0" variants={itemVariants}>
+      <motion.div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end" variants={itemVariants}>
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            👋 {getTimeGreeting()}好，{user?.username || 'Linux Do User'}
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            {getTimeGreeting()}好，{user?.username || 'Linux Do User'}
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">平台数据概览和趋势分析</p>
         </div>
 
         {/* 时间范围选择器 */}
-        <div className="flex items-center gap-1 self-start sm:self-center">
-          <div className="flex items-center bg-muted/50 backdrop-blur-sm rounded-lg px-1.5 py-1 border border-border/50">
-            {timeRangeOptions.map((option) => (
-              <button
-                key={option.value}
-                className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                  range === option.value ?
-                    'bg-primary text-primary-foreground shadow-md' :
-                    'text-muted-foreground hover:text-foreground hover:bg-background/80'
-                }`}
-                onClick={() => setRange(option.value)}
-                title={`查看最近 ${option.value} 天的数据`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center self-start lg:self-end">
+          <Tabs
+            value={String(range)}
+            onValueChange={(value) => setRange(Number(value))}
+            variant="pill"
+          >
+            <TabsList>
+              {timeRangeOptions.map((option) => (
+                <TabsTrigger key={option.value} value={String(option.value)}>
+                  {option.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
       </motion.div>
-
-
       {/* 统计卡片 - 响应式网格 */}
       <motion.div
-        className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4"
+        className='grid grid-cols-2 gap-3 lg:grid-cols-4'
         variants={itemVariants}
       >
         {statsCards.map((card) => (
@@ -182,53 +189,47 @@ export function DashboardMain() {
       </motion.div>
 
       {/* 图表区域 - 1x3 网格布局 */}
-      <motion.div className="grid gap-6 lg:grid-cols-3" variants={itemVariants}>
+      <motion.div className="grid grid-cols-1 gap-4 lg:grid-cols-3" variants={itemVariants}>
         {/* 左侧标签页图表 - 2/3 宽度 */}
-        <div className="lg:col-span-2">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg h-full flex flex-col">
+        <div className="min-h-0 lg:col-span-2">
+          <div className="h-full min-h-0 rounded-[22px] bg-muted flex flex-col">
             {/* 标签页导航 */}
-            <div className="p-4 pb-2 flex-shrink-0">
-              <div className="flex items-center gap-2 border-b border-border/50">
-                <button
-                  className={`px-3 py-2 text-sm font-medium rounded-t-md transition-all duration-200 border-b-2 ${
-                    activeTab === 'activity' ?
-                      'border-primary text-foreground bg-background/50' :
-                      'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                  onClick={() => setActiveTab('activity')}
-                >
-                  <ChartLineIcon className="h-4 w-4 mr-1.5 inline" />
-                  领取趋势
-                </button>
-                <button
-                  className={`px-3 py-2 text-sm font-medium rounded-t-md transition-all duration-200 border-b-2 ${
-                    activeTab === 'users' ?
-                      'border-primary text-foreground bg-background/50' :
-                      'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                  onClick={() => setActiveTab('users')}
-                >
-                  <ChartAreaIcon className="h-4 w-4 mr-1.5 inline" />
-                  用户增长
-                </button>
-                <button
-                  className={`px-3 py-2 text-sm font-medium rounded-t-md transition-all duration-200 border-b-2 ${
-                    activeTab === 'tags' ?
-                      'border-primary text-foreground bg-background/50' :
-                      'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                  onClick={() => setActiveTab('tags')}
-                >
-                  <ChartColumnBigIcon className="h-4 w-4 mr-1.5 inline" />
-                  标签分布
-                </button>
+            <div className="flex flex-col gap-3 p-4 pb-2 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-3.5 w-3.5 items-center justify-center text-gray-500 dark:text-gray-400">
+                  <TrendingUpDown className="size-3.5" />
+                </div>
+                <div className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
+                  核心趋势
+                </div>
               </div>
+              <Tabs
+                value={activeTab}
+                onValueChange={(value) => setActiveTab(value as 'activity' | 'users' | 'tags')}
+                variant="fill"
+                className="self-start"
+              >
+                <TabsList>
+                  <TabsTrigger value="activity">
+                    <ChartLineIcon className="size-3.5" />
+                    领取趋势
+                  </TabsTrigger>
+                  <TabsTrigger value="users">
+                    <ChartAreaIcon className="size-3.5" />
+                    用户增长
+                  </TabsTrigger>
+                  <TabsTrigger value="tags">
+                    <ChartColumnBigIcon className="size-3.5" />
+                    标签分布
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
 
             {/* 标签页内容 */}
-            <div className="flex-1 transition-all duration-300 ease-in-out">
+            <div className="flex-1 min-h-0 p-4 pt-1.5">
               {activeTab === 'activity' && (
-                <div className="p-0 pt-2 h-full">
+                <div className="h-full min-h-0">
                   <ActivityChart
                     data={data?.activityData}
                     isLoading={isLoading}
@@ -239,7 +240,7 @@ export function DashboardMain() {
                 </div>
               )}
               {activeTab === 'users' && (
-                <div className="p-0 pt-2 h-full">
+                <div className="h-full min-h-0">
                   <UserGrowthChart
                     data={data?.userGrowth}
                     isLoading={isLoading}
@@ -250,7 +251,7 @@ export function DashboardMain() {
                 </div>
               )}
               {activeTab === 'tags' && (
-                <div className="p-0 pt-2 h-full">
+                <div className="h-full min-h-0">
                   <CategoryChart
                     data={data?.projectTags}
                     isLoading={isLoading}
@@ -264,32 +265,17 @@ export function DashboardMain() {
         </div>
 
         {/* 右侧饼图 - 1/3 宽度 */}
-        <div className="h-full">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg h-full flex flex-col">
-            {/* 饼图标题 */}
-            <div className="p-4 pb-2 flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="text-gray-600 dark:text-gray-400 w-4 h-4 flex items-center justify-center">
-                  <ChartPieIcon className="h-4 w-4" />
-                </div>
-                <h3 className="text-xs font-medium text-gray-600 dark:text-gray-400">分发模式统计</h3>
-              </div>
-            </div>
-            {/* 饼图内容 */}
-            <div className="flex-1 p-4 pt-2">
-              <DistributeModeChart
-                data={data?.distributeModes}
-                isLoading={isLoading}
-                icon={<ChartPieIcon className="h-4 w-4" />}
-                hideHeader={true}
-              />
-            </div>
-          </div>
+        <div className="h-full min-h-0 lg:col-span-1">
+          <DistributeModeChart
+            data={data?.distributeModes}
+            isLoading={isLoading}
+            icon={<ChartPie className="h-4 w-4" />}
+          />
         </div>
       </motion.div>
 
       {/* 列表卡片区 - 热门项目、活跃创建者、活跃领取者 */}
-      <motion.div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3" variants={itemVariants}>
+      <motion.div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" variants={itemVariants}>
         {listCards.map((card) => (
           <CardList
             key={card.title}

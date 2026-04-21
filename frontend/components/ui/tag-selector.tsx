@@ -187,16 +187,17 @@ function TagSelector({
           <PopoverTrigger asChild>
             <Button
               data-slot="tag-selector-trigger"
-              variant="outline"
+              variant="ghost"
               role="combobox"
               aria-expanded={isOpen}
               className={cn(
                 isMobile ? 'w-full mb-2' : 'flex-1',
-                'justify-between text-sm text-muted-foreground font-normal',
+                'h-9 rounded-xl border-none bg-muted/55 px-3 font-normal text-muted-foreground shadow-none hover:bg-muted/70 hover:text-muted-foreground dark:bg-white/[0.04] dark:hover:bg-white/[0.06]',
+                'justify-between',
               )}
               onClick={() => setIsOpen(true)}
             >
-              <span className="truncate">
+              <span className={cn('truncate', searchValue ? 'text-sm text-foreground' : 'text-xs text-muted-foreground')}>
                 {searchValue ? searchValue : `${placeholder}（${selectedTags.length}/${maxTags}）`}
               </span>
               <PlusCircle className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -204,17 +205,17 @@ function TagSelector({
           </PopoverTrigger>
           <PopoverContent
             data-slot="tag-selector-content"
-            className="w-[300px] p-0"
+            className="w-[300px] rounded-2xl border bg-popover p-0 shadow-none"
             align="start"
           >
             <div className="flex flex-col">
               <div
                 data-slot="tag-selector-search"
-                className="flex items-center gap-2 border-b p-3"
+                className="m-3 flex items-center gap-2 rounded-xl bg-muted/55 px-3 py-2 dark:bg-white/[0.04]"
               >
                 <SearchIcon className="h-4 w-4 shrink-0 opacity-50" />
                 <input
-                  className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground"
+                  className="flex-1 border-none bg-transparent text-sm outline-none placeholder:text-xs placeholder:text-muted-foreground"
                   placeholder={`搜索或创建标签(16字符以内)`}
                   value={searchValue}
                   onChange={handleInputChange}
@@ -265,10 +266,10 @@ function TagSelector({
                         }}
                       >
                         {item.type === 'empty' && (
-                          <div className="flex flex-col items-center justify-center text-center text-sm px-2 h-full py-8">
-                            <p>{item.content}</p>
+                          <div className="flex h-full flex-col items-center justify-center px-2 py-8 text-center">
+                            <p className="text-xs">{item.content}</p>
                             {item.id === 'empty' && (
-                              <p className="text-muted-foreground mt-1">输入内容创建新标签</p>
+                              <p className="mt-1 text-xs text-muted-foreground">输入内容创建新标签</p>
                             )}
                           </div>
                         )}
@@ -281,7 +282,7 @@ function TagSelector({
 
                         {item.type === 'create' && (
                           <div
-                            className="flex items-center gap-2 rounded-sm px-3 text-sm cursor-pointer hover:bg-accent mx-1 h-full mt-2"
+                            className="mx-1 mt-2 flex h-full cursor-pointer items-center gap-2 rounded-xl border-none px-3 text-sm hover:bg-accent"
                             onClick={() => {
                               addTag(item.content);
                               setIsOpen(false);
@@ -294,7 +295,7 @@ function TagSelector({
 
                         {item.type === 'tag' && (
                           <div
-                            className="flex items-center justify-between rounded-sm px-3 text-sm cursor-pointer hover:bg-accent mx-1 h-full"
+                            className="mx-1 flex h-full cursor-pointer items-center justify-between rounded-xl border-none px-3 text-sm hover:bg-accent"
                             onClick={() => addTag(item.content)}
                           >
                             <span>{item.content}</span>
@@ -307,17 +308,6 @@ function TagSelector({
                     );
                   })}
                 </div>
-              </div>
-
-              <div className="flex items-center justify-center gap-2 p-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setIsOpen(false)}
-                >
-                  完成
-                </Button>
               </div>
             </div>
           </PopoverContent>
@@ -333,7 +323,7 @@ function TagSelector({
             <Badge
               key={tag}
               variant="secondary"
-              className="flex items-center gap-1 pr-1"
+              className="flex items-center gap-1 border-none pr-1 shadow-none"
             >
               {tag}
               <Button

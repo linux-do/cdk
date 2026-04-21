@@ -48,7 +48,7 @@ const StatCard = ({title, value, suffix = ''}: {title: string; value: number; su
 
   return (
     <motion.div
-      className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+      className="rounded-lg bg-muted p-3"
       variants={{
         hidden: {opacity: 0, y: 20, scale: 0.95},
         visible: {
@@ -59,7 +59,9 @@ const StatCard = ({title, value, suffix = ''}: {title: string; value: number; su
         },
       }}
     >
-      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{title}</div>
+      <div className="mb-1 text-xs text-gray-600 dark:text-gray-400">
+        {title}
+      </div>
       <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
         <CountingNumber number={value} decimalPlaces={decimalPlaces}/>{suffix}
       </div>
@@ -162,14 +164,14 @@ export function DataChart({data, selectedDay, onRangeChange}: DataChartProps) {
       animate="visible"
       variants={containerVariants}
     >
-      <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-3" variants={containerVariants}>
+      <motion.div className="grid grid-cols-2 gap-3 md:grid-cols-4" variants={containerVariants}>
         <StatCard title="总计" value={stats.total} />
         <StatCard title="今日" value={stats.today} />
         <StatCard title="本月" value={stats.thisMonth} />
         <StatCard title="日均" value={stats.avgDaily} />
       </motion.div>
 
-      <motion.div variants={chartVariants} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <motion.div variants={chartVariants} className="rounded-lg bg-muted p-4">
         <div className="mb-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold">
@@ -186,7 +188,7 @@ export function DataChart({data, selectedDay, onRangeChange}: DataChartProps) {
                   onRangeChange(days);
                 }
               }}>
-                <SelectTrigger className="flex w-24 max-h-[32px] text-xs">
+                <SelectTrigger className="flex w-24 max-h-[32px] bg-background text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="w-24">

@@ -8,6 +8,7 @@ import {useBulkImport} from '@/hooks/use-bulk-import';
 import {useFileUpload} from '@/hooks/use-file-upload';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
+import {ScrollArea} from '@/components/ui/scroll-area';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
 import {validateProjectForm, validatePriceString, CURRENCY_LABEL} from '@/components/common/project';
@@ -214,27 +215,52 @@ export function EditDialog({
         )}
       </DialogTrigger>
       <DialogContent
-        className={`${isMobile ? 'max-w-[95vw] max-h-[90vh]' : 'max-w-3xl max-h-[90vh]'} overflow-hidden`}
+        showCloseButton={false}
+        className={`${isMobile ? 'max-w-[92vw] max-h-[82vh]' : 'max-w-2xl max-h-[78vh]'} overflow-hidden rounded-[24px] border-none bg-background p-0 shadow-none`}
       >
-        <DialogHeader>
-          <DialogTitle>
-            {updateSuccess ? '项目更新成功' : '编辑项目'}
-          </DialogTitle>
-          <DialogDescription>
-            {updateSuccess ? '您的项目已更新成功' : '修改项目信息和设置'}
-          </DialogDescription>
+        <DialogHeader className={`gap-2 px-6 pt-4 ${isMobile ? 'text-left' : ''}`}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 space-y-0">
+              <DialogTitle className={`text-lg font-semibold tracking-tight ${isMobile ? 'text-left' : ''}`}>
+                {updateSuccess ? '项目更新成功' : '编辑项目'}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                {updateSuccess ? '您的项目已更新成功' : '修改项目信息和设置'}
+              </DialogDescription>
+            </div>
+
+            {!updateSuccess && (
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                variant="pill"
+                className="w-full sm:w-auto"
+              >
+                <TabsList className={`w-full sm:w-fit ${project.distribution_type === DistributionType.LOTTERY ? 'grid grid-cols-1' : 'grid grid-cols-2'}`}>
+                  <TabsTrigger value="basic" className="flex-1 sm:flex-none">基本设置</TabsTrigger>
+                  {project.distribution_type !== DistributionType.LOTTERY && (
+                    <TabsTrigger value="content" className="flex-1 sm:flex-none">追加内容</TabsTrigger>
+                  )}
+                </TabsList>
+              </Tabs>
+            )}
+          </div>
         </DialogHeader>
 
+        <div className="mx-6 h-px bg-black/6 dark:bg-white/[0.06]" />
+
         {updateSuccess ? (
-          <div className="space-y-6 py-6">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center gap-3 text-green-600">
-                <CheckCircle className="h-8 w-8" />
-                <div>
-                  <h3 className="text-lg font-semibold">项目更新成功</h3>
-                  <p className="text-sm text-muted-foreground">
+          <div className="px-6">
+            <div className="my-4">
+              <div className="flex items-center justify-center">
+                <div className="flex items-center gap-3 text-green-600">
+                  <CheckCircle className="h-8 w-8" />
+                  <div>
+                    <h3 className="text-lg font-semibold">项目更新成功</h3>
+                    <p className="text-sm text-muted-foreground">
                     项目名称：{formData.name}
-                  </p>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -243,71 +269,78 @@ export function EditDialog({
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full"
+            className="flex min-h-0 w-full flex-1 flex-col"
           >
-            <TabsList className={`grid w-full ${project.distribution_type === DistributionType.LOTTERY ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              <TabsTrigger value="basic">基本设置</TabsTrigger>
-              {project.distribution_type !== DistributionType.LOTTERY && (
-                <TabsTrigger value="content">追加内容</TabsTrigger>
-              )}
-            </TabsList>
-
-            <TabsContents className="mb-1 -mt-2 rounded-sm h-full bg-background">
+            <TabsContents
+              className="min-h-0 flex-1 bg-background"
+              transition={{duration: 0}}
+            >
               <TabsContent
                 value="basic"
-                className={`space-y-6 py-6 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
+                transition={{duration: 0}}
+                className="min-h-0 flex-1"
               >
-                <ProjectBasicForm
-                  formData={formData}
-                  onFormDataChange={setFormData}
-                  tags={tags}
-                  onTagsChange={setTags}
-                  availableTags={availableTags}
-                  isMobile={isMobile}
-                />
+                <ScrollArea className={`${isMobile ? 'h-[58vh]' : 'h-[52vh]'}`}>
+                  <div className="space-y-6 px-6 pt-3 pb-6">
+                    <ProjectBasicForm
+                      formData={formData}
+                      onFormDataChange={setFormData}
+                      tags={tags}
+                      onTagsChange={setTags}
+                      availableTags={availableTags}
+                      isMobile={isMobile}
+                    />
+                  </div>
+                </ScrollArea>
               </TabsContent>
 
               {project.distribution_type !== DistributionType.LOTTERY && (
                 <TabsContent
                   value="content"
-                  className={`space-y-6 py-6 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
+                  transition={{duration: 0}}
+                  className="min-h-0 flex-1"
                 >
-                  <BulkImportSection
-                    items={newItems}
-                    bulkContent={bulkContent}
-                    setBulkContent={setBulkContent}
-                    allowDuplicates={allowDuplicates}
-                    setAllowDuplicates={setAllowDuplicates}
-                    onBulkImport={handleBulkImport}
-                    onRemoveItem={removeItem}
-                    onClearItems={clearNewItems}
-                    onClearBulkContent={() => setBulkContent('')}
-                    fileUploadOpen={fileUploadOpen}
-                    onFileUploadOpenChange={setFileUploadOpen}
-                    onFileUpload={handleFileUpload}
-                    isMobile={isMobile}
-                    mode="edit"
-                    totalExistingItems={project.total_items}
-                    confirmationOpen={confirmationOpen}
-                    onConfirmationOpenChange={setConfirmationOpen}
-                    pendingFile={pendingFile}
-                    onConfirmUpload={handleConfirmUpload}
-                    onCancelUpload={handleCancelUpload}
-                  />
+                  <ScrollArea className={`${isMobile ? 'h-[58vh]' : 'h-[52vh]'}`}>
+                    <div className="space-y-6 px-6 pt-3 pb-6">
+                      <BulkImportSection
+                        items={newItems}
+                        bulkContent={bulkContent}
+                        setBulkContent={setBulkContent}
+                        allowDuplicates={allowDuplicates}
+                        setAllowDuplicates={setAllowDuplicates}
+                        onBulkImport={handleBulkImport}
+                        onRemoveItem={removeItem}
+                        onClearItems={clearNewItems}
+                        onClearBulkContent={() => setBulkContent('')}
+                        fileUploadOpen={fileUploadOpen}
+                        onFileUploadOpenChange={setFileUploadOpen}
+                        onFileUpload={handleFileUpload}
+                        isMobile={isMobile}
+                        mode="edit"
+                        totalExistingItems={project.total_items}
+                        confirmationOpen={confirmationOpen}
+                        onConfirmationOpenChange={setConfirmationOpen}
+                        pendingFile={pendingFile}
+                        onConfirmUpload={handleConfirmUpload}
+                        onCancelUpload={handleCancelUpload}
+                      />
+                    </div>
+                  </ScrollArea>
                 </TabsContent>
               )}
             </TabsContents>
           </Tabs>
         )}
 
-        <DialogFooter className="flex-col gap-2">
+        <DialogFooter className="gap-2 -mt-4 px-4 py-4 sm:justify-end">
           {updateSuccess ? (
             <Button
               onClick={() => {
                 setOpen(false);
                 resetForm();
               }}
-              className="w-full"
+              size="sm"
+              className="min-w-20"
             >
               关闭
             </Button>
@@ -315,7 +348,8 @@ export function EditDialog({
             <Button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full"
+              size="sm"
+              className="min-w-20"
             >
               {loading ? '更新中...' : '更新项目'}
             </Button>

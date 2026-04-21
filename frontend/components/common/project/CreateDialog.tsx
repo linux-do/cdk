@@ -10,6 +10,7 @@ import {toast} from 'sonner';
 import {Label} from '@/components/ui/label';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
+import {ScrollArea} from '@/components/ui/scroll-area';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
 import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
@@ -17,7 +18,7 @@ import {validateProjectForm, validatePriceString, CURRENCY_LABEL} from '@/compon
 import {ProjectBasicForm} from '@/components/common/project/ProjectBasicForm';
 import {BulkImportSection} from '@/components/common/project/BulkImportSection';
 import {DistributionModeSelect} from '@/components/common/project/DistributionModeSelect';
-import {Plus, Copy, ExternalLink, CheckCircle, HelpCircle} from 'lucide-react';
+import {Plus, Copy, ExternalLink, HelpCircle} from 'lucide-react';
 import services from '@/lib/services';
 import {copyToClipboard} from '@/lib/utils';
 import {DistributionType, ProjectListItem} from '@/lib/services/project/types';
@@ -256,43 +257,60 @@ export function CreateDialog({
         )}
       </DialogTrigger>
       <DialogContent
-        className={`${isMobile ? 'max-w-[95vw] max-h-[90vh]' : 'max-w-3xl max-h-[90vh]'} overflow-hidden`}
+        showCloseButton={false}
+        className={`${isMobile ? 'max-w-[92vw] max-h-[82vh]' : 'max-w-2xl max-h-[78vh]'} overflow-hidden rounded-[24px] border-none bg-background p-0 shadow-none`}
       >
-        <DialogHeader className={isMobile ? 'text-left' : ''}>
-          <DialogTitle className={isMobile ? 'text-left' : ''}>
-            {createSuccess ? '项目创建成功' : '创建新项目'}
-          </DialogTitle>
-          <DialogDescription>
-            {createSuccess ?
-              '项目已准备就绪，可以开始分发啦' :
-              '创建一个新的项目来管理和分发您的内容'}
-          </DialogDescription>
-        </DialogHeader>
-
-        {createSuccess && createdProject ? (
-          <div className="space-y-6 py-6">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center gap-3 text-green-600">
-                <CheckCircle className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} flex-shrink-0`} />
-                <div className="flex flex-col text-left">
-                  <h3 className="text-lg font-semibold">{createdProject.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    您可以复制下方链接，分享您分发的内容
-                  </p>
-                </div>
-              </div>
+        <DialogHeader className={`gap-2 px-6 pt-4 ${isMobile ? 'text-left' : ''}`}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 space-y-0">
+              <DialogTitle className={`text-lg font-semibold tracking-tight ${isMobile ? 'text-left' : ''}`}>
+                {createSuccess ? '项目创建成功' : '新建项目'}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                {createSuccess ?
+                  '您可以复制下方链接，分享您分发的内容' :
+                  '创建一个新的项目来管理和分发您的内容'}
+              </DialogDescription>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex flex-col">
-                <Label className="text-sm font-medium">项目领取链接</Label>
-              </div>
+            {!createSuccess && (
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                variant="pill"
+                className="w-full sm:w-auto"
+              >
+                <TabsList
+                  className="w-full sm:w-fit"
+                >
+                  <TabsTrigger
+                    value="basic"
+                    className="flex-1 sm:flex-none"
+                  >
+                    基本设置
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="distribution"
+                    className="flex-1 sm:flex-none"
+                  >
+                    分发内容
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+          </div>
+        </DialogHeader>
 
+        <div className="h-px mx-6 w-full bg-black/6 dark:bg-white/[0.06]" />
+
+        {createSuccess && createdProject ? (
+          <div className="px-6">
+            <div className="my-4">
               <div className="flex gap-2">
                 <Input
                   value={getReceiveLink(createdProject.id)}
                   readOnly
-                  className="bg-gray-100 border-none text-sm h-8 flex-1"
+                  className="h-8 flex-1 border-none bg-muted text-sm"
                 />
                 <Button
                   size="sm"
@@ -322,125 +340,134 @@ export function CreateDialog({
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full"
+            className="flex min-h-0 w-full flex-1 flex-col"
           >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="basic">基本设置</TabsTrigger>
-              <TabsTrigger value="distribution">分发内容</TabsTrigger>
-            </TabsList>
-
-            <TabsContents className="mb-1 -mt-2 rounded-sm h-full bg-background">
+            <TabsContents
+              className="min-h-0 flex-1 bg-background"
+              transition={{duration: 0}}
+            >
               <TabsContent
                 value="basic"
-                className={`space-y-6 py-6 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
+                transition={{duration: 0}}
+                className="min-h-0 flex-1"
               >
-                <ProjectBasicForm
-                  formData={formData}
-                  onFormDataChange={setFormData}
-                  tags={tags}
-                  onTagsChange={setTags}
-                  availableTags={availableTags}
-                  isMobile={isMobile}
-                />
+                <ScrollArea className={`${isMobile ? 'h-[58vh]' : 'h-[52vh]'}`}>
+                  <div className="space-y-6 px-6 pt-3 pb-6">
+                    <ProjectBasicForm
+                      formData={formData}
+                      onFormDataChange={setFormData}
+                      tags={tags}
+                      onTagsChange={setTags}
+                      availableTags={availableTags}
+                      isMobile={isMobile}
+                    />
+                  </div>
+                </ScrollArea>
               </TabsContent>
 
               <TabsContent
                 value="distribution"
-                className={`space-y-6 py-6 ${isMobile ? 'max-h-[65vh]' : 'max-h-[60vh]'} overflow-y-auto`}
+                transition={{duration: 0}}
+                className="min-h-0 flex-1"
               >
-                <DistributionModeSelect
-                  distributionType={formData.distributionType}
-                  onDistributionTypeChange={(type: DistributionType) =>
-                    setFormData({...formData, distributionType: type})
-                  }
-                />
-
-                {formData.distributionType === DistributionType.LOTTERY && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="topicId">
-                        Linux Do 话题 ID <span className="text-red-500">*</span>
-                      </Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>可以直接粘贴话题链接，系统会自动提取ID</p>
-                            <p>需要添加&ldquo;抽奖&rdquo;标签且抽奖已结束的话题</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <Input
-                      id="topicId"
-                      type="text"
-                      placeholder="填写社区抽奖话题的 ID 或粘贴话题链接"
-                      value={formData.topicId?.toString() || ''}
-                      onChange={(e) => {
-                        let value = e.target.value.trim();
-
-                        const urlMatch = value.match(/linux\.do\/t(?:\/topic)?\/(\d+)(?:[\/\?\#]|$)/i);
-                        if (urlMatch) {
-                          value = urlMatch[1];
-                        }
-
-                        const numValue = value ? parseInt(value) : NaN;
-                        setFormData({...formData, topicId: (!isNaN(numValue) && numValue > 0) ? numValue : undefined});
-                      }}
+                <ScrollArea className={`${isMobile ? 'h-[58vh]' : 'h-[52vh]'}`}>
+                  <div className="space-y-6 px-6 pt-3 pb-6">
+                    <DistributionModeSelect
+                      distributionType={formData.distributionType}
+                      onDistributionTypeChange={(type: DistributionType) =>
+                        setFormData({...formData, distributionType: type})
+                      }
                     />
-                  </div>
-                )}
 
-                {(formData.distributionType === DistributionType.ONE_FOR_EACH ||
-                  formData.distributionType === DistributionType.LOTTERY) ? (
-                  <BulkImportSection
-                    items={items}
-                    bulkContent={bulkContent}
-                    setBulkContent={setBulkContent}
-                    allowDuplicates={allowDuplicates}
-                    setAllowDuplicates={setAllowDuplicates}
-                    onBulkImport={handleBulkImport}
-                    onRemoveItem={removeItem}
-                    onClearItems={() => setItems([])}
-                    onClearBulkContent={() => setBulkContent('')}
-                    fileUploadOpen={fileUploadOpen}
-                    onFileUploadOpenChange={setFileUploadOpen}
-                    onFileUpload={handleFileUpload}
-                    isMobile={isMobile}
-                    mode="create"
-                    confirmationOpen={confirmationOpen}
-                    onConfirmationOpenChange={setConfirmationOpen}
-                    pendingFile={pendingFile}
-                    onConfirmUpload={handleConfirmUpload}
-                    onCancelUpload={handleCancelUpload}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <div className="text-lg font-medium text-muted-foreground mb-2">
-                        敬请期待
+                    {formData.distributionType === DistributionType.LOTTERY && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="topicId">
+                            Linux Do 话题 ID <span className="text-red-500">*</span>
+                          </Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>可以直接粘贴话题链接，系统会自动提取ID</p>
+                                <p>需要添加&ldquo;抽奖&rdquo;标签且抽奖已结束的话题</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <Input
+                          id="topicId"
+                          type="text"
+                          placeholder="填写社区抽奖话题的 ID 或粘贴话题链接"
+                          value={formData.topicId?.toString() || ''}
+                          onChange={(e) => {
+                            let value = e.target.value.trim();
+
+                            const urlMatch = value.match(/linux\.do\/t(?:\/topic)?\/(\d+)(?:[\/\?\#]|$)/i);
+                            if (urlMatch) {
+                              value = urlMatch[1];
+                            }
+
+                            const numValue = value ? parseInt(value) : NaN;
+                            setFormData({...formData, topicId: (!isNaN(numValue) && numValue > 0) ? numValue : undefined});
+                          }}
+                        />
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        接龙申请功能正在开发中
-                      </p>
-                    </div>
+                    )}
+
+                    {(formData.distributionType === DistributionType.ONE_FOR_EACH ||
+                      formData.distributionType === DistributionType.LOTTERY) ? (
+                      <BulkImportSection
+                        items={items}
+                        bulkContent={bulkContent}
+                        setBulkContent={setBulkContent}
+                        allowDuplicates={allowDuplicates}
+                        setAllowDuplicates={setAllowDuplicates}
+                        onBulkImport={handleBulkImport}
+                        onRemoveItem={removeItem}
+                        onClearItems={() => setItems([])}
+                        onClearBulkContent={() => setBulkContent('')}
+                        fileUploadOpen={fileUploadOpen}
+                        onFileUploadOpenChange={setFileUploadOpen}
+                        onFileUpload={handleFileUpload}
+                        isMobile={isMobile}
+                        mode="create"
+                        confirmationOpen={confirmationOpen}
+                        onConfirmationOpenChange={setConfirmationOpen}
+                        pendingFile={pendingFile}
+                        onConfirmUpload={handleConfirmUpload}
+                        onCancelUpload={handleCancelUpload}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                          <div className="mb-2 text-lg font-medium text-muted-foreground">
+                            敬请期待
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            接龙申请功能正在开发中
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </ScrollArea>
               </TabsContent>
             </TabsContents>
           </Tabs>
         )}
 
-        <DialogFooter className="flex-col gap-2">
+        <DialogFooter className="gap-2 -mt-4 px-4 py-4 sm:justify-end">
           {createSuccess ? (
             <Button
               onClick={() => {
                 setOpen(false);
                 resetForm();
               }}
-              className="w-full"
+              size="sm"
+              className="min-w-16"
             >
               关闭
             </Button>
@@ -448,7 +475,8 @@ export function CreateDialog({
             <Button
               onClick={handleSubmit}
               disabled={loading || formData.distributionType === DistributionType.INVITE}
-              className="w-full"
+              size="sm"
+              className="min-w-16"
             >
               {loading ? '创建中...' :
                formData.distributionType === DistributionType.INVITE ? '开发中' :

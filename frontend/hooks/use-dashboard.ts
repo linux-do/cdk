@@ -26,7 +26,6 @@ interface UseDashboardReturn {
 // 全局数据缓存 - 所有组件实例共享
 const dataCache = new Map<number, CachedData>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存过期时间
-
 /**
  * 检查缓存是否有效
  * @param cachedData - 缓存的数据

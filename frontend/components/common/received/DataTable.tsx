@@ -79,7 +79,7 @@ const Pagination = ({
 
   return (
     <div className="flex items-center justify-between px-2">
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-muted-foreground">
         {totalItems === 0 ? (
           '无数据'
         ) : (
@@ -197,7 +197,7 @@ export function DataTable({data, currentPage, totalItems, pageSize, onPageChange
         <h2 className="text-base font-semibold">
           详细记录
         </h2>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="搜索项目名称或创建者..."
@@ -262,7 +262,7 @@ export function DataTable({data, currentPage, totalItems, pageSize, onPageChange
                   </TableCell>
                   <TableCell className="text-xs font-mono text-gray-600 dark:text-gray-400">
                     <div className="max-w-[240px] lg:max-w-[400px] xl:max-w-[600px]">
-                      <div className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-sm flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                      <div className="group flex cursor-pointer items-center justify-between rounded-sm bg-muted px-2 py-1 text-xs transition-colors hover:bg-muted/80"
                         onDoubleClick={() => copyToClipboard(item.content)}
                         title={`${item.content} - 双击复制内容`}
                       >
@@ -273,7 +273,7 @@ export function DataTable({data, currentPage, totalItems, pageSize, onPageChange
                           variant="ghost"
                           size="sm"
                           onClick={() => copyToClipboard(item.content)}
-                          className={`h-5 w-5 p-0 ml-2 transition-opacity duration-200 hover:bg-gray-300 dark:hover:bg-gray-600 ${
+                          className={`ml-2 h-5 w-5 p-0 transition-opacity duration-200 hover:bg-muted/80 ${
                             isMobile ?
                               'opacity-100' :
                               'opacity-0 group-hover:opacity-100'

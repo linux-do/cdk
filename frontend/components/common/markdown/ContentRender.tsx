@@ -114,7 +114,7 @@ const markdownComponents: Components = {
     }
 
     return (
-      <code className="bg-gray-100 dark:bg-gray-800 text-pink-600 dark:text-pink-400 px-2 py-1 rounded-md text-sm font-mono border border-gray-200 dark:border-gray-700 font-medium">
+      <code className="rounded-md border border-border bg-muted px-2 py-1 text-sm font-mono font-medium text-pink-600 dark:text-pink-400">
         {children}
       </code>
     );
@@ -174,7 +174,7 @@ const markdownComponents: Components = {
     return (
       <div className="relative group mb-6">
         {/* 代码块头部：包含语言标识和复制按钮 */}
-        <div className="flex items-center justify-between bg-gray-200 dark:bg-gray-800 px-4 py-2 rounded-t-lg border border-gray-300 dark:border-gray-600 border-b-0">
+        <div className="flex items-center justify-between rounded-t-lg border border-border border-b-0 bg-muted px-4 py-2">
           <div className="flex items-center gap-2">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -203,7 +203,7 @@ const markdownComponents: Components = {
                 console.error('复制失败:', error);
               }
             }}
-            className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 rounded transition-colors duration-200 text-gray-700 dark:text-gray-300"
+            className="flex items-center gap-1.5 rounded bg-muted px-2 py-1 text-xs text-muted-foreground transition-colors duration-200 hover:bg-muted/80"
             title="复制代码"
           >
             <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -216,7 +216,7 @@ const markdownComponents: Components = {
 
         {/* 代码内容区域：支持自动换行和语法高亮 */}
         <pre
-          className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 border-t-0 p-4 rounded-b-lg overflow-x-auto text-sm font-mono text-gray-800 dark:text-gray-200 leading-relaxed break-all"
+          className="rounded-b-lg border border-border border-t-0 bg-muted p-4 overflow-x-auto break-all text-sm font-mono leading-relaxed text-foreground"
           style={{
             wordWrap: 'break-word',
             overflowWrap: 'anywhere',
@@ -273,7 +273,7 @@ const markdownComponents: Components = {
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             const errorDiv = document.createElement('div');
-            errorDiv.className = 'bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center text-gray-500 dark:text-gray-400 my-6';
+            errorDiv.className = 'bg-muted border border-border rounded-lg p-4 text-center text-muted-foreground my-6';
             errorDiv.innerHTML = `
               <svg class="w-12 h-12 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
@@ -294,7 +294,7 @@ const markdownComponents: Components = {
   },
   table: ({children}) => (
     <div className="overflow-x-auto mb-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-      <table className="min-w-full border-collapse bg-white dark:bg-gray-800">
+      <table className="min-w-full border-collapse bg-muted">
         {children}
       </table>
     </div>
@@ -305,12 +305,12 @@ const markdownComponents: Components = {
     </thead>
   ),
   tbody: ({children}) => (
-    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+    <tbody className="bg-muted divide-y divide-border">
       {children}
     </tbody>
   ),
   tr: ({children}) => (
-    <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-200">
+    <tr className="transition-colors duration-200 hover:bg-muted/80">
       {children}
     </tr>
   ),

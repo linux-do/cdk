@@ -10,15 +10,27 @@ import {
   MotionHighlightItem,
 } from '@/components/animate-ui/effects/motion-highlight';
 
-type TabsProps = React.ComponentProps<typeof TabsPrimitive.Root>;
+type TabsVariant = 'default' | 'pill' | 'fill';
 
-function Tabs({className, ...props}: TabsProps) {
+type TabsContextValue = {
+  variant: TabsVariant;
+};
+
+const TabsContext = React.createContext<TabsContextValue>({variant: 'default'});
+
+type TabsProps = React.ComponentProps<typeof TabsPrimitive.Root> & {
+  variant?: TabsVariant;
+};
+
+function Tabs({className, variant = 'default', ...props}: TabsProps) {
   return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      className={cn('flex flex-col gap-2', className)}
-      {...props}
-    />
+    <TabsContext.Provider value={{variant}}>
+      <TabsPrimitive.Root
+        data-slot="tabs"
+        className={cn('flex flex-col gap-2', className)}
+        {...props}
+      />
+    </TabsContext.Provider>
   );
 }
 
@@ -39,6 +51,7 @@ function TabsList({
   },
   ...props
 }: TabsListProps) {
+  const {variant} = React.useContext(TabsContext);
   const localRef = React.useRef<HTMLDivElement | null>(null);
   React.useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
 
@@ -76,7 +89,14 @@ function TabsList({
   return (
     <MotionHighlight
       controlledItems
-      className={cn('rounded-sm bg-background shadow-sm', activeClassName)}
+      className={cn(
+          variant === 'fill' ?
+            'rounded-none bg-transparent shadow-none' :
+          variant === 'pill' ?
+            'rounded-full bg-white shadow-none dark:bg-white/[0.08]' :
+            'rounded-sm bg-background shadow-sm',
+          activeClassName,
+      )}
       value={activeValue}
       transition={transition}
     >
@@ -84,7 +104,11 @@ function TabsList({
         ref={localRef}
         data-slot="tabs-list"
         className={cn(
-            'bg-muted text-muted-foreground inline-flex h-10 w-fit items-center justify-center rounded-lg p-[4px]',
+            variant === 'fill' ?
+              'inline-flex h-auto w-fit items-center justify-center gap-3 bg-transparent p-0 text-muted-foreground' :
+            variant === 'pill' ?
+              'inline-flex h-auto w-fit items-center justify-center gap-1 rounded-full bg-muted p-1 text-muted-foreground' :
+              'bg-muted text-muted-foreground inline-flex h-10 w-fit items-center justify-center rounded-lg p-[4px]',
             className,
         )}
         {...props}
@@ -98,12 +122,17 @@ function TabsList({
 type TabsTriggerProps = React.ComponentProps<typeof TabsPrimitive.Trigger>;
 
 function TabsTrigger({className, value, ...props}: TabsTriggerProps) {
+  const {variant} = React.useContext(TabsContext);
   return (
     <MotionHighlightItem value={value} className="size-full">
       <TabsPrimitive.Trigger
         data-slot="tabs-trigger"
         className={cn(
-            'inline-flex cursor-pointer items-center size-full justify-center whitespace-nowrap rounded-sm px-2 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-foreground z-[1]',
+            variant === 'fill' ?
+              'z-[1] inline-flex size-full cursor-pointer items-center justify-center gap-1 whitespace-nowrap border-b border-transparent px-0 py-0.5 text-xs font-medium text-muted-foreground ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-foreground/25 data-[state=active]:text-foreground' :
+            variant === 'pill' ?
+              'z-[1] inline-flex size-full cursor-pointer items-center justify-center whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-foreground' :
+              'z-[1] inline-flex cursor-pointer items-center size-full justify-center whitespace-nowrap rounded-sm px-2 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-foreground',
             className,
         )}
         value={value}

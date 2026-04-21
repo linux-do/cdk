@@ -1,50 +1,43 @@
 'use client';
 
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect, useCallback, useRef} from 'react';
 import {Skeleton} from '@/components/ui/skeleton';
-import {Separator} from '@/components/ui/separator';
 import {CreateDialog, MineProject} from '@/components/common/project';
 import services from '@/lib/services';
-import {ProjectListItem, ListProjectsRequest} from '@/lib/services/project/types';
+import {ProjectListData, ProjectListItem, ListProjectsRequest} from '@/lib/services/project/types';
 import {motion} from 'motion/react';
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 18;
 
 /**
  * 加载骨架屏组件
  */
 const LoadingSkeleton = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-    {Array.from({length: 12}).map((_, index) => (
-      <div key={index} className="w-full max-w-sm mx-auto">
-        <div className="bg-gray-200 dark:bg-gray-800 p-4 sm:p-6 rounded-2xl relative">
-          <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex gap-1 sm:gap-2">
-            <Skeleton className="h-3 w-3 sm:h-4 sm:w-4 rounded-full" />
-            <Skeleton className="h-3 w-8 sm:h-4 sm:w-10 rounded" />
-          </div>
-
-          <div className="flex flex-col items-center justify-center h-28 sm:h-32">
-            <Skeleton className="h-4 sm:h-6 w-2/3 bg-white/30 dark:bg-gray-600 rounded" />
-          </div>
-
-          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
-            <Skeleton className="h-3 w-3 sm:h-4 sm:w-4 bg-white/30 dark:bg-gray-600 rounded" />
+  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+    {Array.from({length: PAGE_SIZE}).map((_, index) => (
+      <div key={index} className="rounded-[22px] bg-muted p-4">
+        <div className="flex items-center justify-between gap-3">
+          <Skeleton className="h-4 w-16 rounded-full" />
+          <div className="flex gap-1.5">
+            <Skeleton className="h-7 w-7 rounded-full" />
+            <Skeleton className="h-7 w-7 rounded-full" />
+            <Skeleton className="h-7 w-7 rounded-full" />
           </div>
         </div>
 
-        <div className="space-y-1.5 sm:space-y-2 mt-3">
-          <div className="flex items-center justify-between gap-2">
-            <Skeleton className="h-3 sm:h-4 w-2/3 rounded" />
-            <Skeleton className="h-4 w-12 sm:w-14 rounded-full" />
-          </div>
+        <div className="mt-5 space-y-2.5">
+          <Skeleton className="h-5 w-3/5 rounded" />
+          <Skeleton className="h-4 w-4/5 rounded" />
+        </div>
 
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex gap-1">
-              <Skeleton className="h-3 w-8 sm:w-10 rounded-full" />
-              <Skeleton className="h-3 w-6 sm:w-8 rounded-full" />
-            </div>
-            <Skeleton className="h-3 w-16 sm:w-20 rounded" />
-          </div>
+        <div className="mt-5 flex gap-2">
+          <Skeleton className="h-3.5 w-36 rounded" />
+          <Skeleton className="h-3.5 w-20 rounded" />
+        </div>
+
+        <div className="mt-3 flex gap-2">
+          <Skeleton className="h-5 w-12 rounded-full" />
+          <Skeleton className="h-5 w-10 rounded-full" />
         </div>
       </div>
     ))}
@@ -60,11 +53,12 @@ export function ProjectMain() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageCache, setPageCache] = useState<Map<string, ProjectListItem[]>>(new Map());
+  const [pageCache, setPageCache] = useState<Map<string, ProjectListData>>(new Map());
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagSearchKeyword, setTagSearchKeyword] = useState('');
   const [isTagFilterOpen, setIsTagFilterOpen] = useState(false);
+  const latestRequestIdRef = useRef(0);
 
   /**
    * 获取标签列表
@@ -81,13 +75,17 @@ export function ProjectMain() {
    */
   const fetchProjects = useCallback(
       async (page: number = 1, forceRefresh: boolean = false) => {
+        const requestId = ++latestRequestIdRef.current;
         const cacheKey = `${page}-${selectedTags.join(',')}`;
 
         if (!forceRefresh && pageCache.has(cacheKey) &&
             !(selectedTags || []).length) {
           const cachedData = pageCache.get(cacheKey)!;
-          setProjects(cachedData || []);
-          setLoading(false);
+          if (requestId === latestRequestIdRef.current) {
+            setProjects(cachedData.results || []);
+            setTotal(cachedData.total || 0);
+            setLoading(false);
+          }
           return;
         }
 
@@ -100,21 +98,44 @@ export function ProjectMain() {
           tags: (selectedTags || []).length > 0 ? selectedTags : undefined,
         };
 
-        const result = await services.project.getMyProjectsSafe(params);
+        let hasError = false;
 
-        if (result.success && result.data) {
-          setProjects(result.data.results || []);
-          setTotal(result.data.total || 0);
-          if (!(selectedTags || []).length) {
-            setPageCache((prev) => new Map(prev.set(cacheKey, result.data!.results || [])));
+        try {
+          const result = await services.project.getMyProjectsSafe(params);
+          if (requestId !== latestRequestIdRef.current) {
+            return;
           }
-        } else {
-          setError(result.error || '获取项目列表失败');
+
+          if (result.success && result.data) {
+            setProjects(result.data.results || []);
+            setTotal(result.data.total || 0);
+            if (!(selectedTags || []).length) {
+              setPageCache((prev) => new Map(prev.set(cacheKey, result.data!)));
+            }
+          } else {
+            hasError = true;
+            setError(result.error || '获取项目列表失败');
+            setProjects([]);
+            setTotal(0);
+          }
+        } catch {
+          if (requestId !== latestRequestIdRef.current) {
+            return;
+          }
+          hasError = true;
+          setError('获取项目列表失败');
           setProjects([]);
           setTotal(0);
-        }
+        } finally {
+          if (requestId !== latestRequestIdRef.current) {
+            return;
+          }
 
-        setLoading(false);
+          if (!hasError) {
+            setError('');
+          }
+          setLoading(false);
+        }
       },
       [pageCache, selectedTags],
   );
@@ -147,6 +168,7 @@ export function ProjectMain() {
    */
   const clearAllFilters = () => {
     setSelectedTags([]);
+    setTagSearchKeyword('');
     setCurrentPage(1);
   };
 
@@ -205,37 +227,30 @@ export function ProjectMain() {
     },
   };
 
-  const separatorVariants = {
-    hidden: {opacity: 0, scaleX: 0},
-    visible: {
-      opacity: 1,
-      scaleX: 1,
-      transition: {duration: 0.4, ease: 'easeOut'},
-    },
-  };
-
   return (
     <motion.div
-      className="space-y-6"
+      className="flex min-h-0 flex-1 flex-col gap-6"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
-      <motion.div className="flex items-center justify-between" variants={itemVariants}>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">我的项目</h1>
-          <p className="text-muted-foreground mt-1">管理您的项目和分发内容</p>
+      <motion.div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end" variants={itemVariants}>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">我的项目</h1>
+          <div className="mt-1 text-muted-foreground">
+            查看和管理您创建的分发项目与内容
+          </div>
         </div>
-        <div>
+        <div className="self-start lg:self-end">
           <CreateDialog onProjectCreated={handleProjectCreated} />
         </div>
       </motion.div>
 
-      <motion.div variants={separatorVariants}>
-        <Separator className="my-8" />
+      <motion.div variants={itemVariants}>
+        <div className="h-px w-full bg-black/6 dark:bg-white/[0.06]" />
       </motion.div>
 
-      <motion.div variants={itemVariants}>
+      <motion.div className="flex min-h-0 flex-1 flex-col" variants={itemVariants}>
         <MineProject
           data={{
             projects,

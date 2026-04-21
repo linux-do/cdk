@@ -4,7 +4,6 @@ import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
-import {Card, CardContent} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -153,6 +152,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
   };
 
   const totalPages = Math.ceil(total / pageSize);
+  const isEmptyState = ((!(projects || []).length && !loading) || !!error);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -170,30 +170,28 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
   const renderContent = () => {
     if ((!(projects || []).length && !loading) || error) {
       return (
-        <Card className="border-none shadow-none">
-          <CardContent className="p-12 text-center">
-            <EmptyState
-              icon={FolderOpen}
-              title="暂无分发项目"
-              description={
-                (selectedTags || []).length > 0 ?
-                  '未找到符合条件的分发项目' :
-                  '点击右上方按钮创建您的第一个分发项目'
-              }
-              className="p-12 text-center"
-            >
-              {(selectedTags || []).length > 0 && (
-                <Button
-                  variant="outline"
-                  onClick={onClearAllFilters}
-                  className="text-xs h-8"
-                >
-                  清除筛选条件
-                </Button>
-              )}
-            </EmptyState>
-          </CardContent>
-        </Card>
+        <div className="flex h-full min-h-0 flex-1 items-center justify-center rounded-[22px] bg-muted px-6 py-12 text-center">
+          <EmptyState
+            icon={FolderOpen}
+            title="暂无分发项目"
+            description={
+              (selectedTags || []).length > 0 ?
+                '未找到符合条件的分发项目' :
+                '点击右上方按钮创建您的第一个分发项目'
+            }
+            className="flex w-full flex-col items-center justify-center p-12 text-center"
+          >
+            {(selectedTags || []).length > 0 && (
+              <Button
+                variant="ghost"
+                onClick={onClearAllFilters}
+                className="h-8 rounded-full bg-white/70 px-3 text-xs text-foreground hover:bg-white dark:bg-white/[0.06] dark:hover:bg-white/[0.1]"
+              >
+                清除筛选条件
+              </Button>
+            )}
+          </EmptyState>
+        </div>
       );
     }
 
@@ -203,7 +201,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
 
     return (
       <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {(projects || []).map((project, index) => (
             <ProjectCard
               key={project.id}
@@ -226,9 +224,9 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-white/20 hover:bg-white/30 text-white"
+                      className="size-6 rounded-full p-0 text-gray-500 hover:bg-black/5 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/[0.06] dark:hover:text-gray-200"
                     >
-                      <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                      <Users className="size-[13px]" />
                     </Button>
                   </ReceiverDialog>
                   <EditDialog
@@ -238,9 +236,9 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-white/20 hover:bg-white/30 text-white"
+                      className="size-6 rounded-full p-0 text-gray-500 hover:bg-black/5 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/[0.06] dark:hover:text-gray-200"
                     >
-                      <Pencil className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                      <Pencil className="size-[13px]" />
                     </Button>
                   </EditDialog>
                 </div>
@@ -250,28 +248,28 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
-            <div className="text-sm text-muted-foreground order-2 sm:order-1">
+          <div className="mt-7 flex flex-col items-center justify-between gap-3 px-1 sm:flex-row">
+            <div className="order-2 text-xs text-muted-foreground sm:order-1">
               共 {total} 个项目，第 {currentPage} / {totalPages} 页
             </div>
-            <div className="flex items-center space-x-2 order-1 sm:order-2">
+            <div className="order-1 flex items-center gap-2 sm:order-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
+                className="size-8 rounded-full bg-muted p-0 hover:bg-muted/80 disabled:opacity-40"
               >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                上一页
+                <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
+                className="size-8 rounded-full bg-muted p-0 hover:bg-muted/80 disabled:opacity-40"
               >
-                下一页
-                <ChevronRight className="h-4 w-4 ml-1" />
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -304,32 +302,31 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
 
   return (
     <motion.div
-      className="space-y-6"
+      className={`flex min-h-0 flex-1 flex-col gap-4 ${isEmptyState ? 'overflow-hidden' : ''}`}
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
-      {/* 标题和标签过滤器 */}
       <motion.div
-        className="flex items-center justify-between"
+        className="flex items-center justify-between gap-3"
         variants={itemVariants}
       >
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">所有项目</h2>
-          <Badge variant="secondary" className="text-xs font-bold">
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-sm font-medium text-foreground">所有项目</h2>
+          <div className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground">
             {total}
-          </Badge>
+          </div>
         </div>
 
-        {/* 标签筛选器 */}
         <TagFilterPopover
           trigger={
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="rounded-full w-8 h-8 mr-1.5"
+              className="h-8 rounded-full bg-muted px-3 text-xs text-foreground hover:bg-muted/80"
             >
               <Filter className="h-4 w-4" />
+              筛选标签
             </Button>
           }
           tags={tags}
@@ -337,23 +334,23 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
           tagSearchKeyword={tagSearchKeyword}
           isOpen={isTagFilterOpen}
           onTagToggle={onTagToggle}
+          onClearAllTags={onClearAllFilters}
           onTagSearchKeywordChange={onTagSearchKeywordChange}
           onOpenChange={onTagFilterOpenChange}
         />
       </motion.div>
 
-      {/* 当前选择的标签展示 */}
       {(selectedTags || []).length > 0 && (
         <motion.div
-          className="flex items-center flex-wrap gap-2"
+          className="flex flex-wrap items-center gap-2"
           variants={itemVariants}
         >
-          <span className="text-xs text-muted-foreground">筛选条件:</span>
+          <span className="text-xs text-muted-foreground">已筛选</span>
           {(selectedTags || []).map((tag) => (
             <Badge
               key={tag}
-              variant="outline"
-              className="px-2 py-0 h-6 bg-primary/5 text-primary border-primary/20 select-none cursor-pointer hover:bg-primary/10 transition-colors"
+              variant="secondary"
+              className="h-7 cursor-pointer rounded-full bg-muted px-2.5 py-0 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/80"
               onClick={() => onTagToggle(tag)}
             >
               {tag}
@@ -363,7 +360,7 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-xs text-muted-foreground"
+            className="h-7 rounded-full px-3 text-xs text-muted-foreground hover:bg-muted/80"
             onClick={onClearAllFilters}
           >
             清除全部
@@ -372,7 +369,9 @@ export function MineProject({data, LoadingSkeleton}: MineProjectProps) {
       )}
 
       {/* 内容区域 */}
-      <motion.div variants={itemVariants}>{renderContent()}</motion.div>
+      <motion.div className={`flex min-h-0 flex-1 flex-col ${isEmptyState ? 'overflow-hidden' : ''}`} variants={itemVariants}>
+        {renderContent()}
+      </motion.div>
 
       <AlertDialog
         open={deleteDialogOpen}

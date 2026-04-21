@@ -1,2 +1,3 @@
 export {CallbackURLHint} from './CallbackURLHint';
-export {PaymentSettingsPage} from './PaymentSettingsPage';
+export {PaymentSettingsContent} from './PaymentSettingsContent';
+export {PaymentSettingsDialog} from './PaymentSettingsDialog';

@@ -65,7 +65,7 @@ const ReceiveButton = ({
     const contentItems = receivedContent.split('$\n*');
 
     return (
-      <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg -mt-4">
+      <div className="-mt-4 rounded-lg bg-muted p-3">
         <div className="text-xs text-muted-foreground mb-2">分发内容</div>
         <div className="space-y-2">
           {contentItems.map((item, index) => (
@@ -99,7 +99,7 @@ const ReceiveButton = ({
   if (now < startTime) {
     const timeRemaining = getTimeRemainingText(startTime, now);
     return (
-      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400">
+      <Button disabled className="w-full cursor-not-allowed bg-muted text-gray-400">
         <Clock className="w-4 h-4 mr-2" />
         时间未到 {timeRemaining ? `(${timeRemaining})` : ''}
       </Button>
@@ -108,7 +108,7 @@ const ReceiveButton = ({
 
   if (now > endTime) {
     return (
-      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400">
+      <Button disabled className="w-full cursor-not-allowed bg-muted text-gray-400">
         <AlertCircle className="w-4 h-4 mr-2" />
         项目已结束
       </Button>
@@ -117,7 +117,7 @@ const ReceiveButton = ({
 
   if (project.available_items_count <= 0) {
     return (
-      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400">
+      <Button disabled className="w-full cursor-not-allowed bg-muted text-gray-400">
         <Package className="w-4 h-4 mr-2" />
         库存已空
       </Button>
@@ -126,7 +126,7 @@ const ReceiveButton = ({
 
   if (!user || user.trust_level < project.minimum_trust_level) {
     return (
-      <Button disabled className="w-full bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400">
+      <Button disabled className="w-full cursor-not-allowed bg-muted text-gray-400">
         <AlertCircle className="w-4 h-4 mr-2" />
         信任等级不足
       </Button>
@@ -411,7 +411,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
       </motion.div>
 
       <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-3" variants={itemVariants}>
-        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="rounded-lg bg-muted p-3">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">发布人</div>
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
             <Link
@@ -423,15 +423,15 @@ export function ReceiveContent({data}: ReceiveContentProps) {
             </Link>
           </div>
         </div>
-        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="rounded-lg bg-muted p-3">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">最低用户分数</div>
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{100 - currentProject.risk_level}</div>
         </div>
-        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="rounded-lg bg-muted p-3">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">信任等级</div>
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{trustLevelConfig?.label}</div>
         </div>
-        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="rounded-lg bg-muted p-3">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">IP 限制</div>
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
             {currentProject.allow_same_ip ? '允许同一 IP' : '限制同一 IP'}
@@ -453,7 +453,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
 
       <motion.div className="pt-6 border-t border-gray-200" variants={itemVariants}>
         <h3 className="font-medium mb-3">项目描述</h3>
-        <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="rounded-lg bg-muted p-6">
           <ContentRender
             content={currentProject.description}
             className="text-gray-700 dark:text-gray-200 leading-relaxed markdown-content"
