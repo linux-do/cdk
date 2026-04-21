@@ -30,21 +30,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/linux-do/cdk/internal/config"
+	"github.com/linux-do/cdk/internal/utils"
 )
-
-// httpClientTimeout 调用易支付接口时的默认超时
-func httpClientTimeout() time.Duration {
-	if s := config.Config.Payment.HTTPTimeoutSeconds; s > 0 {
-		return time.Duration(s) * time.Second
-	}
-	return 10 * time.Second
-}
 
 // submitURL 构造 /epay/pay/submit.php 的完整 GET 跳转 URL,由浏览器直接访问。
 // 不在后端跟随 302,以确保 credit.linux.do/paying 的付款会话对用户浏览器可见。
@@ -95,14 +86,15 @@ func doEpayRefund(ctx context.Context, clientID, clientSecret, tradeNo, money st
 	form.Set("money", money)
 
 	endpoint := strings.TrimRight(config.Config.Payment.ApiUrl, "/") + "/api.php"
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(form.Encode()))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := &http.Client{Timeout: httpClientTimeout()}
-	resp, err := client.Do(req)
+	resp, err := utils.Request(
+		ctx,
+		"POST",
+		endpoint,
+		strings.NewReader(form.Encode()),
+		map[string]string{"Content-Type": "application/x-www-form-urlencoded"},
+		nil,
+	)
 	if err != nil {
 		return err
 	}

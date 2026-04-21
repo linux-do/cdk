@@ -120,4 +120,3 @@ payment:
   notify_base_url: "https://your-domain.com"      # 本项目公网基址,用于拼接回调 URL
   config_encryption_key: "<32-char-secret-key!!>" # AES-256 密钥,恰好 32 字节,首次部署后不可更改
   order_expire_minutes: 10                        # 订单未付款超时时间（分钟）
-  http_timeout_seconds: 10                        # 调用易支付 API 的 HTTP 超时（秒）

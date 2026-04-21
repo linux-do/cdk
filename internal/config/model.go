@@ -168,6 +168,4 @@ type PaymentConfig struct {
 	ConfigEncryptionKey string `mapstructure:"config_encryption_key"`
 	// OrderExpireMinutes 订单 PENDING 状态的最长保留时间(分钟),默认 10
 	OrderExpireMinutes int `mapstructure:"order_expire_minutes"`
-	// HTTPTimeoutSeconds 调用易支付接口的超时(秒),默认 10
-	HTTPTimeoutSeconds int `mapstructure:"http_timeout_seconds"`
 }
