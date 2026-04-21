@@ -30,7 +30,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/linux-do/cdk/internal/apps/oauth"
@@ -313,20 +312,6 @@ func fulfillPaidOrder(ctx context.Context, order *PaymentOrder) error {
 		}
 		return p.FulfillForReceiver(ctx, tx, &item, order.PayerID, order.ClientIP)
 	})
-}
-
-// ReturnRedirectPath 构造同步回跳路径(相对路径,调用方决定是否附加 host)
-// 包含 project_id 与 trade_no,便于前端在 /receive 页展示等待发放的状态
-func ReturnRedirectPath(q map[string]string) string {
-	outTradeNo := q["out_trade_no"]
-	if outTradeNo == "" {
-		return "/"
-	}
-	var order PaymentOrder
-	if err := db.DB(context.Background()).Where("out_trade_no = ?", outTradeNo).First(&order).Error; err != nil {
-		return "/"
-	}
-	return fmt.Sprintf("/receive/%s?trade_no=%s", order.ProjectID, strings.TrimSpace(q["trade_no"]))
 }
 
 // CallbackURLs 返回当前平台配置的回调地址,用于前端展示给用户。

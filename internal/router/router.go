@@ -135,7 +135,6 @@ func Serve() {
 			paymentRouter := apiV1Router.Group("/payment")
 			{
 				paymentRouter.GET("/notify", payment.HandleNotifyHTTP)
-				paymentRouter.GET("/return", payment.HandleReturnHTTP)
 			}
 
 			// Tag

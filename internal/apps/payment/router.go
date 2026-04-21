@@ -194,12 +194,5 @@ func HandleNotifyHTTP(c *gin.Context) {
 	}
 }
 
-// HandleReturnHTTP GET /api/v1/payment/return
-// 同步回跳,302 到前端 /receive/{projectId}?trade_no=...
-func HandleReturnHTTP(c *gin.Context) {
-	path := ReturnRedirectPath(extractQueryMap(c.Request.URL.Query()))
-	c.Redirect(http.StatusFound, path)
-}
-
 // 保留 GORM ErrRecordNotFound 的判断以防将来需要细分
 var _ = errors.Is
