@@ -75,6 +75,6 @@ func expireOrder(ctx context.Context, order *PaymentOrder) {
 
 	// 归还预占的 item，恢复项目库存
 	db.Redis.RPush(ctx, project.ProjectItemsKey(order.ProjectID), order.ItemID)
-	logger.InfoF(ctx, "payment cleanup: returned item %d to project %d stock", order.ItemID, order.ProjectID)
+	logger.InfoF(ctx, "payment cleanup: returned item %d to project %s stock", order.ItemID, order.ProjectID)
 	logger.InfoF(ctx, "payment cleanup: order %s expired and marked as FAILED", order.OutTradeNo)
 }
