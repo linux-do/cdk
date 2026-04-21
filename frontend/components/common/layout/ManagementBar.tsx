@@ -28,7 +28,7 @@ import {
 } from '@/components/animate-ui/radix/dialog';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {TrustLevel} from '@/lib/services/core';
-import {DialogClose} from "@/components/ui/dialog";
+import {DialogClose} from '@/components/ui/dialog';
 
 const IconOptions = {
   className: 'h-4 w-4',
