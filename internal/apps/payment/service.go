@@ -36,6 +36,7 @@ import (
 	"github.com/linux-do/cdk/internal/apps/project"
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
+	"github.com/linux-do/cdk/internal/logger"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -203,6 +204,7 @@ func InitiatePayment(ctx context.Context, p *project.Project, payer *oauth.User,
 			return err
 		}
 		itemID = reservedItemID
+		logger.InfoF(ctx, "Reserved item %d for project %d and payer %d", itemID, p.ID, payer.ID)
 
 		outTradeNo := genOutTradeNo()
 		order := PaymentOrder{
