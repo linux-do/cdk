@@ -258,6 +258,24 @@ func HandleNotify(ctx context.Context, q map[string]string) (bool, string) {
 		return true, "idempotent"
 	}
 
+	// 增加对 Refunding 状态的处理
+	if order.Status == OrderStatusRefunding {
+		refundErr := doEpayRefund(ctx, cfg.ClientID, secret, order.TradeNo, moneyString(order.Amount))
+		if refundErr == nil {
+			tNow := time.Now()
+			if updateErr := db.DB(ctx).
+				Model(&PaymentOrder{}).
+				Where("out_trade_no = ?", outTradeNo).
+				Updates(map[string]any{"status": OrderStatusRefunded, "refunded_at": &tNow}).
+				Error; updateErr != nil {
+				return false, "update order status failed"
+			}
+			db.Redis.RPush(ctx, project.ProjectItemsKey(order.ProjectID), order.ItemID)
+			return true, "refund retry ok"
+		}
+		return false, "refund retry failed"
+	}
+
 	// CAS: PENDING -> PAID
 	now := time.Now()
 	rows := db.DB(ctx).Model(&PaymentOrder{}).
