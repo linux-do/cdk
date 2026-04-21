@@ -26,10 +26,11 @@ package schedule
 
 import (
 	"fmt"
-	"github.com/linux-do/cdk/internal/config"
-	"github.com/linux-do/cdk/internal/task"
 	"sync"
 	"time"
+
+	"github.com/linux-do/cdk/internal/config"
+	"github.com/linux-do/cdk/internal/task"
 
 	"github.com/hibiken/asynq"
 )
@@ -69,11 +70,7 @@ func StartScheduler() error {
 		}
 
 		// 每分钟扫描一次未付款超时订单
-		expireCron := config.Config.Schedule.ExpireStalePaymentOrdersCron
-		if expireCron == "" {
-			expireCron = "*/1 * * * *"
-		}
-		if _, err = scheduler.Register(expireCron, asynq.NewTask(task.ExpireStalePaymentOrdersTask, nil)); err != nil {
+		if _, err = scheduler.Register(config.Config.Schedule.ExpireStalePaymentOrdersCron, asynq.NewTask(task.ExpireStalePaymentOrdersTask, nil)); err != nil {
 			return
 		}
 

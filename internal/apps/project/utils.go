@@ -26,9 +26,14 @@ package project
 
 import (
 	"context"
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/cdk/internal/apps/oauth"
+	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
+	"github.com/shopspring/decimal"
+
 	"time"
 )
 
@@ -162,4 +167,41 @@ func ListMyProjectsWithTags(ctx context.Context, creatorID uint64, offset, limit
 		Total:   total,
 		Results: &listProjectsResponseDataResult,
 	}, nil
+}
+
+// maxProjectPrice 付费项目的最大单价上限
+var maxProjectPrice = decimal.RequireFromString("99999999.99")
+
+// validateProjectPrice 校验 Price 字段合法性。
+// 规则:
+//   - Price 必须非负,最多 2 位小数,不超过上限
+//   - Price > 0 仅允许 DistributionTypeOneForEach
+//   - Price > 0 时必须确认全局支付功能已启用且创建者已配置 clientID/clientSecret
+func validateProjectPrice(ctx context.Context, price decimal.Decimal, dt DistributionType, creatorID uint64) error {
+	if price.IsNegative() {
+		return errors.New(InvalidPrice)
+	}
+	if price.Exponent() < -2 {
+		return errors.New(InvalidPriceDecimals)
+	}
+	if price.GreaterThan(maxProjectPrice) {
+		return errors.New(PriceTooLarge)
+	}
+	if price.IsZero() {
+		return nil
+	}
+	if dt != DistributionTypeOneForEach {
+		return errors.New(PriceOnlyOneForEach)
+	}
+	if !config.Config.Payment.Enabled {
+		return errors.New(PaymentDisabled)
+	}
+	var cnt int64
+	if err := db.DB(ctx).Table("user_payment_configs").Where("user_id = ?", creatorID).Count(&cnt).Error; err != nil {
+		return err
+	}
+	if cnt == 0 {
+		return errors.New(CreatorNotConfigured)
+	}
+	return nil
 }
