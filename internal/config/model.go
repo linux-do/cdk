@@ -163,6 +163,9 @@ type PaymentConfig struct {
 	// NotifyBaseURL 本项目对外可访问的基址(不含路径),例如 https://cdk.linux.do
 	// 用于拼接 notify_url / return_url 并提示用户在 LDC 商户后台填写
 	NotifyBaseURL string `mapstructure:"notify_base_url"`
+	// RedirectBaseURL 本项目对外可访问的基址(不含路径),例如 https://cdk.linux.do
+	// 用于拼接 redirect_url 并提示用户在 LDC 商户后台填写
+	RedirectBaseURL string `mapstructure:"redirect_base_url"`
 	// ConfigEncryptionKey 用于加密用户 clientSecret 的密钥,必须是 32 字节长度
 	// 建议直接填 32 字符 ASCII 字符串或 base64 解码得 32 字节
 	ConfigEncryptionKey string `mapstructure:"config_encryption_key"`
