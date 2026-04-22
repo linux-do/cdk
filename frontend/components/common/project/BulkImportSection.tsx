@@ -97,7 +97,7 @@ export function BulkImportSection({
       <div className="space-y-4">
         <div className="flex items-center">
           <div className="flex items-center justify-between w-full gap-2">
-            <div className="text-sm font-medium">{contentLabel}</div>
+            <div className="text-xs font-medium">{contentLabel}</div>
             <div className="flex items-center gap-2">
               <TooltipProvider>
                 <Tooltip>
@@ -173,7 +173,7 @@ export function BulkImportSection({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">{itemsLabel}</Label>
+            <Label className="text-xs font-medium">{itemsLabel}</Label>
             {items.length > 0 && (
               <Button
                 type="button"
@@ -227,7 +227,7 @@ export function BulkImportSection({
         <DialogContent className={`${isMobile ? 'max-w-[90vw] max-h-[80vh]' : 'max-w-lg'}`}>
           <DialogHeader>
             <DialogTitle>文件导入</DialogTitle>
-            <DialogDescription className="text-xs">
+            <DialogDescription>
             支持 .txt 和 .jsonl 格式 • 每行一个内容 • 空行自动忽略 • 大小限制：5MB
             </DialogDescription>
           </DialogHeader>
@@ -241,7 +241,7 @@ export function BulkImportSection({
         <DialogContent className={`${isMobile ? 'max-w-[90vw] max-h-[80vh]' : 'max-w-lg'}`}>
           <DialogHeader>
             <DialogTitle>文件内容确认</DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogDescription>
               检测到文件可能包含特殊字符，请确认是否继续导入。
             </DialogDescription>
           </DialogHeader>
@@ -282,17 +282,17 @@ export function BulkImportSection({
             </div>
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter>
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={onCancelUpload}
-              className="flex-1"
+              className="h-8 rounded-full px-3 text-xs shadow-none"
             >
               取消
             </Button>
             <Button
               onClick={onConfirmUpload}
-              className="flex-1"
+              className="h-8 rounded-full px-3 text-xs shadow-none"
               variant="default"
             >
               确定导入

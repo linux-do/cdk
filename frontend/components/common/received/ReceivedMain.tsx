@@ -251,12 +251,14 @@ export function ReceivedMain() {
       animate="visible"
       variants={containerVariants}
     >
-      <motion.div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end" variants={itemVariants}>
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">我的领取</h1>
-          <div className="mt-1 text-muted-foreground">
-            查看您已领取的分发项目信息和内容
+      <motion.div className="space-y-1.5" variants={itemVariants}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-2xl font-bold tracking-tight text-foreground">我的领取</h1>
           </div>
+        </div>
+        <div className="text-muted-foreground">
+          查看您已领取的分发项目信息和内容
         </div>
       </motion.div>
 

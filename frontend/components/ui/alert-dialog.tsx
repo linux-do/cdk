@@ -5,6 +5,7 @@ import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
+import {ScrollArea} from '@/components/ui/scroll-area';
 
 function AlertDialog({
   ...props
@@ -54,7 +55,7 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         className={cn(
-            'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg',
+            'bg-background/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden rounded-[24px] border border-border/50 p-0 shadow-[0_24px_60px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.03] duration-200 sm:max-w-lg dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.42)] dark:ring-white/[0.04]',
             className,
         )}
         {...props}
@@ -70,7 +71,7 @@ function AlertDialogHeader({
   return (
     <div
       data-slot="alert-dialog-header"
-      className={cn('flex flex-col gap-2 text-center sm:text-left', className)}
+      className={cn('flex flex-col gap-1.5 px-6 pt-5 text-left', className)}
       {...props}
     />
   );
@@ -84,11 +85,23 @@ function AlertDialogFooter({
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-          'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end',
+          'flex flex-row justify-end gap-2 px-6 pt-3 pb-5',
           className,
       )}
       {...props}
     />
+  );
+}
+
+function AlertDialogBody({className, children, ...props}: React.ComponentProps<typeof ScrollArea>) {
+  return (
+    <ScrollArea
+      data-slot="alert-dialog-body"
+      className={cn('min-h-0 flex-1', className)}
+      {...props}
+    >
+      {children}
+    </ScrollArea>
   );
 }
 
@@ -112,7 +125,7 @@ function AlertDialogDescription({
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn('text-muted-foreground text-sm', className)}
+      className={cn('text-muted-foreground text-xs', className)}
       {...props}
     />
   );
@@ -124,7 +137,7 @@ function AlertDialogAction({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
   return (
     <AlertDialogPrimitive.Action
-      className={cn(buttonVariants(), className)}
+      className={cn(buttonVariants(), 'h-8 rounded-full px-3 text-xs shadow-none', className)}
       {...props}
     />
   );
@@ -136,7 +149,7 @@ function AlertDialogCancel({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Cancel>) {
   return (
     <AlertDialogPrimitive.Cancel
-      className={cn(buttonVariants({variant: 'outline'}), className)}
+      className={cn(buttonVariants({variant: 'ghost'}), 'h-8 rounded-full px-3 text-xs shadow-none', className)}
       {...props}
     />
   );
@@ -150,6 +163,7 @@ export {
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogFooter,
+  AlertDialogBody,
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogAction,

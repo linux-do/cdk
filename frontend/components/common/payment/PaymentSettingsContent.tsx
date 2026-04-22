@@ -34,7 +34,7 @@ export function PaymentSettingsContent({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pt-4">
       <CallbackURLHint
         notifyUrl={config?.callback_notify_url || ''}
         returnUrl={config?.callback_return_url || ''}
@@ -42,7 +42,7 @@ export function PaymentSettingsContent({
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="client_id">Client ID</Label>
+          <Label className="text-xs">Client ID</Label>
           <Input
             id="client_id"
             placeholder="在 credit.linux.do 集市应用中获取"
@@ -53,7 +53,7 @@ export function PaymentSettingsContent({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="client_secret">Client Secret</Label>
+          <Label className="text-xs">Client Secret</Label>
           <Input
             id="client_secret"
             type="password"

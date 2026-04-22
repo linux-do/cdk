@@ -147,15 +147,15 @@ export function DashboardMain() {
       variants={containerVariants}
     >
       {/* 问候语标题和时间选择器 */}
-      <motion.div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end" variants={itemVariants}>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+      <motion.div className="flex items-start justify-between gap-3" variants={itemVariants}>
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
             {getTimeGreeting()}好，{user?.username || 'Linux Do User'}
           </h1>
         </div>
 
         {/* 时间范围选择器 */}
-        <div className="flex items-center self-start lg:self-end">
+        <div className="flex shrink-0 items-center self-start">
           <Tabs
             value={String(range)}
             onValueChange={(value) => setRange(Number(value))}

@@ -37,7 +37,7 @@ export function DistributionModeSelect({
 }: DistributionModeSelectProps) {
   return (
     <div className="space-y-2.5">
-      <Label>分发模式</Label>
+      <Label className="text-xs">分发模式</Label>
       <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
         {DISTRIBUTION_OPTIONS.map((option) => {
           const Icon = option.icon;
@@ -51,7 +51,7 @@ export function DistributionModeSelect({
               aria-pressed={isActive}
               onClick={() => onDistributionTypeChange(option.type)}
               className={cn(
-                  'flex w-full items-start gap-3 rounded-2xl border-none px-3.5 py-3 text-left shadow-none',
+                  'flex w-full items-start gap-3 rounded-2xl border-none px-3 py-2 text-left shadow-none',
                   'bg-muted/45 dark:bg-white/[0.04]',
                   isActive && 'bg-muted/80 dark:bg-white/[0.08]',
                   isPending && !isActive && 'text-muted-foreground/80',
@@ -69,19 +69,19 @@ export function DistributionModeSelect({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-3">
-                  <span className={cn('text-sm font-medium', isActive ? 'text-foreground' : 'text-foreground/90')}>
+                  <span className={cn('text-xs font-medium', isActive ? 'text-foreground' : 'text-foreground/90')}>
                     {option.title}
                   </span>
                   <span
                     className={cn(
-                        'text-[11px]',
+                        'text-xs font-medium',
                         isActive ? 'text-foreground/55' : 'text-muted-foreground',
                     )}
                   >
-                    {isPending ? '开发中' : isActive ? '已选中' : '选择'}
+                    {isActive ? '*' : ''}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {option.description}
                 </p>
               </div>

@@ -141,15 +141,17 @@ export function ReportButton({projectId, user, hasReported = false, variant = 'd
         </div>
         <DialogFooter>
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={handleClose}
             disabled={isSubmitting}
+            className="h-8 rounded-full px-3 text-xs shadow-none"
           >
             取消
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || !trimmedReason}
+            className="h-8 rounded-full px-3 text-xs shadow-none"
           >
             {isSubmitting ? '提交中...' : '提交举报'}
           </Button>
