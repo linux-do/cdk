@@ -8,9 +8,8 @@ import {useBulkImport} from '@/hooks/use-bulk-import';
 import {useFileUpload} from '@/hooks/use-file-upload';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
-import {ScrollArea} from '@/components/ui/scroll-area';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
-import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
+import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogBody} from '@/components/animate-ui/radix/dialog';
 import {validateProjectForm, validatePriceString, CURRENCY_LABEL} from '@/components/common/project';
 import {ProjectBasicForm} from '@/components/common/project/ProjectBasicForm';
 import {BulkImportSection} from '@/components/common/project/BulkImportSection';
@@ -145,7 +144,7 @@ export function EditDialog({
           return;
         }
         if (!cfgResult.data?.has_config) {
-          toast.error('请先在"支付设置"中配置 clientID 与 clientSecret');
+          toast.error('请先在"支付设置"中配置 Client ID 与 Client Secret');
           setLoading(false);
           return;
         }
@@ -216,15 +215,15 @@ export function EditDialog({
       </DialogTrigger>
       <DialogContent
         showCloseButton={false}
-        className={`${isMobile ? 'max-w-[92vw] max-h-[82vh]' : 'max-w-2xl max-h-[78vh]'} overflow-hidden rounded-[24px] border border-border/50 bg-background/95 p-0 shadow-[0_24px_60px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.03] dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.42)] dark:ring-white/[0.04]`}
+        className={`${isMobile ? 'max-w-[92vw] max-h-[82vh]' : 'max-w-2xl max-h-[78vh]'}`}
       >
-        <DialogHeader className={`gap-2 px-6 pt-4 ${isMobile ? 'text-left' : ''}`}>
+        <DialogHeader>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 space-y-0">
-              <DialogTitle className={`text-lg font-semibold tracking-tight ${isMobile ? 'text-left' : ''}`}>
+              <DialogTitle>
                 {updateSuccess ? '项目更新成功' : '编辑项目'}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
+              <DialogDescription>
                 {updateSuccess ? '您的项目已更新成功' : '修改项目信息和设置'}
               </DialogDescription>
             </div>
@@ -250,8 +249,8 @@ export function EditDialog({
         <div className="mx-6 h-px bg-black/6 dark:bg-white/[0.06]" />
 
         {updateSuccess ? (
-          <div className="px-6">
-            <div className="my-4">
+          <DialogBody className={isMobile ? 'max-h-[58vh]' : 'max-h-[52vh]'}>
+            <div className="px-6 py-4">
               <div className="flex items-center justify-center">
                 <div className="flex items-center gap-3 text-green-600">
                   <CheckCircle className="h-8 w-8" />
@@ -264,23 +263,23 @@ export function EditDialog({
                 </div>
               </div>
             </div>
-          </div>
+          </DialogBody>
         ) : (
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="flex min-h-0 w-full flex-1 flex-col"
-          >
-            <TabsContents
-              className="min-h-0 flex-1 bg-background"
-              transition={{duration: 0}}
+          <DialogBody className={isMobile ? 'max-h-[58vh]' : 'max-h-[52vh]'}>
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="flex min-h-0 w-full flex-1 flex-col"
             >
-              <TabsContent
-                value="basic"
+              <TabsContents
+                className="min-h-0 flex-1 bg-background"
                 transition={{duration: 0}}
-                className="min-h-0 flex-1"
               >
-                <ScrollArea className={`${isMobile ? 'h-[58vh]' : 'h-[52vh]'}`}>
+                <TabsContent
+                  value="basic"
+                  transition={{duration: 0}}
+                  className="min-h-0 flex-1"
+                >
                   <div className="space-y-6 px-6 pt-3 pb-6">
                     <ProjectBasicForm
                       formData={formData}
@@ -291,16 +290,14 @@ export function EditDialog({
                       isMobile={isMobile}
                     />
                   </div>
-                </ScrollArea>
-              </TabsContent>
+                </TabsContent>
 
-              {project.distribution_type !== DistributionType.LOTTERY && (
-                <TabsContent
-                  value="content"
-                  transition={{duration: 0}}
-                  className="min-h-0 flex-1"
-                >
-                  <ScrollArea className={`${isMobile ? 'h-[58vh]' : 'h-[52vh]'}`}>
+                {project.distribution_type !== DistributionType.LOTTERY && (
+                  <TabsContent
+                    value="content"
+                    transition={{duration: 0}}
+                    className="min-h-0 flex-1"
+                  >
                     <div className="space-y-6 px-6 pt-3 pb-6">
                       <BulkImportSection
                         items={newItems}
@@ -325,14 +322,14 @@ export function EditDialog({
                         onCancelUpload={handleCancelUpload}
                       />
                     </div>
-                  </ScrollArea>
-                </TabsContent>
-              )}
-            </TabsContents>
-          </Tabs>
+                  </TabsContent>
+                )}
+              </TabsContents>
+            </Tabs>
+          </DialogBody>
         )}
 
-        <DialogFooter className="gap-2 -mt-4 px-4 py-4 sm:justify-end">
+        <DialogFooter>
           {updateSuccess ? (
             <Button
               onClick={() => {
@@ -340,7 +337,8 @@ export function EditDialog({
                 resetForm();
               }}
               size="sm"
-              className="min-w-20"
+              variant="ghost"
+              className="rounded-full px-3 text-xs shadow-none"
             >
               关闭
             </Button>
@@ -349,7 +347,7 @@ export function EditDialog({
               onClick={handleSubmit}
               disabled={loading}
               size="sm"
-              className="min-w-20"
+              className="rounded-full px-3 text-xs shadow-none"
             >
               {loading ? '更新中...' : '更新项目'}
             </Button>

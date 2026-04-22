@@ -5,6 +5,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import {XIcon} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
+import {ScrollArea} from '@/components/ui/scroll-area';
 
 function Dialog({
   ...props
@@ -60,7 +61,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-            'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border border-border/60 bg-background/95 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.12)] ring-1 ring-black/[0.03] duration-200 sm:max-w-lg dark:border-border/70 dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/[0.04]',
+            'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden rounded-[24px] border border-border/50 bg-background/95 p-0 shadow-[0_24px_60px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.03] duration-200 sm:max-w-lg dark:border-border/70 dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.42)] dark:ring-white/[0.04]',
             className,
         )}
         {...props}
@@ -84,7 +85,7 @@ function DialogHeader({className, ...props}: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn('flex flex-col gap-2 text-center sm:text-left', className)}
+      className={cn('flex flex-col gap-1.5 px-6 pt-5 text-left', className)}
       {...props}
     />
   );
@@ -95,11 +96,23 @@ function DialogFooter({className, ...props}: React.ComponentProps<'div'>) {
     <div
       data-slot="dialog-footer"
       className={cn(
-          'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end',
+          'flex flex-row justify-end gap-2 px-6 pt-3 pb-5',
           className,
       )}
       {...props}
     />
+  );
+}
+
+function DialogBody({className, children, ...props}: React.ComponentProps<typeof ScrollArea>) {
+  return (
+    <ScrollArea
+      data-slot="dialog-body"
+      className={cn('min-h-0 flex-1', className)}
+      {...props}
+    >
+      {children}
+    </ScrollArea>
   );
 }
 
@@ -123,7 +136,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn('text-muted-foreground text-sm', className)}
+      className={cn('text-muted-foreground text-xs', className)}
       {...props}
     />
   );
@@ -136,6 +149,7 @@ export {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogBody,
   DialogOverlay,
   DialogPortal,
   DialogTitle,

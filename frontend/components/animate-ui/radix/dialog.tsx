@@ -11,6 +11,7 @@ import {
 } from 'motion/react';
 
 import {cn} from '@/lib/utils';
+import {ScrollArea} from '@/components/ui/scroll-area';
 
 type DialogContextType = {
   isOpen: boolean;
@@ -151,7 +152,7 @@ function DialogContent({
               }}
               transition={{...transition, duration: 0.15, ease: 'easeOut'}}
               className={cn(
-                  'fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-xl border border-border/60 bg-background/95 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.12)] ring-1 ring-black/[0.03] dark:border-border/70 dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/[0.04]',
+                  'fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden rounded-[24px] border border-border/50 bg-background/95 shadow-[0_24px_60px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.03] dark:border-border/70 dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.42)] dark:ring-white/[0.04]',
                   className,
               )}
               {...props}
@@ -178,7 +179,7 @@ function DialogHeader({className, ...props}: DialogHeaderProps) {
     <div
       data-slot="dialog-header"
       className={cn(
-          'flex flex-col space-y-1.5 text-center sm:text-left',
+          'flex flex-col gap-1.5 px-6 py-4 text-left bg-background',
           className,
       )}
       {...props}
@@ -193,11 +194,25 @@ function DialogFooter({className, ...props}: DialogFooterProps) {
     <div
       data-slot="dialog-footer"
       className={cn(
-          'flex flex-col-reverse sm:flex-row sm:justify-end gap-2',
+          'flex flex-row justify-end gap-2 px-6 py-4 bg-background',
           className,
       )}
       {...props}
     />
+  );
+}
+
+type DialogBodyProps = React.ComponentProps<typeof ScrollArea>;
+
+function DialogBody({className, children, ...props}: DialogBodyProps) {
+  return (
+    <ScrollArea
+      data-slot="dialog-body"
+      className={cn('min-h-0 flex-1', className)}
+      {...props}
+    >
+      {children}
+    </ScrollArea>
   );
 }
 
@@ -224,7 +239,7 @@ function DialogDescription({className, ...props}: DialogDescriptionProps) {
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-xs text-muted-foreground pt-1', className)}
       {...props}
     />
   );
@@ -239,6 +254,7 @@ export {
   DialogContent,
   DialogHeader,
   DialogFooter,
+  DialogBody,
   DialogTitle,
   DialogDescription,
   useDialog,
@@ -251,6 +267,7 @@ export {
   type DialogContentProps,
   type DialogHeaderProps,
   type DialogFooterProps,
+  type DialogBodyProps,
   type DialogTitleProps,
   type DialogDescriptionProps,
 };

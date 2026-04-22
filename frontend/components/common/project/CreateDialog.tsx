@@ -10,9 +10,8 @@ import {toast} from 'sonner';
 import {Label} from '@/components/ui/label';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
-import {ScrollArea} from '@/components/ui/scroll-area';
 import {Tabs, TabsList, TabsTrigger, TabsContent, TabsContents} from '@/components/animate-ui/radix/tabs';
-import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter} from '@/components/animate-ui/radix/dialog';
+import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogBody} from '@/components/animate-ui/radix/dialog';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {validateProjectForm, validatePriceString, CURRENCY_LABEL} from '@/components/common/project';
 import {ProjectBasicForm} from '@/components/common/project/ProjectBasicForm';
@@ -168,7 +167,7 @@ export function CreateDialog({
         return;
       }
       if (!cfgResult.data?.has_config) {
-        toast.error('请先在"支付设置"中配置 clientID 与 clientSecret');
+        toast.error('请先在"支付设置"中配置 Client ID 与 Client Secret');
         return;
       }
     }
@@ -258,15 +257,15 @@ export function CreateDialog({
       </DialogTrigger>
       <DialogContent
         showCloseButton={false}
-        className={`${isMobile ? 'max-w-[92vw] max-h-[82vh]' : 'max-w-2xl max-h-[78vh]'} overflow-hidden rounded-[24px] border border-border/50 bg-background/95 p-0 shadow-[0_24px_60px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.03] dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.42)] dark:ring-white/[0.04]`}
+        className={`${isMobile ? 'max-w-[92vw] max-h-[82vh]' : 'max-w-2xl max-h-[78vh]'}`}
       >
-        <DialogHeader className={`gap-2 px-6 pt-4 ${isMobile ? 'text-left' : ''}`}>
+        <DialogHeader>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 space-y-0">
-              <DialogTitle className={`text-lg font-semibold tracking-tight ${isMobile ? 'text-left' : ''}`}>
+              <DialogTitle>
                 {createSuccess ? '项目创建成功' : '新建项目'}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
+              <DialogDescription>
                 {createSuccess ?
                   '您可以复制下方链接，分享您分发的内容' :
                   '创建一个新的项目来管理和分发您的内容'}
@@ -304,8 +303,8 @@ export function CreateDialog({
         <div className="h-px mx-6 w-full bg-black/6 dark:bg-white/[0.06]" />
 
         {createSuccess && createdProject ? (
-          <div className="px-6">
-            <div className="my-4">
+          <DialogBody className={isMobile ? 'max-h-[58vh]' : 'max-h-[52vh]'}>
+            <div className="px-6 py-4">
               <div className="flex gap-2">
                 <Input
                   value={getReceiveLink(createdProject.id)}
@@ -314,7 +313,7 @@ export function CreateDialog({
                 />
                 <Button
                   size="sm"
-                  variant="secondary"
+                  variant="default"
                   onClick={async () => {
                     try {
                       await copyToClipboard(getReceiveLink(createdProject.id));
@@ -328,30 +327,30 @@ export function CreateDialog({
                 </Button>
                 <Button
                   size="sm"
-                  variant="secondary"
+                  variant="default"
                   onClick={() => openLink(getReceiveLink(createdProject.id))}
                 >
                   <ExternalLink className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-          </div>
+          </DialogBody>
         ) : (
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="flex min-h-0 w-full flex-1 flex-col"
-          >
-            <TabsContents
-              className="min-h-0 flex-1 bg-background"
-              transition={{duration: 0}}
+          <DialogBody className={isMobile ? 'max-h-[58vh]' : 'max-h-[52vh]'}>
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="flex min-h-0 w-full flex-1 flex-col"
             >
-              <TabsContent
-                value="basic"
+              <TabsContents
+                className="min-h-0 flex-1 bg-background"
                 transition={{duration: 0}}
-                className="min-h-0 flex-1"
               >
-                <ScrollArea className={`${isMobile ? 'h-[58vh]' : 'h-[52vh]'}`}>
+                <TabsContent
+                  value="basic"
+                  transition={{duration: 0}}
+                  className="min-h-0 flex-1"
+                >
                   <div className="space-y-6 px-6 pt-3 pb-6">
                     <ProjectBasicForm
                       formData={formData}
@@ -362,15 +361,13 @@ export function CreateDialog({
                       isMobile={isMobile}
                     />
                   </div>
-                </ScrollArea>
-              </TabsContent>
+                </TabsContent>
 
-              <TabsContent
-                value="distribution"
-                transition={{duration: 0}}
-                className="min-h-0 flex-1"
-              >
-                <ScrollArea className={`${isMobile ? 'h-[58vh]' : 'h-[52vh]'}`}>
+                <TabsContent
+                  value="distribution"
+                  transition={{duration: 0}}
+                  className="min-h-0 flex-1"
+                >
                   <div className="space-y-6 px-6 pt-3 pb-6">
                     <DistributionModeSelect
                       distributionType={formData.distributionType}
@@ -453,13 +450,13 @@ export function CreateDialog({
                       </div>
                     )}
                   </div>
-                </ScrollArea>
-              </TabsContent>
-            </TabsContents>
-          </Tabs>
+                </TabsContent>
+              </TabsContents>
+            </Tabs>
+          </DialogBody>
         )}
 
-        <DialogFooter className="gap-2 -mt-4 px-4 py-4 sm:justify-end">
+        <DialogFooter>
           {createSuccess ? (
             <Button
               onClick={() => {
@@ -467,7 +464,8 @@ export function CreateDialog({
                 resetForm();
               }}
               size="sm"
-              className="min-w-16"
+              variant="ghost"
+              className="rounded-full px-3 text-xs shadow-none"
             >
               关闭
             </Button>
@@ -476,7 +474,7 @@ export function CreateDialog({
               onClick={handleSubmit}
               disabled={loading || formData.distributionType === DistributionType.INVITE}
               size="sm"
-              className="min-w-16"
+              className="rounded-full px-3 text-xs shadow-none"
             >
               {loading ? '创建中...' :
                formData.distributionType === DistributionType.INVITE ? '开发中' :

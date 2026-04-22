@@ -23,10 +23,10 @@ import {Button} from '@/components/ui/button';
 import Link from 'next/link';
 import {PaymentSettingsDialog} from '@/components/common/payment';
 import {Badge} from '@/components/ui/badge';
-import {ScrollArea} from '@/components/ui/scroll-area';
 import {Separator} from '@/components/ui/separator';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogDescription,
@@ -382,15 +382,15 @@ export function ManagementBar() {
             </DialogTrigger>
             <DialogContent
               showCloseButton={false}
-              className="max-w-[520px] rounded-[24px] border border-border/50 bg-background/95 p-0 shadow-[0_24px_60px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.03] dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.42)] dark:ring-white/[0.04]"
+              className="max-w-[520px]"
             >
-              <DialogHeader className="px-5 pt-4">
-                <DialogTitle className="text-lg font-semibold tracking-tight">个人信息</DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
+              <DialogHeader>
+                <DialogTitle>个人信息</DialogTitle>
+                <DialogDescription>
                   管理账户信息、主题偏好和支付设置
                 </DialogDescription>
               </DialogHeader>
-              <ScrollArea className="max-h-[min(72vh,560px)]">
+              <DialogBody className="max-h-[min(72vh,560px)]">
                 <div className="space-y-5 px-5 pb-4">
                   {!isLoading && user && (
                     <>
@@ -583,7 +583,7 @@ export function ManagementBar() {
                     </div>
                   )}
                 </div>
-              </ScrollArea>
+              </DialogBody>
             </DialogContent>
           </Dialog>
           <PaymentSettingsDialog open={paymentOpen} onOpenChange={setPaymentOpen} />

@@ -20,7 +20,7 @@ function URLRow({label, value}: {label: string; value: string}) {
         <Input
           readOnly
           value={value}
-          className="bg-background font-mono text-xs shadow-none hover:bg-muted/70"
+          className="font-mono text-xs shadow-none h-8 border-dashed border-border"
         />
         <Button
           size="sm"
@@ -49,10 +49,10 @@ export function CallbackURLHint({notifyUrl, returnUrl}: CallbackURLHintProps) {
     <div className="space-y-4 rounded-[20px] border border-amber-500/10 bg-amber-500/[0.06] p-4 dark:border-amber-400/10 dark:bg-amber-400/[0.05]">
       <div className="flex items-center gap-2">
         <Info className="size-3.5" />
-        <p className="text-sm text-foreground font-medium">请先在 LDC 集市应用详情中配置回调地址</p>
+        <p className="text-xs font-medium text-foreground">请先在 LDC 集市应用详情中配置回调地址</p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-1">
         <URLRow label="notify_url" value={notifyUrl} />
         <URLRow label="return_url" value={returnUrl} />
       </div>

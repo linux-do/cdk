@@ -69,7 +69,7 @@ export function ProjectBasicForm({
     }
 
     if (!res.data.has_config) {
-      setPaymentDialogMessage('请先在支付设置中配置 clientID 与 clientSecret，然后再设置领取消耗积分。');
+      setPaymentDialogMessage('请先在支付设置中配置 Client ID 与 Client Secret，然后再设置领取消耗积分。');
       setPaymentDialogOpen(true);
       setPaymentConfigChecked(false);
       return false;
@@ -103,7 +103,7 @@ export function ProjectBasicForm({
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="name">
+        <Label className="text-xs">
           项目名称 <span className="text-red-500">*</span>
         </Label>
         <Input
@@ -116,7 +116,7 @@ export function ProjectBasicForm({
       </div>
 
       <div className="space-y-2">
-        <Label>项目标签</Label>
+        <Label className="text-xs">项目标签</Label>
         <TagSelector
           selectedTags={tags}
           availableTags={availableTags}
@@ -131,9 +131,9 @@ export function ProjectBasicForm({
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <DateTimePicker
           label={
-            <>
+            <Label className="text-xs">
               开始时间 <span className="text-red-500">*</span>
-            </>
+            </Label>
           }
           value={formData.startTime}
           onChange={(date) => updateField('startTime', date || new Date())}
@@ -141,9 +141,9 @@ export function ProjectBasicForm({
         />
         <DateTimePicker
           label={
-            <>
+            <Label className="text-xs">
               结束时间 <span className="text-red-500">*</span>
-            </>
+            </Label>
           }
           value={formData.endTime}
           onChange={(date) => updateField('endTime', date || new Date())}
@@ -153,7 +153,7 @@ export function ProjectBasicForm({
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <div className="space-y-2">
-          <Label>最低社区等级</Label>
+          <Label className="text-xs">最低社区等级</Label>
           <Select
             value={formData.minimumTrustLevel.toString()}
             onValueChange={(value) => updateField('minimumTrustLevel', parseInt(value) as TrustLevel)}
@@ -173,7 +173,7 @@ export function ProjectBasicForm({
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="riskLevel">最低社区分数</Label>
+            <Label className="text-xs">最低社区分数</Label>
             <TooltipProvider>
               <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
                 <TooltipTrigger asChild>
@@ -206,7 +206,7 @@ export function ProjectBasicForm({
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <div className="space-y-2">
-          <Label>限制相同 IP</Label>
+          <Label className="text-xs">限制相同 IP</Label>
           <Select
             value={formData.allowSameIP ? 'off' : 'on'}
             onValueChange={(value) => updateField('allowSameIP', value === 'off')}
@@ -223,7 +223,7 @@ export function ProjectBasicForm({
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="price">领取消耗积分</Label>
+            <Label className="text-xs">领取消耗积分</Label>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -281,7 +281,7 @@ export function ProjectBasicForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">项目描述</Label>
+        <Label className="text-xs">项目描述</Label>
         <MarkdownEditor
           value={formData.description}
           onChange={(value) => updateField('description', value)}
@@ -303,9 +303,8 @@ export function ProjectBasicForm({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="h-8 text-xs border-none shadow-none">取消</AlertDialogCancel>
+            <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
-              className="h-8 text-xs"
               onClick={() => {
                 setPaymentDialogOpen(false);
                 window.dispatchEvent(new Event('linux-do-cdk:open-payment-settings'));
