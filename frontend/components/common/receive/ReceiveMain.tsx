@@ -17,57 +17,66 @@ import {motion} from 'motion/react';
  * 加载骨架屏组件
  */
 const LoadingSkeleton = () => (
-  <div className="max-w-4xl mx-auto space-y-6">
+  <div className="mx-auto max-w-5xl space-y-6">
     {/* 返回按钮 */}
     <div className="flex items-center justify-between">
-      <Skeleton className="h-8 w-16 -ml-2 -mt-8" />
+      <Skeleton className="h-8 w-16 -ml-2" />
     </div>
 
-    {/* 项目标题和剩余数量 */}
-    <div className="flex items-start justify-between gap-4">
-      <div className="text-left space-y-4 flex-1">
-        <Skeleton className="h-10 w-3/4" />
-        <div className="flex flex-wrap gap-2">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-6 w-20 rounded-full" />
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-3/4" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-6 w-16 rounded-full" />
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-x-6 gap-y-3 border-y border-black/6 py-4 dark:border-white/[0.06] sm:grid-cols-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="space-y-1" >
+              <Skeleton className="h-3 w-14" />
+              <Skeleton className="h-4 w-24" />
+            </div>
           ))}
         </div>
-        <Skeleton className="h-4 w-64" />
+
+        <div className="space-y-3">
+          <Skeleton className="h-3 w-16" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        </div>
       </div>
 
-      <div className="text-right space-y-2">
-        <Skeleton className="h-4 w-20 ml-auto" />
-        <Skeleton className="h-10 w-16 ml-auto" />
-        <Skeleton className="h-4 w-24 ml-auto" />
-      </div>
-    </div>
-
-    {/* 项目信息卡片 */}
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="rounded-lg bg-muted p-3">
-          <Skeleton className="h-3 w-16 mb-1" />
-          <Skeleton className="h-5 w-24" />
+      <div className="rounded-[22px] bg-muted p-4 sm:p-5">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="mt-2 h-10 w-16" />
+        <Skeleton className="mt-2 h-4 w-28" />
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="rounded-[18px] bg-background/80 px-3 py-2.5">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="mt-2 h-4 w-36" />
+          </div>
+          <div className="rounded-[18px] bg-background/80 px-3 py-2.5">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="mt-2 h-4 w-36" />
+          </div>
         </div>
-      ))}
-    </div>
-
-    {/* 领取按钮或领取成功显示 */}
-    <div className="py-4">
-      <Skeleton className="h-10 w-full rounded-md" />
-    </div>
-
-    {/* 项目描述 */}
-    <div className="pt-6 border-t border-gray-200">
-      <Skeleton className="h-6 w-24 mb-3" />
-      <div className="rounded-lg bg-muted p-4">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-full" />
-        </div>
+        <Skeleton className="mt-4 h-9 w-full rounded-full" />
       </div>
     </div>
   </div>
@@ -166,13 +175,13 @@ export function ReceiveMain() {
           <LoadingSkeleton />
         </motion.div>
       ) : error || !project ? (
-        <motion.div className="space-y-4 max-w-4xl mx-auto" variants={contentVariants}>
+        <motion.div className="mx-auto max-w-5xl space-y-4" variants={contentVariants}>
           <div className="flex items-center justify-start">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleGoBack}
-              className="text-muted-foreground -ml-2 -mt-8"
+              className="-ml-2 text-muted-foreground"
             >
               <ArrowLeftIcon className="h-4 w-4 mr-2" />
               返回

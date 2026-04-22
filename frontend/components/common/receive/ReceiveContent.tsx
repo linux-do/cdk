@@ -1,23 +1,24 @@
 'use client';
 
-import React, {useState, useEffect, useRef} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import Link from 'next/link';
 import {useRouter, useSearchParams} from 'next/navigation';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
-import {CURRENCY_LABEL, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
-import {ArrowLeftIcon, Copy, Tag, Gift, Clock, AlertCircle, Package, Coins, Loader2} from 'lucide-react';
+import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import {AvatarGroup, AvatarGroupTooltip} from '@/components/animate-ui/components/animate/avatar-group';
+import {CURRENCY_LABEL, DISTRIBUTION_MODE_NAMES, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
+import {ArrowLeftIcon, Copy, Gift, Clock, AlertCircle, Package, Coins, Loader2, CalendarRange, Hash} from 'lucide-react';
 import ContentRender from '@/components/common/markdown/ContentRender';
 import {ReportButton} from '@/components/common/receive/ReportButton';
 import {ReceiveVerify, ReceiveVerifyRef} from '@/components/common/receive/ReceiveVerify';
 import services from '@/lib/services';
 import {BasicUserInfo} from '@/lib/services/core';
 import {GetProjectResponseData} from '@/lib/services/project';
-import {formatDateTimeWithSeconds, copyToClipboard} from '@/lib/utils';
+import {formatDate, formatDateTimeWithSeconds, copyToClipboard} from '@/lib/utils';
 import {motion} from 'motion/react';
-
-
+import {Separator} from '@/components/ui/separator';
 /**
  * 计算时间剩余显示文本
  */
@@ -43,8 +44,6 @@ interface ReceiveButtonProps {
   project: GetProjectResponseData;
   user: BasicUserInfo | null;
   currentTime: Date;
-  hasReceived: boolean;
-  receivedContent: string | null;
   isVerifying: boolean;
   onReceive: () => void;
 }
@@ -56,42 +55,9 @@ const ReceiveButton = ({
   project,
   user,
   currentTime,
-  hasReceived,
-  receivedContent,
   isVerifying,
   onReceive,
 }: ReceiveButtonProps) => {
-  if (hasReceived && receivedContent) {
-    const contentItems = receivedContent.split('$\n*');
-
-    return (
-      <div className="-mt-4 rounded-lg bg-muted p-3">
-        <div className="text-xs text-muted-foreground mb-2">分发内容</div>
-        <div className="space-y-2">
-          {contentItems.map((item, index) => (
-            <div key={index} className="flex-1 min-w-0 flex items-center justify-between gap-2">
-              <code className="block text-sm font-bold text-gray-900 dark:text-gray-100 break-all">
-                {item}
-              </code>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-3 flex-shrink-0 h-7 w-7 p-0"
-                onClick={() => {
-                  const cleanContent = item.replace(/^[\u4e00-\u9fa5\w]+\d*:\s*/, '');
-                  copyToClipboard(cleanContent);
-                  toast.success('复制成功');
-                }}
-              >
-                <Copy className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   const now = currentTime;
   const startTime = new Date(project.start_time);
   const endTime = new Date(project.end_time);
@@ -99,7 +65,7 @@ const ReceiveButton = ({
   if (now < startTime) {
     const timeRemaining = getTimeRemainingText(startTime, now);
     return (
-      <Button disabled className="w-full cursor-not-allowed bg-muted text-gray-400">
+      <Button disabled className="h-9 w-full cursor-not-allowed rounded-full bg-muted text-muted-foreground shadow-none">
         <Clock className="w-4 h-4 mr-2" />
         时间未到 {timeRemaining ? `(${timeRemaining})` : ''}
       </Button>
@@ -108,7 +74,7 @@ const ReceiveButton = ({
 
   if (now > endTime) {
     return (
-      <Button disabled className="w-full cursor-not-allowed bg-muted text-gray-400">
+      <Button disabled className="h-9 w-full cursor-not-allowed rounded-full bg-muted text-muted-foreground shadow-none">
         <AlertCircle className="w-4 h-4 mr-2" />
         项目已结束
       </Button>
@@ -117,7 +83,7 @@ const ReceiveButton = ({
 
   if (project.available_items_count <= 0) {
     return (
-      <Button disabled className="w-full cursor-not-allowed bg-muted text-gray-400">
+      <Button disabled className="h-9 w-full cursor-not-allowed rounded-full bg-muted text-muted-foreground shadow-none">
         <Package className="w-4 h-4 mr-2" />
         库存已空
       </Button>
@@ -126,9 +92,18 @@ const ReceiveButton = ({
 
   if (!user || user.trust_level < project.minimum_trust_level) {
     return (
-      <Button disabled className="w-full cursor-not-allowed bg-muted text-gray-400">
+      <Button disabled className="h-9 w-full cursor-not-allowed rounded-full bg-muted text-muted-foreground shadow-none">
         <AlertCircle className="w-4 h-4 mr-2" />
         信任等级不足
+      </Button>
+    );
+  }
+
+  if (project.is_completed) {
+    return (
+      <Button disabled className="h-9 w-full cursor-not-allowed rounded-full bg-muted text-muted-foreground shadow-none">
+        <Package className="w-4 h-4 mr-2" />
+        项目已完成
       </Button>
     );
   }
@@ -140,7 +115,7 @@ const ReceiveButton = ({
     <Button
       onClick={onReceive}
       disabled={isVerifying}
-      className="w-full"
+      className="h-9 w-full rounded-full shadow-none"
     >
       {isVerifying ? (
         <>
@@ -162,6 +137,98 @@ const ReceiveButton = ({
   );
 };
 
+function ReceivedContentPanel({receivedContent}: {receivedContent: string}) {
+  const contentItems = receivedContent.split('$\n*').filter(Boolean);
+
+  return (
+    <div className="space-y-2.5">
+      <div className="text-[11px] font-medium text-muted-foreground">领取内容</div>
+      <div className="space-y-2">
+        {contentItems.map((item, index) => (
+          <div key={index} className="flex min-w-0 items-center justify-between gap-2 rounded-[18px] bg-background/80 px-3 py-2.5">
+            <code className="block break-all text-[13px] font-semibold text-foreground">
+              {item}
+            </code>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-2 h-7 w-7 flex-shrink-0 rounded-full p-0"
+              onClick={() => {
+                const cleanContent = item.replace(/^[\u4e00-\u9fa5\w]+\d*:\s*/, '');
+                copyToClipboard(cleanContent);
+                toast.success('复制成功');
+              }}
+            >
+              <Copy className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VolunteerBanner() {
+  const [items, setItems] = useState<VolunteerItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadItems = async () => {
+      try {
+        const response = await fetch('/heart.json');
+        if (!response.ok) return;
+        const data = await response.json() as VolunteerItem[];
+        if (!cancelled && Array.isArray(data)) {
+          const shuffled = [...data].sort(() => Math.random() - 0.5);
+          setItems(shuffled.slice(0, 6));
+        }
+      } catch {
+        if (!cancelled) {
+          setItems([]);
+        }
+      }
+    };
+
+    loadItems();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="text-[11px] font-medium text-muted-foreground">LINUX DO 公益广告</div>
+      <AvatarGroup className="h-10 w-24 -space-x-2">
+        {items.map((item) => (
+          <Avatar key={item.detailUrl} onClick={() => window.open(item.detailUrl, '_blank')}>
+            <AvatarImage src={item.photoUrl} alt={item.name} />
+            <AvatarFallback>{item.name.slice(0, 1)}</AvatarFallback>
+            <AvatarGroupTooltip>
+              <img src={item.photoUrl} alt={item.name} className="w-24 h-24 object-cover" />
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-semibold">{item.categoryName} · {item.name}</span>
+                <span className="text-xs text-muted">走失时间：{item.lostDay}</span>
+                <span className="text-xs text-muted">走失地点：{item.lostAddress}</span>
+                {item.feature && (
+                  <>
+                    <span className="text-xs text-muted">特征：{item.feature}</span>
+                  </>
+                )}
+              </div>
+            </AvatarGroupTooltip>
+          </Avatar>
+        ))}
+      </AvatarGroup>
+    </div>
+  );
+}
+
 /**
  * ReceiveContent 组件的 Props 接口
  */
@@ -171,6 +238,19 @@ interface ReceiveContentProps {
     user: BasicUserInfo | null;
     projectId: string;
   };
+}
+
+interface VolunteerItem {
+  name: string;
+  sex: string;
+  birthDay: string;
+  lostDay: string;
+  lostAddress: string;
+  lostHeight: string;
+  feature: string;
+  photoUrl: string;
+  detailUrl: string;
+  categoryName: string;
 }
 
 /**
@@ -314,6 +394,50 @@ export function ReceiveContent({data}: ReceiveContentProps) {
   }, [isAwaitingPayment, projectId]);
 
   const trustLevelConfig = TRUST_LEVEL_OPTIONS.find((option) => option.value === currentProject.minimum_trust_level);
+  const distributionModeName = DISTRIBUTION_MODE_NAMES[currentProject.distribution_type] || '分发项目';
+  const startTime = new Date(currentProject.start_time);
+  const endTime = new Date(currentProject.end_time);
+  const receivedCount = Math.max(currentProject.total_items - currentProject.available_items_count, 0);
+  const projectContentItems = receivedContent?.split('$\n*').filter(Boolean) || [];
+  const statusLabel = currentProject.is_completed ?
+    '已完成' :
+    hasReceived ?
+    '已领取' :
+    currentTime < startTime ?
+      '未开始' :
+      currentTime > endTime ?
+        '已结束' :
+        currentProject.available_items_count <= 0 ?
+          '已领完' :
+          '进行中';
+  const createdAtText = formatDate(currentProject.created_at);
+  const metaItems = [
+    {
+      label: '分发人',
+      value: currentProject.creator_nickname || currentProject.creator_username,
+      href: `https://linux.do/u/${currentProject.creator_username}/summary`,
+    },
+    {
+      label: '分发模式',
+      value: distributionModeName,
+    },
+    {
+      label: '社区分数',
+      value: `${100 - currentProject.risk_level}`,
+    },
+    {
+      label: '信任等级',
+      value: trustLevelConfig?.label || '无限制',
+    },
+    {
+      label: '消耗 LDC',
+      value: Number(currentProject.price || '0') > 0 ? currentProject.price || '0' : '免费',
+    },
+    {
+      label: 'IP 规则',
+      value: currentProject.allow_same_ip ? '允许同 IP' : '限制同 IP',
+    },
+  ];
 
   const containerVariants = {
     hidden: {opacity: 0},
@@ -353,7 +477,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
 
   return (
     <motion.div
-      className="max-w-4xl mx-auto space-y-6"
+      className="mx-auto max-w-5xl space-y-6"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -363,7 +487,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
           variant="ghost"
           size="sm"
           onClick={handleGoBack}
-          className="text-muted-foreground -ml-2 -mt-8"
+          className="-ml-2 text-muted-foreground"
         >
           <ArrowLeftIcon className="h-4 w-4" />
           返回
@@ -373,103 +497,181 @@ export function ReceiveContent({data}: ReceiveContentProps) {
       {isAwaitingPayment && (
         <motion.div
           variants={itemVariants}
-          className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/40 dark:border-blue-900 px-4 py-3 text-sm text-blue-900 dark:text-blue-200"
+          className="flex items-center gap-3 rounded-[22px] bg-muted px-4 py-3 text-sm text-foreground"
         >
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>付款处理中,CDK 将在回调成功后自动发放。如长时间未到账,可刷新页面重试。</span>
         </motion.div>
       )}
 
-      <motion.div className="flex items-start justify-between gap-4" variants={itemVariants}>
-        <div className="text-left space-y-4">
-          <div className="text-4xl font-bold">{currentProject.name}</div>
-          <div className="flex flex-wrap gap-2">
-            {currentProject.tags && currentProject.tags.length > 0 ? (
-              currentProject.tags.slice(0, 10).map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  <Tag className="h-4 w-4 mr-1" />
-                  {tag}
+      <motion.div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]" variants={itemVariants}>
+        <div className="min-w-0 space-y-4">
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <div className="text-[26px] font-bold tracking-tight text-foreground sm:text-[30px]">
+                {currentProject.name}
+              </div>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                <span>共 {currentProject.total_items} 项内容</span>
+                <span className="text-muted-foreground/50">/</span>
+                <span>剩余 {currentProject.available_items_count} 项</span>
+                <span className="text-muted-foreground/50">/</span>
+                <span>创建于 {createdAtText}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {currentProject.tags && currentProject.tags.length > 0 ? (
+                currentProject.tags.slice(0, 10).map((tag) => (
+                  <Badge key={tag} variant="secondary" className="h-5 rounded-full px-2 text-[10px] font-medium">
+                    <Hash className="mr-1 size-3" />
+                    {tag}
+                  </Badge>
+                ))
+              ) : (
+                <Badge variant="secondary" className="h-5 rounded-full px-2 text-[10px] font-medium">
+                  <Hash className="mr-1 size-3" />
+                  无标签
                 </Badge>
-              ))
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2 border-y border-black/6 py-3 dark:border-white/[0.06]">
+            <div className="text-[11px] font-medium tracking-wide text-muted-foreground">
+              项目摘要
+            </div>
+            <div className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+              {metaItems.map((item) => {
+                const content = (
+                  <div className="grid grid-cols-[72px_minmax(0,1fr)] items-baseline gap-3 py-1">
+                    <div className="text-[11px] font-medium tracking-wide text-muted-foreground">
+                      {item.label}
+                    </div>
+                    <div className="min-w-0 text-[14px] font-semibold leading-5 text-foreground">
+                      <span className="block truncate">
+                        {item.value}
+                        {item.label === '消耗 LDC' && item.value !== '免费' ? ` ${CURRENCY_LABEL}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                );
+
+                return item.href ? (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block min-w-0 transition-colors hover:text-foreground"
+                  >
+                    {content}
+                  </Link>
+                ) : (
+                  <div key={item.label} className="min-w-0">
+                    {content}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-[11px] font-medium tracking-wide text-muted-foreground">项目内容</div>
+            {projectContentItems.length > 0 ? (
+              <div className="space-y-2">
+                {projectContentItems.map((item, index) => (
+                  <div
+                    key={`${item}-${index}`}
+                    className="rounded-[16px] bg-muted/55 px-3 py-2 text-[13px] font-medium text-foreground"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
             ) : (
-              <Badge variant="secondary">
-                <Tag className="h-4 w-4 mr-1" />
-                无标签
-              </Badge>
+              <div className="rounded-[16px] bg-muted/45 px-3 py-2 text-[13px] font-medium text-muted-foreground">
+                请先领取 CDK
+              </div>
             )}
           </div>
-          <div className="text-sm text-muted-foreground">
-            {formatDateTimeWithSeconds(currentProject.start_time)} - {formatDateTimeWithSeconds(currentProject.end_time)}
+
+          <div className="h-px w-full bg-black/6 dark:bg-white/[0.06]" />
+
+          <div className="space-y-2">
+            <div className="text-[11px] font-medium tracking-wide text-muted-foreground">项目描述</div>
+            <ContentRender
+              content={currentProject.description || '暂无项目描述'}
+              className="markdown-content text-[14px] leading-6 text-foreground/90"
+            />
           </div>
         </div>
 
-        <div className="text-right space-y-2">
-          <div className="text-sm text-muted-foreground">剩余名额</div>
-          <div className="text-4xl font-bold">{currentProject.available_items_count}</div>
-          <div className="text-sm text-muted-foreground">共 {currentProject.total_items} 个</div>
-        </div>
-      </motion.div>
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          <div className="space-y-4">
+            <div className="space-y-4 rounded-[22px] bg-muted/70 p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[11px] font-medium text-muted-foreground">领取状态</div>
+                  <div className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+                    {receivedCount} / {currentProject.total_items}
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    已领取 {receivedCount} 项，共 {currentProject.total_items} 项
+                  </div>
+                </div>
+                <Badge variant="secondary" className="h-6 rounded-full px-2.5 text-[11px] font-medium">
+                  <CalendarRange className="mr-1 size-3.5" />
+                  {statusLabel}
+                </Badge>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                <div className="rounded-[18px] bg-background/80 px-3 py-2.5">
+                  <div className="text-[11px] font-medium text-muted-foreground">开始时间</div>
+                  <div className="mt-1 text-xs font-medium text-foreground">
+                    {formatDateTimeWithSeconds(currentProject.start_time)}
+                  </div>
+                </div>
+                <div className="rounded-[18px] bg-background/80 px-3 py-2.5">
+                  <div className="text-[11px] font-medium text-muted-foreground">结束时间</div>
+                  <div className="mt-1 text-xs font-medium text-foreground">
+                    {formatDateTimeWithSeconds(currentProject.end_time)}
+                  </div>
+                </div>
+              </div>
 
-      <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-3" variants={itemVariants}>
-        <div className="rounded-lg bg-muted p-3">
-          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">发布人</div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-            <Link
-              href={`https://linux.do/u/${currentProject.creator_username}/summary`}
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              {currentProject.creator_nickname || currentProject.creator_username}
-            </Link>
+              <Separator className="bg-black/6 dark:bg-white/[0.06]" />
+
+              <div className="space-y-2.5">
+                <div className="text-[11px] font-medium text-muted-foreground">领取操作</div>
+                <ReceiveButton
+                  project={currentProject}
+                  user={user}
+                  currentTime={currentTime}
+                  isVerifying={isVerifying}
+                  onReceive={handleReceive}
+                />
+              </div>
+
+              {hasReceived && receivedContent && (
+                <>
+                  <Separator className="bg-black/6 dark:bg-white/[0.06]" />
+                  <ReceivedContentPanel receivedContent={receivedContent} />
+                </>
+              )}
+
+              <div className="flex justify-end pt-1">
+                <ReportButton
+                  projectId={projectId}
+                  user={user}
+                  hasReported={false}
+                  variant="text"
+                />
+              </div>
+            </div>
+
+            <VolunteerBanner />
           </div>
-        </div>
-        <div className="rounded-lg bg-muted p-3">
-          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">最低用户分数</div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{100 - currentProject.risk_level}</div>
-        </div>
-        <div className="rounded-lg bg-muted p-3">
-          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">信任等级</div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{trustLevelConfig?.label}</div>
-        </div>
-        <div className="rounded-lg bg-muted p-3">
-          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">IP 限制</div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-            {currentProject.allow_same_ip ? '允许同一 IP' : '限制同一 IP'}
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div className="py-4" variants={itemVariants}>
-        <ReceiveButton
-          project={currentProject}
-          user={user}
-          currentTime={currentTime}
-          hasReceived={hasReceived}
-          receivedContent={receivedContent}
-          isVerifying={isVerifying}
-          onReceive={handleReceive}
-        />
-      </motion.div>
-
-      <motion.div className="pt-6 border-t border-gray-200" variants={itemVariants}>
-        <h3 className="font-medium mb-3">项目描述</h3>
-        <div className="rounded-lg bg-muted p-6">
-          <ContentRender
-            content={currentProject.description}
-            className="text-gray-700 dark:text-gray-200 leading-relaxed markdown-content"
-          />
-        </div>
-      </motion.div>
-
-      <motion.div variants={itemVariants}>
-        <hr className="border-t border-gray-200 dark:border-gray-700" />
-        <div className="pt-4">
-          <ReportButton
-            projectId={projectId}
-            user={user}
-            hasReported={false}
-            variant="text"
-          />
         </div>
       </motion.div>
 

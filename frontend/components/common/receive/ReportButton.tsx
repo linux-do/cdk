@@ -107,11 +107,11 @@ export function ReportButton({projectId, user, hasReported = false, variant = 'd
           disabled={!user || hasReportedLocal}
           className={
             variant === 'text' ?
-              'h-auto p-0 text-sm text-muted-foreground hover:text-foreground font-normal justify-start' :
+              'h-auto p-0 text-[11px] text-muted-foreground hover:text-foreground font-normal justify-start' :
               'h-9 px-3 text-xs border-muted-foreground/30 text-muted-foreground hover:text-foreground hover:border-muted-foreground'
           }
         >
-          <Flag className={variant === 'text' ? 'w-4 h-4 mr-2' : 'w-3 h-3 mr-1'} />
+          <Flag className={variant === 'text' ? 'mr-1.5 h-3 w-3' : 'w-3 h-3 mr-1'} />
           {!user ? '请先登录' : hasReportedLocal ? '已举报' : '举报项目'}
         </Button>
       </DialogTrigger>
