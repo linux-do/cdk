@@ -143,12 +143,12 @@ jobs:
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      # update image tags in values/cdk.yaml
-      - name: Update image tags in values/cdk.yaml
+      # update image tags in values/cdk/cdk.yaml
+      - name: Update image tags in values/cdk/cdk.yaml
         run: |
           cd helm-charts
-          yq -i '.image.tag = "${{ github.ref_name }}"' values/cdk.yaml
-          yq -i '.image.webTag = "${{ github.ref_name }}"' values/cdk.yaml
+          yq -i '.image.tag = "${{ github.ref_name }}"' values/cdk/cdk.yaml
+          yq -i '.image.webTag = "${{ github.ref_name }}"' values/cdk/cdk.yaml
 
       # commit and push to a new branch, then open a PR for review
       - name: Commit, push and create PR
@@ -159,13 +159,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b update/cdk-${{ github.ref_name }}
-          git add values/cdk.yaml
+          git add values/cdk/cdk.yaml
           git commit -m "chore: update cdk image tag to ${{ github.ref_name }}"
           git push origin update/cdk-${{ github.ref_name }}
           HELM_REPO=$(echo "${{ vars.HELM_CHARTS_REPO }}" | sed 's/git@github.com://;s/\.git$//')
           gh pr create \
             --repo "${HELM_REPO}" \
             --title "chore: update cdk image tag to ${{ github.ref_name }}" \
-            --body "Automated PR: update \`values/cdk.yaml\` image tags to \`${{ github.ref_name }}\` after Docker image build." \
+            --body "Automated PR: update \`values/cdk/cdk.yaml\` image tags to \`${{ github.ref_name }}\` after Docker image build." \
             --base main \
             --head update/cdk-${{ github.ref_name }}
