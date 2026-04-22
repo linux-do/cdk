@@ -108,7 +108,7 @@ jobs:
             type=ref,event=tag
             type=sha,format=short,prefix=
 
-      # build and push frontend docker image
+      # build and push frontend docker image with version argument
       - name: Build Frontend Docker image
         uses: docker/build-push-action@v5
         with:
@@ -117,6 +117,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
+          build-args: |
+            VERSION=${{ github.ref_type == 'tag' && github.ref_name || '' }}
 
   update_helm_values:
     runs-on: ubuntu-latest
@@ -143,12 +145,25 @@ jobs:
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      # update image tags in values/cdk.yaml
-      - name: Update image tags in values/cdk.yaml
+      # determine helm values file based on tag type (production or test)
+      - name: Determine Helm values file
+        id: helm_config
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "values_file=values/cdk/cdk.yaml" >> "$GITHUB_OUTPUT"
+            echo "branch_prefix=update/cdk" >> "$GITHUB_OUTPUT"
+          else
+            echo "values_file=values/cdk_test/cdk.yaml" >> "$GITHUB_OUTPUT"
+            echo "branch_prefix=update/cdk_test" >> "$GITHUB_OUTPUT"
+          fi
+
+      # update image tags in helm values file
+      - name: Update image tags in helm values file
         run: |
           cd helm-charts
-          yq -i '.image.tag = "${{ github.ref_name }}"' values/cdk.yaml
-          yq -i '.image.webTag = "${{ github.ref_name }}"' values/cdk.yaml
+          yq -i '.image.tag = "${{ github.ref_name }}"' ${{ steps.helm_config.outputs.values_file }}
+          yq -i '.image.webTag = "${{ github.ref_name }}"' ${{ steps.helm_config.outputs.values_file }}
 
       # commit and push to a new branch, then open a PR for review
       - name: Commit, push and create PR
@@ -158,14 +173,15 @@ jobs:
           cd helm-charts
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b update/cdk-${{ github.ref_name }}
-          git add values/cdk.yaml
+          BRANCH_NAME="${{ steps.helm_config.outputs.branch_prefix }}-${{ github.ref_name }}"
+          git checkout -b "$BRANCH_NAME"
+          git add ${{ steps.helm_config.outputs.values_file }}
           git commit -m "chore: update cdk image tag to ${{ github.ref_name }}"
-          git push origin update/cdk-${{ github.ref_name }}
+          git push origin "$BRANCH_NAME"
           HELM_REPO=$(echo "${{ vars.HELM_CHARTS_REPO }}" | sed 's/git@github.com://;s/\.git$//')
           gh pr create \
             --repo "${HELM_REPO}" \
             --title "chore: update cdk image tag to ${{ github.ref_name }}" \
-            --body "Automated PR: update \`values/cdk.yaml\` image tags to \`${{ github.ref_name }}\` after Docker image build." \
+            --body "Automated PR: update \`${{ steps.helm_config.outputs.values_file }}\` image tags to \`${{ github.ref_name }}\` after Docker image build." \
             --base main \
-            --head update/cdk-${{ github.ref_name }}
+            --head "$BRANCH_NAME"

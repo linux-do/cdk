@@ -25,13 +25,15 @@
 package router
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
+	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/logger"
 	"github.com/linux-do/cdk/internal/otel_trace"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	"strconv"
-	"time"
 )
 
 func loggerMiddleware() gin.HandlerFunc {
@@ -58,18 +60,22 @@ func loggerMiddleware() gin.HandlerFunc {
 		latency := end.Sub(start)
 
 		// 打印日志
-		logger.InfoF(
-			ctx,
-			"[LoggerMiddleware] %s %s\nStartTime: %s\nEndTime: %s\nLatency: %d\nClientIP: %s\nResponse: %d %d",
-			c.Request.Method,
-			path,
-			start.Format(time.RFC3339),
-			end.Format(time.RFC3339),
-			latency.Milliseconds(),
-			c.ClientIP(),
-			c.Writer.Status(),
-			c.Writer.Size(),
-		)
+		// 排除健康检查接口
+		healthPath := config.Config.App.APIPrefix + "/v1/health"
+		if c.Request.URL.Path != healthPath {
+			logger.InfoF(
+				ctx,
+				"[LoggerMiddleware] %s %s\nStartTime: %s\nEndTime: %s\nLatency: %d\nClientIP: %s\nResponse: %d %d",
+				c.Request.Method,
+				path,
+				start.Format(time.RFC3339),
+				end.Format(time.RFC3339),
+				latency.Milliseconds(),
+				c.ClientIP(),
+				c.Writer.Status(),
+				c.Writer.Size(),
+			)
+		}
 
 		// 设置 Span 状态
 		if c.Writer.Status() >= 400 {

@@ -22,8 +22,16 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# accepts version argument to override package.json version
+ARG VERSION=""
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# update package.json version if VERSION arg is provided
+RUN if [ -n "$VERSION" ]; then \
+  node -e "const pkg = require('./package.json'); pkg.version = '$VERSION'; require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2))"; \
+fi
 
 EXPOSE 3000
 
