@@ -219,6 +219,14 @@ export interface GetProjectResponseData extends Project {
   creator_username: string;
   /** 创建者昵称 */
   creator_nickname: string;
+  /** 项目是否已完成 */
+  is_completed?: boolean;
+  /** 项目状态 */
+  status?: number;
+  /** 举报数量 */
+  report_count?: number;
+  /** 是否在探索页隐藏 */
+  hide_from_explore?: boolean;
   /** 项目标签列表 */
   tags: string[] | null;
   /** 可领取数量 */
