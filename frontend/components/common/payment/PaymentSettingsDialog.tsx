@@ -83,7 +83,7 @@ export function PaymentSettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="rounded-[24px] border-none bg-background p-0 shadow-none"
+        className="rounded-[24px] border border-border/50 bg-background/95 p-0 shadow-[0_24px_60px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.03] dark:bg-background dark:shadow-[0_24px_60px_rgba(0,0,0,0.42)] dark:ring-white/[0.04]"
       >
         <div className="px-6 pt-4">
           <div className="min-w-0">
