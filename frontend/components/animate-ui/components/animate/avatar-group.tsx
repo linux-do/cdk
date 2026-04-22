@@ -8,7 +8,7 @@ import {
   type AvatarGroupProps as AvatarGroupPropsPrimitive,
   type AvatarGroupTooltipProps as AvatarGroupTooltipPropsPrimitive,
 } from '@/components/animate-ui/primitives/animate/avatar-group';
-import { cn } from '@/lib/utils';
+import {cn} from '@/lib/utils';
 
 type AvatarGroupProps = AvatarGroupPropsPrimitive;
 
@@ -43,8 +43,8 @@ function AvatarGroupTooltip({
   return (
     <AvatarGroupTooltipPrimitive
       className={cn(
-        'bg-primary text-primary-foreground z-50 w-fit rounded-md px-3 py-1.5 text-xs text-balance',
-        className,
+          'bg-primary text-primary-foreground z-50 w-fit rounded-md px-3 py-1.5 text-xs text-balance',
+          className,
       )}
       {...props}
     >

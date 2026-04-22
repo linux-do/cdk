@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import {useState, useEffect, useRef} from 'react';
 import Link from 'next/link';
 import {useRouter, useSearchParams} from 'next/navigation';
@@ -203,14 +204,14 @@ function VolunteerBanner() {
 
   return (
     <div className="space-y-2">
-      <div className="text-[11px] font-medium text-muted-foreground">LINUX DO 公益广告</div>
+      <div className="text-[11px] font-medium text-muted-foreground">LINUX DO 公益广告 (Beta)</div>
       <AvatarGroup className="h-10 w-24 -space-x-2">
         {items.map((item) => (
           <Avatar key={item.detailUrl} onClick={() => window.open(item.detailUrl, '_blank')}>
             <AvatarImage src={item.photoUrl} alt={item.name} />
             <AvatarFallback>{item.name.slice(0, 1)}</AvatarFallback>
             <AvatarGroupTooltip>
-              <img src={item.photoUrl} alt={item.name} className="w-24 h-24 object-cover" />
+              <Image src={item.photoUrl} alt={item.name} width={96} height={96} className="h-24 w-24 object-cover" />
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-semibold">{item.categoryName} · {item.name}</span>
                 <span className="text-xs text-muted">走失时间：{item.lostDay}</span>

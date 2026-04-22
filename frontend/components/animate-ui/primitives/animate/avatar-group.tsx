@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { HTMLMotionProps, motion, type Transition } from 'motion/react';
+import {HTMLMotionProps, motion, type Transition} from 'motion/react';
 
 import {
   TooltipProvider,
@@ -43,12 +43,12 @@ function AvatarContainer({
           initial="initial"
           whileHover="hover"
           whileTap="hover"
-          style={{ position: 'relative', zIndex }}
+          style={{position: 'relative', zIndex}}
         >
           <motion.div
             variants={{
-              initial: { y: 0 },
-              hover: { y: translate },
+              initial: {y: 0},
+              hover: {y: translate},
             }}
             {...props}
           />
@@ -71,7 +71,7 @@ function AvatarGroup({
   ref,
   children,
   id,
-  transition = { type: 'spring', stiffness: 300, damping: 17 },
+  transition = {type: 'spring', stiffness: 300, damping: 17},
   invertOverlap = false,
   translate = '-30%',
   openDelay = 0,
@@ -80,7 +80,7 @@ function AvatarGroup({
   sideOffset = 25,
   align = 'center',
   alignOffset = 0,
-  tooltipTransition = { type: 'spring', stiffness: 300, damping: 35 },
+  tooltipTransition = {type: 'spring', stiffness: 300, damping: 35},
   style,
   ...props
 }: AvatarGroupProps) {

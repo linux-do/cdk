@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 function getStrictContext<T>(
-  name?: string,
+    name?: string,
 ): readonly [
   ({
     value,
@@ -33,4 +33,4 @@ function getStrictContext<T>(
   return [Provider, useSafeContext] as const;
 }
 
-export { getStrictContext };
+export {getStrictContext};
