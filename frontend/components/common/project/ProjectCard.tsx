@@ -3,10 +3,26 @@
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {MotionEffect} from '@/components/animate-ui/effects/motion-effect';
-import {CURRENCY_LABEL, DISTRIBUTION_MODE_NAMES, TRUST_LEVEL_CONFIG} from '@/components/common/project';
+import {CURRENCY_LABEL, DISTRIBUTION_MODE_NAMES} from '@/components/common/project';
 import {BadgeCheck, Boxes, Coins, Gauge, Pencil, ShieldCheck, Trash2, Waypoints} from 'lucide-react';
 import {formatDateTimeWithSeconds} from '@/lib/utils';
 import {ProjectListItem} from '@/lib/services/project/types';
+
+const TRUST_LEVEL_SHORT_LABELS: Partial<Record<number, string>> = {
+  1: 'TL1',
+  2: 'TL2',
+  3: 'TL3',
+  4: 'TL4',
+};
+
+const trimTrailingZeros = (value: string): string => value.replace(/\.0+$|(\.\d*?[1-9])0+$/, '$1');
+
+const formatCompactPrice = (price: number): {display: string; full: string; compacted: boolean} => {
+  const full = `${price.toFixed(2)} ${CURRENCY_LABEL}`;
+  const formatter = new Intl.NumberFormat('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2});
+  const numberOnly = trimTrailingZeros(formatter.format(price));
+  return {display: numberOnly, full, compacted: true};
+};
 
 interface ProjectCardProps {
   project: ProjectListItem;
@@ -26,7 +42,7 @@ export function ProjectCard({
   editButton,
 }: ProjectCardProps) {
   const priceNum = Number(project.price || '0');
-  const normalizedPrice = priceNum.toFixed(2);
+  const priceDisplay = formatCompactPrice(priceNum);
 
   const now = new Date();
   const startTime = new Date(project.start_time);
@@ -43,15 +59,15 @@ export function ProjectCard({
 
   const visibleTags = (project.tags || []).slice(0, 3);
   const hiddenTagCount = Math.max(0, (project.tags?.length || 0) - visibleTags.length);
-  const valueText = `${normalizedPrice} ${CURRENCY_LABEL}`;
   const itemText = `${project.total_items}`;
   const modeText = DISTRIBUTION_MODE_NAMES[project.distribution_type];
   const description = project.description?.trim();
-  const trustText = TRUST_LEVEL_CONFIG[project.minimum_trust_level]?.name || `T${project.minimum_trust_level}`;
+  const trustText = TRUST_LEVEL_SHORT_LABELS[project.minimum_trust_level];
   const riskText = `${String(project.risk_level).padStart(2, '0')}`;
   const showRisk = project.risk_level > 0;
   const showPrice = priceNum > 0;
   const showIpLimit = !project.allow_same_ip;
+  const showTrustLevel = Boolean(trustText);
 
   return (
     <TooltipProvider>
@@ -118,9 +134,9 @@ export function ProjectCard({
               {description || '暂无描述'}
             </p>
 
-            <div className="mt-4 space-y-1.5">
-              <div className="flex items-start justify-between gap-3 sm:gap-4">
-                <div className="min-w-0 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[10px] leading-5 text-muted-foreground sm:text-[11px]">
+            <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 sm:gap-x-4">
+              <div className="min-w-0 self-end">
+                <div className="flex max-h-11 flex-wrap items-center gap-x-2 gap-y-1 overflow-hidden text-[10px] leading-5 text-muted-foreground sm:gap-x-3 sm:text-[11px]">
                   {visibleTags.map((tag) => (
                     <span
                       key={tag}
@@ -134,15 +150,6 @@ export function ProjectCard({
                       +{hiddenTagCount}
                     </span>
                   )}
-                </div>
-
-                <div className="shrink-0 text-[10px] font-medium leading-5 text-foreground/85 sm:text-[11px]">
-                  {modeText}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between gap-3 sm:gap-4">
-                <div className="min-w-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] leading-5 text-muted-foreground md:flex-nowrap md:gap-x-3 sm:text-[11px]">
                   <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
                     <Boxes className="h-3.5 w-3.5 text-foreground/50" />
                     {itemText}
@@ -154,15 +161,26 @@ export function ProjectCard({
                     </span>
                   )}
                   {showPrice && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+                          <Coins className="h-3.5 w-3.5 text-foreground/50" />
+                          {priceDisplay.display}
+                        </span>
+                      </TooltipTrigger>
+                      {priceDisplay.compacted && (
+                        <TooltipContent side="top">
+                          <p>{priceDisplay.full}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  )}
+                  {showTrustLevel && (
                     <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                      <Coins className="h-3.5 w-3.5 text-foreground/50" />
-                      {valueText}
+                      <BadgeCheck className="h-3.5 w-3.5 text-foreground/50" />
+                      {trustText}
                     </span>
                   )}
-                  <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                    <BadgeCheck className="h-3.5 w-3.5 text-foreground/50" />
-                    {trustText}
-                  </span>
                   {showIpLimit && (
                     <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
                       <Waypoints className="h-3.5 w-3.5 text-foreground/50" />
@@ -170,10 +188,16 @@ export function ProjectCard({
                     </span>
                   )}
                 </div>
+              </div>
+
+              <div className="flex min-h-11 shrink-0 flex-col items-end justify-between gap-1 text-right">
+                <div className="text-[10px] font-medium leading-5 text-foreground/85 sm:text-[11px]">
+                  {modeText}
+                </div>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="inline-flex shrink-0 items-center self-center gap-1.5 text-left text-[10px] font-medium text-muted-foreground sm:text-[11px]">
+                    <div className="inline-flex shrink-0 items-center gap-1.5 text-[10px] font-medium text-muted-foreground sm:text-[11px]">
                       <ShieldCheck className={`h-3.5 w-3.5 ${statusIconClassName}`} />
                       <span>{statusLabel}</span>
                     </div>

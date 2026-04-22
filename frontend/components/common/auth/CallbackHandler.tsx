@@ -3,7 +3,7 @@
 import {useEffect, useState} from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import {LiquidButton} from '@/components/animate-ui/buttons/liquid';
-import {GalleryVerticalEnd, CheckCircle2, AlertCircle} from 'lucide-react';
+import {GalleryVerticalEnd} from 'lucide-react';
 import services from '@/lib/services';
 import {cn} from '@/lib/utils';
 
@@ -97,13 +97,11 @@ export function CallbackHandler({
             )}
             {status === 'success' && (
               <div className="flex flex-col items-center gap-3">
-                <CheckCircle2 className="h-8 w-8 text-green-500" />
                 <h2 className="text-lg font-medium text-green-500">验证成功</h2>
               </div>
             )}
             {status === 'error' && (
               <div className="flex flex-col items-center gap-4 w-full max-w-sm">
-                <AlertCircle className="h-8 w-8 text-destructive" />
                 <div className="text-center space-y-3 w-full">
                   <h2 className="text-md font-medium text-destructive">验证失败 ｜{error}</h2>
                   <LiquidButton
