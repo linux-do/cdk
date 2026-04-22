@@ -8,10 +8,8 @@ export const metadata: Metadata = {
 
 export default function ProjectPage() {
   return (
-    <div className="container mx-auto flex min-h-0 flex-1 flex-col px-4 pt-8 sm:px-6 lg:max-w-7xl lg:px-8">
-      <Suspense>
-        <ProjectMain />
-      </Suspense>
-    </div>
+    <Suspense>
+      <ProjectMain />
+    </Suspense>
   );
 }

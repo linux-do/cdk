@@ -193,17 +193,17 @@ export function DataTable({data, currentPage, totalItems, pageSize, onPageChange
       animate="visible"
       variants={containerVariants}
     >
-      <motion.div className="flex items-center justify-between" variants={itemVariants}>
-        <h2 className="text-base font-semibold">
+      <motion.div className="flex items-center justify-between gap-4" variants={itemVariants}>
+        <h2 className="shrink-0 text-base font-semibold whitespace-nowrap">
           详细记录
         </h2>
-        <div className="relative w-full sm:w-auto">
+        <div className="relative min-w-0 flex-1 sm:max-w-xs">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="搜索项目名称或创建者..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-8 w-48"
+            className="w-full pl-8"
           />
         </div>
       </motion.div>

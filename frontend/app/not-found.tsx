@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default function NotFound() {
   return (
     <div className="fixed inset-0 flex items-center justify-center dark:bg-black bg-white">
-      <div className="max-w-7xl mx-auto text-center px-4">
+      <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 md:px-8 lg:px-12">
         <motion.div
           initial={{opacity: 0, y: 20}}
           animate={{opacity: 1, y: 0}}
@@ -127,4 +127,3 @@ export default function NotFound() {
     </div>
   );
 }
-
