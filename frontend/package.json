@@ -1,6 +1,7 @@
 {
   "name": "linux-do-cdk",
   "version": "1.2.3",
+  "buildDate": "2026-01-01T00:00:00Z",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

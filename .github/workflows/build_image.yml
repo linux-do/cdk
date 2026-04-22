@@ -108,6 +108,11 @@ jobs:
             type=ref,event=tag
             type=sha,format=short,prefix=
 
+      # generate frontend build date in utc
+      - name: Generate frontend build date
+        id: frontend_build_meta
+        run: echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+
       # build and push frontend docker image with version argument
       - name: Build Frontend Docker image
         uses: docker/build-push-action@v5
@@ -119,6 +124,7 @@ jobs:
           platforms: linux/amd64
           build-args: |
             VERSION=${{ github.ref_type == 'tag' && github.ref_name || '' }}
+            BUILD_DATE=${{ steps.frontend_build_meta.outputs.build_date }}
 
   update_helm_values:
     runs-on: ubuntu-latest
