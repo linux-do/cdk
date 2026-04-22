@@ -149,7 +149,7 @@ export function DashboardMain() {
       {/* 问候语标题和时间选择器 */}
       <motion.div className="flex items-start justify-between gap-3" variants={itemVariants}>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h1 className="truncate text-[26px] font-bold tracking-tight text-foreground sm:text-[30px]">
             {getTimeGreeting()}好，{user?.username || 'Linux Do User'}
           </h1>
         </div>
