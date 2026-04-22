@@ -111,7 +111,7 @@ jobs:
       # generate frontend build date in utc
       - name: Generate frontend build date
         id: frontend_build_meta
-        run: echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+        run: echo "build_date=$(date -u +'%Y/%m/%d UTC')" >> "$GITHUB_OUTPUT"
 
       # build and push frontend docker image with version argument
       - name: Build Frontend Docker image
