@@ -30,7 +30,7 @@ replace_placeholder() {
 }
 
 replace_placeholder "__NEXT_PUBLIC_FRONTEND_BASE_URL__"  "$NEXT_PUBLIC_FRONTEND_BASE_URL"
-replace_placeholder "__NEXT_PUBLIC_BACKEND_BASE_URL__"  "$NEXT_PUBLIC_BACKEND_BASE_URL"
+replace_placeholder "https://build-placeholder.invalid"  "$NEXT_PUBLIC_BACKEND_BASE_URL"
 replace_placeholder "__NEXT_PUBLIC_HCAPTCHA_SITE_KEY__"  "$NEXT_PUBLIC_HCAPTCHA_SITE_KEY"
 replace_placeholder "__HCAPTCHA_SECRET_KEY__"  "$HCAPTCHA_SECRET_KEY"
 
