@@ -17,7 +17,9 @@ replace_placeholder() {
   escaped=$(printf '%s\n' "$real_value" | sed 's/[&/\]/\\&/g')
 
   local files
-  files=$(grep -rl "$placeholder" /app/.next || true)
+  if [ -f /app/.replace.files ]; then
+    files=$(grep -l "$placeholder" $(cat /app/.replace.files) 2>/dev/null || true)
+  fi
 
   if [ -z "$files" ]; then
     echo "⚠️  WARNING: placeholder '${placeholder}' not found in any file"
