@@ -28,6 +28,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-contrib/sessions"
@@ -78,12 +79,12 @@ func Serve() {
 			Domain:   config.Config.App.SessionDomain,
 			MaxAge:   config.Config.App.SessionAge,
 			HttpOnly: config.Config.App.SessionHttpOnly,
-			Secure:   config.Config.App.SessionSecure, // 若用 HTTPS 可以设 true
+			Secure:   config.Config.App.SessionSecure,
+			SameSite: http.SameSiteLaxMode,
 		},
 	)
 	r.Use(sessions.Sessions(config.Config.App.SessionCookieName, sessionStore))
-
-	// 补充中间件
+	r.Use(csrfMiddleware())
 	r.Use(otelgin.Middleware(config.Config.App.AppName), loggerMiddleware())
 
 	apiGroup := r.Group(config.Config.App.APIPrefix)

@@ -274,13 +274,24 @@ const markdownComponents: Components = {
             const target = e.target as HTMLImageElement;
             const errorDiv = document.createElement('div');
             errorDiv.className = 'bg-muted border border-border rounded-lg p-4 text-center text-muted-foreground my-6';
-            errorDiv.innerHTML = `
+
+            const iconDiv = document.createElement('div');
+            iconDiv.innerHTML = `
               <svg class="w-12 h-12 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
-              </svg>
-              <div class="text-sm">图片加载失败</div>
-              <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">${alt || src}</div>
-            `;
+              </svg>`;
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'text-sm';
+            msgDiv.textContent = '图片加载失败';
+
+            const detailDiv = document.createElement('div');
+            detailDiv.className = 'text-xs text-gray-400 dark:text-gray-500 mt-1';
+            detailDiv.textContent = alt || src || '';
+
+            errorDiv.appendChild(iconDiv);
+            errorDiv.appendChild(msgDiv);
+            errorDiv.appendChild(detailDiv);
             target.parentNode?.replaceChild(errorDiv, target);
           }}
         />

@@ -178,6 +178,7 @@ function showRiskBlockedDialog(riskInfo: RiskInfo): void {
 apiClient.interceptors.request.use(
     (config) => {
       config.withCredentials = true;
+      config.headers['X-Requested-With'] = 'XMLHttpRequest';
       return config;
     },
     (error) => Promise.reject(error),

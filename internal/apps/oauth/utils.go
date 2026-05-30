@@ -31,11 +31,8 @@ import (
 	"io"
 	"time"
 
-	"fmt"
-
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/linux-do/cdk/internal/config"
 	"github.com/linux-do/cdk/internal/db"
 	"github.com/linux-do/cdk/internal/otel_trace"
@@ -113,14 +110,7 @@ func doOAuth(ctx context.Context, code string) (*User, error) {
 	err = db.DB(ctx).Transaction(func(tx *gorm.DB) error {
 		var holder User
 		if conflictErr := tx.Where("username = ? AND id != ?", userInfo.Username, userInfo.Id).First(&holder).Error; conflictErr == nil {
-			// 存在冲突 -> 将占用者改名并注销
-			newParams := map[string]interface{}{
-				"username":  fmt.Sprintf("%s已注销: %s", holder.Username, uuid.NewString()),
-				"is_active": false,
-			}
-			if updateErr := tx.Model(&holder).Updates(newParams).Error; updateErr != nil {
-				return updateErr
-			}
+			return errors.New(UsernameConflict)
 		}
 
 		// 根据 ID 处理当前用户的 更新 或 创建
