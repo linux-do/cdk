@@ -126,6 +126,7 @@ async function handleReceiveRequest(request: NextRequest, pathname: string): Pro
         'User-Agent': 'CDK-Frontend-Middleware',
         'Referer': request.headers.get('referer') || '',
         'Origin': request.headers.get('origin') || '',
+        'X-Requested-With': 'XMLHttpRequest',
       },
       body: Object.keys(backendBody).length > 0 ? JSON.stringify(backendBody) : undefined,
       credentials: 'include',

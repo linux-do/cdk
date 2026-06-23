@@ -25,7 +25,9 @@
 package router
 
 import (
+	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +37,26 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
+
+// csrfMiddleware 校验状态变更请求必须携带 X-Requested-With 头，
+// 防止跨站请求伪造(CSRF)。OAuth callback 和支付回调因来源为外部跳转，放行。
+func csrfMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		method := c.Request.Method
+		if method == "POST" || method == "PUT" || method == "DELETE" || method == "PATCH" {
+			path := c.Request.URL.Path
+			if strings.HasSuffix(path, "/oauth/callback") || strings.HasSuffix(path, "/payment/notify") {
+				c.Next()
+				return
+			}
+			if c.GetHeader("X-Requested-With") != "XMLHttpRequest" {
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error_msg": "CSRF 验证失败", "data": nil})
+				return
+			}
+		}
+		c.Next()
+	}
+}
 
 func loggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
