@@ -9,14 +9,14 @@ import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {AvatarGroup, AvatarGroupTooltip} from '@/components/animate-ui/components/animate/avatar-group';
-import {CURRENCY_LABEL, DISTRIBUTION_MODE_NAMES, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
+import {CURRENCY_LABEL, DISTRIBUTION_MODE_NAMES, getRequirementLimitTypeLabel, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
 import {ArrowLeftIcon, Copy, Gift, Clock, AlertCircle, Package, Coins, Loader2, CalendarRange, Hash} from 'lucide-react';
 import ContentRender from '@/components/common/markdown/ContentRender';
 import {ReportButton} from '@/components/common/receive/ReportButton';
 import {ReceiveVerify, ReceiveVerifyRef} from '@/components/common/receive/ReceiveVerify';
 import services from '@/lib/services';
 import {BasicUserInfo} from '@/lib/services/core';
-import {GetProjectResponseData} from '@/lib/services/project';
+import {GetProjectResponseData, RequirementLimitType} from '@/lib/services/project';
 import {formatDate, formatDateTimeWithSeconds, copyToClipboard} from '@/lib/utils';
 import {motion} from 'motion/react';
 import {Separator} from '@/components/ui/separator';
@@ -91,11 +91,30 @@ const ReceiveButton = ({
     );
   }
 
-  if (!user || user.trust_level < project.minimum_trust_level) {
+  const trustLevelBlocked = !user ||
+    (project.trust_level_limit_type === RequirementLimitType.MINIMUM ?
+      user.trust_level < project.minimum_trust_level :
+      user.trust_level > project.minimum_trust_level);
+  const scoreThreshold = 100 - project.risk_level;
+  const scoreBlocked = !user ||
+    (project.score_limit_type === RequirementLimitType.MINIMUM ?
+      user.score < scoreThreshold :
+      user.score > scoreThreshold);
+
+  if (trustLevelBlocked) {
     return (
       <Button disabled className="h-9 w-full cursor-not-allowed rounded-full bg-muted text-muted-foreground shadow-none">
         <AlertCircle className="w-4 h-4 mr-2" />
-        信任等级不足
+        {project.trust_level_limit_type === RequirementLimitType.MINIMUM ? '信任等级不足' : '信任等级过高'}
+      </Button>
+    );
+  }
+
+  if (scoreBlocked) {
+    return (
+      <Button disabled className="h-9 w-full cursor-not-allowed rounded-full bg-muted text-muted-foreground shadow-none">
+        <AlertCircle className="w-4 h-4 mr-2" />
+        {project.score_limit_type === RequirementLimitType.MINIMUM ? '社区分数不足' : '社区分数过高'}
       </Button>
     );
   }
@@ -396,6 +415,9 @@ export function ReceiveContent({data}: ReceiveContentProps) {
 
   const trustLevelConfig = TRUST_LEVEL_OPTIONS.find((option) => option.value === currentProject.minimum_trust_level);
   const distributionModeName = DISTRIBUTION_MODE_NAMES[currentProject.distribution_type] || '分发项目';
+  const scoreThreshold = 100 - currentProject.risk_level;
+  const trustLabel = `${getRequirementLimitTypeLabel(currentProject.trust_level_limit_type)}${trustLevelConfig?.label || '无限制'}`;
+  const scoreLabel = `${getRequirementLimitTypeLabel(currentProject.score_limit_type)} ${scoreThreshold}`;
   const startTime = new Date(currentProject.start_time);
   const endTime = new Date(currentProject.end_time);
   const receivedCount = Math.max(currentProject.total_items - currentProject.available_items_count, 0);
@@ -424,11 +446,11 @@ export function ReceiveContent({data}: ReceiveContentProps) {
     },
     {
       label: '社区分数',
-      value: `${100 - currentProject.risk_level}`,
+      value: scoreLabel,
     },
     {
       label: '信任等级',
-      value: trustLevelConfig?.label || '无限制',
+      value: trustLabel,
     },
     {
       label: '消耗 LDC',

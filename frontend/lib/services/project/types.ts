@@ -14,6 +14,17 @@ export enum DistributionType {
 }
 
 /**
+ * 项目限制类型
+ */
+/* eslint-disable no-unused-vars */
+export enum RequirementLimitType {
+  /** 最低 */
+  MINIMUM = 0,
+  /** 最高 */
+  MAXIMUM = 1,
+}
+
+/**
  * 项目基础信息
  */
 export interface Project {
@@ -31,10 +42,14 @@ export interface Project {
   start_time: string;
   /** 结束时间 */
   end_time: string;
+  /** 社区等级限制类型 */
+  trust_level_limit_type: RequirementLimitType;
   /** 最低信任等级 */
   minimum_trust_level: TrustLevel;
   /** 是否允许同一IP */
   allow_same_ip: boolean;
+  /** 社区分数限制类型 */
+  score_limit_type: RequirementLimitType;
   /** 风险等级 */
   risk_level: number;
   /** 领取单价,字符串形式的两位小数。"0" 或空表示免费 */
@@ -61,10 +76,14 @@ export interface CreateProjectRequest {
   start_time: string;
   /** 结束时间 */
   end_time: string;
+  /** 社区等级限制类型 */
+  trust_level_limit_type?: RequirementLimitType;
   /** 最低信任等级 */
   minimum_trust_level: TrustLevel;
   /** 是否允许同一IP */
   allow_same_ip?: boolean;
+  /** 社区分数限制类型 */
+  score_limit_type?: RequirementLimitType;
   /** 风险等级 */
   risk_level?: number;
   /** 分发类型 */
@@ -91,10 +110,14 @@ export interface UpdateProjectRequest {
   start_time: string;
   /** 结束时间 */
   end_time: string;
+  /** 社区等级限制类型 */
+  trust_level_limit_type?: RequirementLimitType;
   /** 最低信任等级 */
   minimum_trust_level: TrustLevel;
   /** 是否允许同一IP */
   allow_same_ip?: boolean;
+  /** 社区分数限制类型 */
+  score_limit_type?: RequirementLimitType;
   /** 风险等级 */
   risk_level?: number;
   /** 追加的项目物品列表 */
@@ -284,10 +307,14 @@ export interface ProjectListItem {
   start_time: string;
   /** 结束时间 */
   end_time: string;
+  /** 社区等级限制类型 */
+  trust_level_limit_type: RequirementLimitType;
   /** 最低信任等级 */
   minimum_trust_level: TrustLevel;
   /** 是否允许同一IP */
   allow_same_ip: boolean;
+  /** 社区分数限制类型 */
+  score_limit_type: RequirementLimitType;
   /** 风险等级 */
   risk_level: number;
   /** 领取单价,字符串,两位小数 */

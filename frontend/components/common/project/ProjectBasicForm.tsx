@@ -19,9 +19,9 @@ import {TagSelector} from '@/components/ui/tag-selector';
 import {DateTimePicker} from '@/components/ui/DateTimePicker';
 import MarkdownEditor from '@/components/common/markdown/Editor';
 import {HelpCircle, Wallet} from 'lucide-react';
-import {FORM_LIMITS, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
+import {FORM_LIMITS, REQUIREMENT_LIMIT_TYPE_OPTIONS, TRUST_LEVEL_OPTIONS} from '@/components/common/project';
 import {TrustLevel} from '@/lib/services/core/types';
-import {DistributionType} from '@/lib/services/project/types';
+import {DistributionType, RequirementLimitType} from '@/lib/services/project/types';
 import {ProjectFormData} from '@/hooks/use-project-form';
 import services from '@/lib/services';
 
@@ -153,27 +153,50 @@ export function ProjectBasicForm({
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <div className="space-y-2">
-          <Label className="text-xs">最低社区等级</Label>
-          <Select
-            value={formData.minimumTrustLevel.toString()}
-            onValueChange={(value) => updateField('minimumTrustLevel', parseInt(value) as TrustLevel)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TRUST_LEVEL_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value.toString()}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="text-xs">社区等级限制</Label>
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-[120px_minmax(0,1fr)]'} gap-2`}>
+            <Select
+              value={formData.trustLevelLimitType.toString()}
+              onValueChange={(value) => updateField('trustLevelLimitType', parseInt(value) as RequirementLimitType)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {REQUIREMENT_LIMIT_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={formData.minimumTrustLevel.toString()}
+              onValueChange={(value) => updateField('minimumTrustLevel', parseInt(value) as TrustLevel)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TRUST_LEVEL_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {formData.trustLevelLimitType === RequirementLimitType.MINIMUM ?
+              '仅允许达到该等级及以上的用户领取' :
+              '仅允许达到该等级及以下的用户领取'}
+          </p>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label className="text-xs">最低社区分数</Label>
+            <Label className="text-xs">社区分数限制</Label>
             <TooltipProvider>
               <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
                 <TooltipTrigger asChild>
@@ -182,25 +205,52 @@ export function ProjectBasicForm({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>注：此功能已于 2025/07/22 更新  <br /> 低于此分数的用户无法领取项目内容！</p>
+                  <p>
+                    注：你可以设置最低分或最高分。
+                    <br />
+                    最低分适合提高门槛，最高分适合更偏向新人。
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
-          <Input
-            id="riskLevel"
-            type="number"
-            min={0}
-            max={100}
-            value={100 - formData.riskLevel}
-            onChange={(e) => {
-              const userInput = parseInt(e.target.value) || 0;
-              const clampedInput = Math.max(0, Math.min(100, userInput));
-              const riskLevel = 100 - clampedInput;
-              updateField('riskLevel', riskLevel);
-            }}
-            placeholder="输入0-100的用户分数"
-          />
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-[120px_minmax(0,1fr)]'} gap-2`}>
+            <Select
+              value={formData.scoreLimitType.toString()}
+              onValueChange={(value) => updateField('scoreLimitType', parseInt(value) as RequirementLimitType)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {REQUIREMENT_LIMIT_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Input
+              id="riskLevel"
+              type="number"
+              min={0}
+              max={100}
+              value={100 - formData.riskLevel}
+              onChange={(e) => {
+                const userInput = parseInt(e.target.value) || 0;
+                const clampedInput = Math.max(0, Math.min(100, userInput));
+                const riskLevel = 100 - clampedInput;
+                updateField('riskLevel', riskLevel);
+              }}
+              placeholder="输入 0-100 的用户分数"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {formData.scoreLimitType === RequirementLimitType.MINIMUM ?
+              '仅允许达到该分数及以上的用户领取' :
+              '仅允许达到该分数及以下的用户领取'}
+          </p>
         </div>
       </div>
 

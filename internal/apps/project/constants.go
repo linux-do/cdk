@@ -38,6 +38,13 @@ const (
 	DistributionTypeInvite
 )
 
+type RequirementLimitType int8
+
+const (
+	RequirementLimitTypeMinimum RequirementLimitType = iota
+	RequirementLimitTypeMaximum
+)
+
 type ProjectStatus uint8
 
 const (

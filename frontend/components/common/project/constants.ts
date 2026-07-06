@@ -1,4 +1,5 @@
 import {TrustLevel} from '@/lib/services/core/types';
+import {RequirementLimitType} from '@/lib/services/project/types';
 
 /**
  * 表单验证常量
@@ -62,6 +63,14 @@ export const TRUST_LEVEL_OPTIONS = [
   {value: TrustLevel.ACTIVE_USER, label: '活跃用户'},
   {value: TrustLevel.LEADER, label: '领导者'},
 ];
+
+export const REQUIREMENT_LIMIT_TYPE_OPTIONS = [
+  {value: RequirementLimitType.MINIMUM, label: '最低'},
+  {value: RequirementLimitType.MAXIMUM, label: '最高'},
+];
+
+export const getRequirementLimitTypeLabel = (value: RequirementLimitType): string =>
+  REQUIREMENT_LIMIT_TYPE_OPTIONS.find((option) => option.value === value)?.label || '最低';
 
 /**
  * 信任等级配置 - 用于卡片样式和显示

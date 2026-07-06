@@ -156,8 +156,10 @@ export function EditDialog({
         project_tags: tags.length > 0 ? tags : undefined,
         start_time: formData.startTime.toISOString(),
         end_time: formData.endTime.toISOString(),
+        trust_level_limit_type: formData.trustLevelLimitType,
         minimum_trust_level: formData.minimumTrustLevel,
         allow_same_ip: formData.allowSameIP,
+        score_limit_type: formData.scoreLimitType,
         risk_level: formData.riskLevel,
         price: formData.price || '0',
         // 只有非抽奖项目才允许更新项目内容
@@ -184,9 +186,12 @@ export function EditDialog({
         tags: tags,
         start_time: formData.startTime.toISOString(),
         end_time: formData.endTime.toISOString(),
+        trust_level_limit_type: formData.trustLevelLimitType,
         minimum_trust_level: formData.minimumTrustLevel,
         allow_same_ip: formData.allowSameIP,
+        score_limit_type: formData.scoreLimitType,
         risk_level: formData.riskLevel,
+        price: formData.price || '0',
         total_items: project.distribution_type === DistributionType.LOTTERY ?
           project.total_items :
           project.total_items + newItems.length,

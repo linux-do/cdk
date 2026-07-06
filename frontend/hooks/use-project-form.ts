@@ -2,7 +2,7 @@
 
 import {useState, useCallback} from 'react';
 import {TrustLevel} from '@/lib/services/core/types';
-import {DistributionType, ProjectListItem} from '@/lib/services/project/types';
+import {DistributionType, ProjectListItem, RequirementLimitType} from '@/lib/services/project/types';
 import {DEFAULT_FORM_VALUES} from '@/components/common/project';
 
 export interface ProjectFormData {
@@ -10,8 +10,10 @@ export interface ProjectFormData {
   description: string;
   startTime: Date;
   endTime: Date;
+  trustLevelLimitType: RequirementLimitType;
   minimumTrustLevel: TrustLevel;
   allowSameIP: boolean;
+  scoreLimitType: RequirementLimitType;
   riskLevel: number;
   distributionType: DistributionType;
   topicId?: number;
@@ -35,8 +37,10 @@ export function useProjectForm(options: UseProjectFormOptions) {
         description: project.description || '',
         startTime: new Date(project.start_time),
         endTime: new Date(project.end_time),
+        trustLevelLimitType: project.trust_level_limit_type ?? RequirementLimitType.MINIMUM,
         minimumTrustLevel: project.minimum_trust_level,
         allowSameIP: project.allow_same_ip,
+        scoreLimitType: project.score_limit_type ?? RequirementLimitType.MINIMUM,
         riskLevel: project.risk_level,
         distributionType: project.distribution_type,
         price: project.price ?? '0',
@@ -48,8 +52,10 @@ export function useProjectForm(options: UseProjectFormOptions) {
       description: '',
       startTime: new Date(),
       endTime: new Date(Date.now() + DEFAULT_FORM_VALUES.TIME_OFFSET_24H),
+      trustLevelLimitType: RequirementLimitType.MINIMUM,
       minimumTrustLevel: TrustLevel.BASIC_USER,
       allowSameIP: false,
+      scoreLimitType: RequirementLimitType.MINIMUM,
       riskLevel: DEFAULT_FORM_VALUES.RISK_LEVEL,
       distributionType: DistributionType.ONE_FOR_EACH,
       price: '0',

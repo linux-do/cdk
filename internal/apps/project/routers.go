@@ -46,16 +46,18 @@ type ProjectResponse struct {
 }
 
 type ProjectRequest struct {
-	Name              string           `json:"name" binding:"required,min=1,max=32"`
-	Description       string           `json:"description" binding:"max=1024"`
-	ProjectTags       []string         `json:"project_tags" binding:"dive,min=1,max=16"`
-	StartTime         time.Time        `json:"start_time" binding:"required"`
-	EndTime           time.Time        `json:"end_time" binding:"required,gtfield=StartTime"`
-	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level" binding:"oneof=0 1 2 3 4"`
-	AllowSameIP       bool             `json:"allow_same_ip"`
-	RiskLevel         int8             `json:"risk_level" binding:"min=0,max=100"`
-	HideFromExplore   bool             `json:"hide_from_explore"`
-	Price             decimal.Decimal  `json:"price"`
+	Name                string               `json:"name" binding:"required,min=1,max=32"`
+	Description         string               `json:"description" binding:"max=1024"`
+	ProjectTags         []string             `json:"project_tags" binding:"dive,min=1,max=16"`
+	StartTime           time.Time            `json:"start_time" binding:"required"`
+	EndTime             time.Time            `json:"end_time" binding:"required,gtfield=StartTime"`
+	TrustLevelLimitType RequirementLimitType `json:"trust_level_limit_type" binding:"oneof=0 1"`
+	MinimumTrustLevel   oauth.TrustLevel     `json:"minimum_trust_level" binding:"oneof=0 1 2 3 4"`
+	AllowSameIP         bool                 `json:"allow_same_ip"`
+	ScoreLimitType      RequirementLimitType `json:"score_limit_type" binding:"oneof=0 1"`
+	RiskLevel           int8                 `json:"risk_level" binding:"min=0,max=100"`
+	HideFromExplore     bool                 `json:"hide_from_explore"`
+	Price               decimal.Decimal      `json:"price"`
 }
 type GetProjectResponseData struct {
 	Project             `json:",inline"` // 内嵌所有 Project 字段
@@ -89,9 +91,11 @@ func GetProject(c *gin.Context) {
 		}
 		return
 	}
-	if err := project.ValidateRequirement(currentUser); err != nil {
-		c.JSON(http.StatusForbidden, ProjectResponse{ErrorMsg: err.Error()})
-		return
+	if project.CreatorID != currentUser.ID {
+		if err := project.ValidateRequirement(currentUser); err != nil {
+			c.JSON(http.StatusForbidden, ProjectResponse{ErrorMsg: err.Error()})
+			return
+		}
 	}
 
 	tags, err := project.GetTags(db.DB(c.Request.Context()))
@@ -177,20 +181,22 @@ func CreateProject(c *gin.Context) {
 
 	// init project
 	project := Project{
-		ID:                uuid.NewString(),
-		Name:              req.Name,
-		Description:       req.Description,
-		DistributionType:  req.DistributionType,
-		TotalItems:        int64(len(req.ProjectItems)),
-		StartTime:         req.StartTime,
-		EndTime:           req.EndTime,
-		MinimumTrustLevel: req.MinimumTrustLevel,
-		AllowSameIP:       req.AllowSameIP,
-		RiskLevel:         req.RiskLevel,
-		CreatorID:         currentUser.ID,
-		IsCompleted:       false,
-		HideFromExplore:   req.HideFromExplore,
-		Price:             req.Price,
+		ID:                  uuid.NewString(),
+		Name:                req.Name,
+		Description:         req.Description,
+		DistributionType:    req.DistributionType,
+		TotalItems:          int64(len(req.ProjectItems)),
+		StartTime:           req.StartTime,
+		EndTime:             req.EndTime,
+		TrustLevelLimitType: req.TrustLevelLimitType,
+		MinimumTrustLevel:   req.MinimumTrustLevel,
+		AllowSameIP:         req.AllowSameIP,
+		ScoreLimitType:      req.ScoreLimitType,
+		RiskLevel:           req.RiskLevel,
+		CreatorID:           currentUser.ID,
+		IsCompleted:         false,
+		HideFromExplore:     req.HideFromExplore,
+		Price:               req.Price,
 	}
 
 	// create project
@@ -257,8 +263,10 @@ func UpdateProject(c *gin.Context) {
 	project.Description = req.Description
 	project.StartTime = req.StartTime
 	project.EndTime = req.EndTime
+	project.TrustLevelLimitType = req.TrustLevelLimitType
 	project.MinimumTrustLevel = req.MinimumTrustLevel
 	project.AllowSameIP = req.AllowSameIP
+	project.ScoreLimitType = req.ScoreLimitType
 	project.RiskLevel = req.RiskLevel
 	project.HideFromExplore = req.HideFromExplore
 	project.Price = req.Price
@@ -630,20 +638,22 @@ type ListProjectsRequest struct {
 }
 
 type ListProjectsResponseDataResult struct {
-	ID                string            `json:"id"`
-	Name              string            `json:"name"`
-	Description       string            `json:"description"`
-	DistributionType  DistributionType  `json:"distribution_type"`
-	TotalItems        int64             `json:"total_items"`
-	StartTime         time.Time         `json:"start_time"`
-	EndTime           time.Time         `json:"end_time"`
-	MinimumTrustLevel oauth.TrustLevel  `json:"minimum_trust_level"`
-	AllowSameIP       bool              `json:"allow_same_ip"`
-	RiskLevel         int8              `json:"risk_level"`
-	HideFromExplore   bool              `json:"hide_from_explore"`
-	Price             decimal.Decimal   `json:"price"`
-	Tags              utils.StringArray `json:"tags"`
-	CreatedAt         time.Time         `json:"created_at"`
+	ID                  string               `json:"id"`
+	Name                string               `json:"name"`
+	Description         string               `json:"description"`
+	DistributionType    DistributionType     `json:"distribution_type"`
+	TotalItems          int64                `json:"total_items"`
+	StartTime           time.Time            `json:"start_time"`
+	EndTime             time.Time            `json:"end_time"`
+	TrustLevelLimitType RequirementLimitType `json:"trust_level_limit_type"`
+	MinimumTrustLevel   oauth.TrustLevel     `json:"minimum_trust_level"`
+	AllowSameIP         bool                 `json:"allow_same_ip"`
+	ScoreLimitType      RequirementLimitType `json:"score_limit_type"`
+	RiskLevel           int8                 `json:"risk_level"`
+	HideFromExplore     bool                 `json:"hide_from_explore"`
+	Price               decimal.Decimal      `json:"price"`
+	Tags                utils.StringArray    `json:"tags"`
+	CreatedAt           time.Time            `json:"created_at"`
 }
 
 type ListProjectsResponseData struct {

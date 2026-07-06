@@ -3,12 +3,13 @@
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {MotionEffect} from '@/components/animate-ui/effects/motion-effect';
-import {CURRENCY_LABEL, DISTRIBUTION_MODE_NAMES} from '@/components/common/project';
+import {CURRENCY_LABEL, DISTRIBUTION_MODE_NAMES, getRequirementLimitTypeLabel} from '@/components/common/project';
 import {BadgeCheck, Boxes, Coins, Gauge, Pencil, ShieldCheck, Trash2, Waypoints} from 'lucide-react';
 import {formatDateTimeWithSeconds} from '@/lib/utils';
 import {ProjectListItem} from '@/lib/services/project/types';
 
 const TRUST_LEVEL_SHORT_LABELS: Partial<Record<number, string>> = {
+  0: 'TL0',
   1: 'TL1',
   2: 'TL2',
   3: 'TL3',
@@ -63,11 +64,12 @@ export function ProjectCard({
   const modeText = DISTRIBUTION_MODE_NAMES[project.distribution_type];
   const description = project.description?.trim();
   const trustText = TRUST_LEVEL_SHORT_LABELS[project.minimum_trust_level];
-  const riskText = `${String(project.risk_level).padStart(2, '0')}`;
-  const showRisk = project.risk_level > 0;
+  const riskThreshold = String(100 - project.risk_level).padStart(2, '0');
   const showPrice = priceNum > 0;
   const showIpLimit = !project.allow_same_ip;
   const showTrustLevel = Boolean(trustText);
+  const trustPrefix = getRequirementLimitTypeLabel(project.trust_level_limit_type);
+  const scorePrefix = getRequirementLimitTypeLabel(project.score_limit_type);
 
   return (
     <TooltipProvider>
@@ -154,12 +156,10 @@ export function ProjectCard({
                     <Boxes className="h-3.5 w-3.5 text-foreground/50" />
                     {itemText}
                   </span>
-                  {showRisk && (
-                    <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                      <Gauge className="h-3.5 w-3.5 text-foreground/50" />
-                      {riskText}
-                    </span>
-                  )}
+                  <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+                    <Gauge className="h-3.5 w-3.5 text-foreground/50" />
+                    {scorePrefix}{riskThreshold}
+                  </span>
                   {showPrice && (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -178,7 +178,7 @@ export function ProjectCard({
                   {showTrustLevel && (
                     <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
                       <BadgeCheck className="h-3.5 w-3.5 text-foreground/50" />
-                      {trustText}
+                      {trustPrefix}{trustText}
                     </span>
                   )}
                   {showIpLimit && (

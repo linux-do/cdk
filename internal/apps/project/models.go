@@ -47,25 +47,27 @@ import (
 )
 
 type Project struct {
-	ID                string           `json:"id" gorm:"primaryKey;size:64"`
-	Name              string           `json:"name" gorm:"size:32"`
-	Description       string           `json:"description" gorm:"size:1024"`
-	DistributionType  DistributionType `json:"distribution_type"`
-	TotalItems        int64            `json:"total_items"`
-	StartTime         time.Time        `json:"start_time"`
-	EndTime           time.Time        `json:"end_time" gorm:"index:idx_projects_end_completed_trust_risk,priority:1"`
-	MinimumTrustLevel oauth.TrustLevel `json:"minimum_trust_level" gorm:"index:idx_projects_end_completed_trust_risk,priority:4"`
-	AllowSameIP       bool             `json:"allow_same_ip"`
-	RiskLevel         int8             `json:"risk_level" gorm:"index:idx_projects_end_completed_trust_risk,priority:5"`
-	CreatorID         uint64           `json:"creator_id" gorm:"index"`
-	IsCompleted       bool             `json:"is_completed" gorm:"index:idx_projects_end_completed_trust_risk,priority:2"`
-	Status            ProjectStatus    `json:"status" gorm:"default:0;index;index:idx_projects_end_completed_trust_risk,priority:3"`
-	ReportCount       uint8            `json:"report_count" gorm:"default:0"`
-	HideFromExplore   bool             `json:"hide_from_explore" gorm:"default:false"`
-	Price             decimal.Decimal  `json:"price" gorm:"type:decimal(10,2);default:0;not null"`
-	Creator           oauth.User       `json:"-" gorm:"foreignKey:CreatorID"`
-	CreatedAt         time.Time        `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt         time.Time        `json:"updated_at" gorm:"autoUpdateTime"`
+	ID                  string               `json:"id" gorm:"primaryKey;size:64"`
+	Name                string               `json:"name" gorm:"size:32"`
+	Description         string               `json:"description" gorm:"size:1024"`
+	DistributionType    DistributionType     `json:"distribution_type"`
+	TotalItems          int64                `json:"total_items"`
+	StartTime           time.Time            `json:"start_time"`
+	EndTime             time.Time            `json:"end_time" gorm:"index:idx_projects_end_completed_trust_risk,priority:1"`
+	TrustLevelLimitType RequirementLimitType `json:"trust_level_limit_type" gorm:"default:0;index:idx_projects_end_completed_trust_risk,priority:4"`
+	MinimumTrustLevel   oauth.TrustLevel     `json:"minimum_trust_level" gorm:"index:idx_projects_end_completed_trust_risk,priority:5"`
+	AllowSameIP         bool                 `json:"allow_same_ip"`
+	ScoreLimitType      RequirementLimitType `json:"score_limit_type" gorm:"default:0;index:idx_projects_end_completed_trust_risk,priority:6"`
+	RiskLevel           int8                 `json:"risk_level" gorm:"index:idx_projects_end_completed_trust_risk,priority:7"`
+	CreatorID           uint64               `json:"creator_id" gorm:"index"`
+	IsCompleted         bool                 `json:"is_completed" gorm:"index:idx_projects_end_completed_trust_risk,priority:2"`
+	Status              ProjectStatus        `json:"status" gorm:"default:0;index;index:idx_projects_end_completed_trust_risk,priority:3"`
+	ReportCount         uint8                `json:"report_count" gorm:"default:0"`
+	HideFromExplore     bool                 `json:"hide_from_explore" gorm:"default:false"`
+	Price               decimal.Decimal      `json:"price" gorm:"type:decimal(10,2);default:0;not null"`
+	Creator             oauth.User           `json:"-" gorm:"foreignKey:CreatorID"`
+	CreatedAt           time.Time            `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt           time.Time            `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 // IsPaid 是否为付费项目
@@ -415,12 +417,31 @@ func (p *Project) HasStock(ctx context.Context) (bool, error) {
 	return stock > 0, nil
 }
 
+func (p *Project) ScoreThreshold() int {
+	return oauth.BaseUserScore - int(p.RiskLevel)
+}
+
 func (p *Project) ValidateRequirement(user *oauth.User) error {
-	if user.TrustLevel < p.MinimumTrustLevel {
-		return fmt.Errorf(TrustLevelNotMatch, p.MinimumTrustLevel)
+	switch p.TrustLevelLimitType {
+	case RequirementLimitTypeMaximum:
+		if user.TrustLevel > p.MinimumTrustLevel {
+			return fmt.Errorf(TrustLevelTooHigh, p.MinimumTrustLevel)
+		}
+	default:
+		if user.TrustLevel < p.MinimumTrustLevel {
+			return fmt.Errorf(TrustLevelNotMatch, p.MinimumTrustLevel)
+		}
 	}
-	if user.RiskLevel() > p.RiskLevel {
-		return fmt.Errorf(ScoreNotEnough, 100-int(p.RiskLevel))
+
+	switch p.ScoreLimitType {
+	case RequirementLimitTypeMaximum:
+		if user.RiskLevel() < p.RiskLevel {
+			return fmt.Errorf(ScoreTooHigh, p.ScoreThreshold())
+		}
+	default:
+		if user.RiskLevel() > p.RiskLevel {
+			return fmt.Errorf(ScoreNotEnough, p.ScoreThreshold())
+		}
 	}
 	return nil
 }
