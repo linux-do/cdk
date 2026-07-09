@@ -333,6 +333,7 @@ const IconContainer = memo(
             style={{width, height}}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            data-dock-no-drag="true"
             className="relative flex aspect-square items-center justify-center rounded-full bg-gray-200 cursor-pointer dark:bg-neutral-800"
           >
             <AnimatePresence>
