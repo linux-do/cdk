@@ -264,8 +264,12 @@ func UpdateProject(c *gin.Context) {
 	project.Price = req.Price
 
 	if project.DistributionType == DistributionTypeLottery {
-		// save project
-		if err := db.DB(c.Request.Context()).Save(&project).Error; err != nil {
+		if err := db.DB(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
+			if err := tx.Save(project).Error; err != nil {
+				return err
+			}
+			return project.RefreshTags(tx, req.ProjectTags)
+		}); err != nil {
 			c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
 		} else {
 			c.JSON(http.StatusOK, ProjectResponse{})
