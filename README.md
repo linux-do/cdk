@@ -279,4 +279,4 @@ docker run -d -p 8000:8000 linux-do-cdk
 
 ## 📈 项目趋势
 
-[![Star History Chart](https://api.star-history.com/svg?repos=linux-do/cdk&type=Date)](https://star-history.com/#linux-do/cdk&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=linux-do/cdk&type=Date)](https://star-history.dera.page/#linux-do/cdk&Date)
