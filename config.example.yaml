@@ -31,6 +31,13 @@ projectApp:
     - interval_seconds: 60
       max_count: 20
 
+# captcha (hCaptcha) - 领取接口的人机验证由后端校验
+# 本地开发可用 hCaptcha 测试密钥（配合测试 sitekey 10000000-ffff-ffff-ffff-000000000001）：
+#   secret_key: "0x0000000000000000000000000000000000000000"
+captcha:
+  secret_key: "<HCAPTCHA_SECRET_KEY>"
+  verify_url: "https://api.hcaptcha.com/siteverify"
+
 # OAuth2
 oauth2:
   client_id: "<OAUTH2_CLIENT_ID>"

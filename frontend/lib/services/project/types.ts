@@ -212,6 +212,18 @@ export interface ReceiveProjectData {
 export type ReceiveProjectResponse = BackendResponse<ReceiveProjectData>;
 
 /**
+ * 领取凭证
+ */
+export interface ReceiveTokenData {
+  /** 一次性凭证，领取时随 captcha_token 一并提交 */
+  token: string;
+  /** 有效期（秒） */
+  expires_in: number;
+}
+
+export type ReceiveTokenResponse = BackendResponse<ReceiveTokenData>;
+
+/**
  * 获取项目详情响应数据
  */
 export interface GetProjectResponseData extends Project {

@@ -13,7 +13,6 @@ ENV NODE_ENV=production
 ENV NEXT_PUBLIC_FRONTEND_BASE_URL=__NEXT_PUBLIC_FRONTEND_BASE_URL__
 ENV NEXT_PUBLIC_BACKEND_BASE_URL=https://build-placeholder.invalid
 ENV NEXT_PUBLIC_HCAPTCHA_SITE_KEY=__NEXT_PUBLIC_HCAPTCHA_SITE_KEY__
-ENV HCAPTCHA_SECRET_KEY=__HCAPTCHA_SECRET_KEY__
 
 ARG VERSION=""
 ARG BUILD_DATE=""
@@ -37,7 +36,6 @@ RUN grep -rl \
     -e "__NEXT_PUBLIC_FRONTEND_BASE_URL__" \
     -e "https://build-placeholder.invalid" \
     -e "__NEXT_PUBLIC_HCAPTCHA_SITE_KEY__" \
-    -e "__HCAPTCHA_SECRET_KEY__" \
     /app/.next > /app/.replace.files
 
 # ---- runner stage ----

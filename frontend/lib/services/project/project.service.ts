@@ -17,6 +17,8 @@ import {
   ProjectListResponse,
   ApiRequestParams,
   ReceiveProjectData,
+  ReceiveTokenData,
+  ReceiveTokenResponse,
   ReportProjectResponse,
   ProjectReceiver,
   ProjectReceiversResponse,
@@ -120,16 +122,30 @@ export class ProjectService extends BaseService {
   }
 
   /**
-   * 领取项目内容（必须带验证码）
+   * 获取领取凭证（服务端签发的一次性 token）
+   * @param projectId - 项目ID
+   */
+  static async getReceiveToken(projectId: string): Promise<ReceiveTokenData> {
+    const response = await apiClient.get<ReceiveTokenResponse>(`${this.basePath}/${projectId}/receive/token`);
+    if (response.data.error_msg) {
+      throw new Error(response.data.error_msg);
+    }
+    return response.data.data;
+  }
+
+  /**
+   * 领取项目内容（验证码 + 领取凭证一起提交）
    * @param projectId - 项目ID
    * @param captchaToken - hCaptcha验证令牌
+   * @param receiveToken - 服务端签发的领取凭证
    * @returns 领取结果，包含领取内容
    */
-  static async receiveProject(projectId: string, captchaToken: string): Promise<ReceiveProjectData> {
+  static async receiveProject(projectId: string, captchaToken: string, receiveToken: string): Promise<ReceiveProjectData> {
     const response = await apiClient.post<ReceiveProjectResponse>(
         `${this.basePath}/${projectId}/receive`,
         {
           captcha_token: captchaToken,
+          receive_token: receiveToken,
         },
     );
     if (response.data.error_msg) {
@@ -370,13 +386,13 @@ export class ProjectService extends BaseService {
    * @param captchaToken - hCaptcha验证令牌
    * @returns 领取结果，包含成功状态、领取内容和错误信息
    */
-  static async receiveProjectSafe(projectId: string, captchaToken: string): Promise<{
+  static async receiveProjectSafe(projectId: string, captchaToken: string, receiveToken: string): Promise<{
     success: boolean;
     data?: ReceiveProjectData;
     error?: string;
   }> {
     try {
-      const data = await this.receiveProject(projectId, captchaToken);
+      const data = await this.receiveProject(projectId, captchaToken, receiveToken);
       return {success: true, data};
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '领取项目内容失败';

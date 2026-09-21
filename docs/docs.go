@@ -648,6 +648,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{id}/receive/token": {
+            "get": {
+                "description": "项目可领取时签发一次性凭证，领取时需与 captcha_token 一并提交",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "summary": "获取领取凭证",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "项目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/project.ProjectResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/project.ReceiveTokenResponseData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{id}/receivers": {
             "get": {
                 "consumes": [
@@ -1418,6 +1459,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "label": {
+                    "type": "string"
+                }
+            }
+        },
+        "project.ReceiveTokenResponseData": {
+            "type": "object",
+            "properties": {
+                "expires_in": {
+                    "type": "integer"
+                },
+                "token": {
                     "type": "string"
                 }
             }

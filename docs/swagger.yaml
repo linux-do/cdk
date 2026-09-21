@@ -428,6 +428,13 @@ definitions:
       label:
         type: string
     type: object
+  project.ReceiveTokenResponseData:
+    properties:
+      expires_in:
+        type: integer
+      token:
+        type: string
+    type: object
   project.ReportProjectRequestBody:
     properties:
       reason:
@@ -823,6 +830,30 @@ paths:
       summary: 获取当前用户的待支付订单
       tags:
       - payment
+  /api/v1/projects/{id}/receive/token:
+    get:
+      description: 项目可领取时签发一次性凭证，领取时需与 captcha_token 一并提交
+      parameters:
+      - description: 项目ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/project.ProjectResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/project.ReceiveTokenResponseData'
+              type: object
+      summary: 获取领取凭证
+      tags:
+      - project
   /api/v1/projects/{id}/receivers:
     get:
       consumes:

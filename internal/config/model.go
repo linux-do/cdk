@@ -40,6 +40,7 @@ type configModel struct {
 	OpenAPIRisk openAPIRiskConfig `mapstructure:"openapi_risk"`
 	Otel        otelConfig        `mapstructure:"otel"`
 	Payment     PaymentConfig     `mapstructure:"payment"`
+	Captcha     captchaConfig     `mapstructure:"captcha"`
 }
 
 // appConfig 应用基本配置
@@ -64,6 +65,14 @@ type projectAppConfig struct {
 		IntervalSeconds int `mapstructure:"interval_seconds"`
 		MaxCount        int `mapstructure:"max_count"`
 	} `mapstructure:"create_project_rate_limit"`
+}
+
+// captchaConfig hCaptcha 配置（领取接口的人机验证由后端校验）
+type captchaConfig struct {
+	// SecretKey hCaptcha 服务端密钥，必填
+	SecretKey string `mapstructure:"secret_key"`
+	// VerifyURL siteverify 地址，默认 https://api.hcaptcha.com/siteverify
+	VerifyURL string `mapstructure:"verify_url"`
 }
 
 // OAuth2Config OAuth2认证配置

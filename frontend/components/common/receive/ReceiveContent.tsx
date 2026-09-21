@@ -302,6 +302,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
   const [isCheckingPendingPayment, setIsCheckingPendingPayment] = useState(false);
   const [isContinuingPayment, setIsContinuingPayment] = useState(false);
   const verifyRef = useRef<ReceiveVerifyRef>(null);
+  const receiveTokenRef = useRef<string | null>(null);
 
   /**
    * 检查项目是否可以领取（时间限制）
@@ -315,7 +316,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
   /**
    * 处理项目领取（触发验证）
    */
-  const handleReceive = () => {
+  const handleReceive = async () => {
     if (!projectId || hasReceived || isVerifying) return;
 
     // 检查项目时间
@@ -331,7 +332,16 @@ export function ReceiveContent({data}: ReceiveContentProps) {
       return;
     }
 
-    // 触发验证
+    // 先向服务端获取一次性领取凭证，再触发验证；验证通过后两者一起提交
+    setIsVerifying(true);
+    try {
+      const {token} = await services.project.getReceiveToken(projectId);
+      receiveTokenRef.current = token;
+    } catch (error) {
+      setIsVerifying(false);
+      toast.error(error instanceof Error ? error.message : '获取领取凭证失败');
+      return;
+    }
     verifyRef.current?.execute();
   };
 
@@ -367,8 +377,14 @@ export function ReceiveContent({data}: ReceiveContentProps) {
    * 验证成功后处理
    */
   const handleVerifySuccess = async (token: string) => {
-    // 调用领取接口
-    const result = await services.project.receiveProjectSafe(projectId, token);
+    const receiveToken = receiveTokenRef.current;
+    receiveTokenRef.current = null;
+    if (!receiveToken) {
+      toast.error('领取凭证已失效，请重试');
+      throw new Error('missing receive token');
+    }
+    // 调用领取接口：验证码 + 领取凭证一起提交
+    const result = await services.project.receiveProjectSafe(projectId, token, receiveToken);
 
     if (!result.success) {
       toast.error(result.error || '领取失败');
@@ -407,6 +423,7 @@ export function ReceiveContent({data}: ReceiveContentProps) {
    * 验证结束回调
    */
   const handleVerifyEnd = () => {
+    receiveTokenRef.current = null;
     setIsVerifying(false);
   };
 
