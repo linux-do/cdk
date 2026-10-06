@@ -38,6 +38,7 @@ import (
 	"github.com/linux-do/cdk/internal/utils"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ProjectResponse struct {
@@ -280,6 +281,35 @@ func UpdateProject(c *gin.Context) {
 	// save to db
 	if err := db.DB(c.Request.Context()).Transaction(
 		func(tx *gorm.DB) error {
+			// Lock and reload the project inside the transaction.
+			//
+			// The project object from middleware was loaded before the
+			// transaction started. Using it directly for TotalItems += n can
+			// lose updates when multiple requests update the same project
+			// concurrently.
+			//
+			// Locking the project row serializes updates for the same project
+			// and makes subsequent item filtering observe previously committed
+			// updates.
+			if err := tx.
+				Clauses(clause.Locking{Strength: "UPDATE"}).
+				Where("id = ?", project.ID).
+				First(project).Error; err != nil {
+				return err
+			}
+
+			// First() reloads the persisted project state, so re-apply the
+			// editable fields from this request before saving.
+			project.Name = req.Name
+			project.Description = req.Description
+			project.StartTime = req.StartTime
+			project.EndTime = req.EndTime
+			project.MinimumTrustLevel = req.MinimumTrustLevel
+			project.AllowSameIP = req.AllowSameIP
+			project.RiskLevel = req.RiskLevel
+			project.HideFromExplore = req.HideFromExplore
+			project.Price = req.Price
+
 			// Calculate actual items to be added (considering filter)
 			actualItemsCount, err := project.GetFilteredItemsCount(c.Request.Context(), tx, req.ProjectItems, req.EnableFilter)
 			if err != nil {
