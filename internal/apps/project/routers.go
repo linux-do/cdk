@@ -356,22 +356,36 @@ func DeleteProject(c *gin.Context) {
 	// load project
 	project, _ := GetProjectFromContext(c)
 
-	// check for received
-	var count int64
-	if err := db.DB(c.Request.Context()).
-		Model(&ProjectItem{}).
-		Where("project_id = ? AND receiver_id IS NOT NULL", project.ID).
-		Count(&count).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
-		return
-	} else if count > 0 {
-		c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: AlreadyReceived})
-		return
-	}
+	errAlreadyReceived := errors.New(AlreadyReceived)
 
 	// do delete
-	if err := db.DB(c.Request.Context()).Transaction(
+	err := db.DB(c.Request.Context()).Transaction(
 		func(tx *gorm.DB) error {
+			// Keep the lock order consistent with UpdateProject:
+			// project -> project_tags -> project_items.
+			//
+			// This prevents UpdateProject and DeleteProject from holding
+			// locks in opposite orders and potentially deadlocking.
+			if err := tx.
+				Clauses(clause.Locking{Strength: "UPDATE"}).
+				Where("id = ?", project.ID).
+				First(project).Error; err != nil {
+				return err
+			}
+
+			// Check after acquiring the project lock so the decision to
+			// delete is made against the serialized project state.
+			var count int64
+			if err := tx.
+				Model(&ProjectItem{}).
+				Where("project_id = ? AND receiver_id IS NOT NULL", project.ID).
+				Count(&count).Error; err != nil {
+                    return err
+			}
+			if count > 0 {
+				return errAlreadyReceived
+			}
+
 			// delete project tag
 			if err := tx.Where("project_id = ?", project.ID).Delete(&ProjectTag{}).Error; err != nil {
 				return err
@@ -390,7 +404,13 @@ func DeleteProject(c *gin.Context) {
 			}
 			return nil
 		},
-	); err != nil {
+	)
+	if err != nil {
+		if errors.Is(err, errAlreadyReceived) {
+			c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: AlreadyReceived})
+			return
+		}
+
 		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
 		return
 	}
