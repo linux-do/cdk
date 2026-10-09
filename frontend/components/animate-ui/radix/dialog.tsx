@@ -31,28 +31,30 @@ const useDialog = (): DialogContextType => {
 
 type DialogProps = React.ComponentProps<typeof DialogPrimitive.Root>;
 
-function Dialog({children, ...props}: DialogProps) {
-  const [isOpen, setIsOpen] = React.useState(
-      props?.open ?? props?.defaultOpen ?? false,
+function Dialog({children, open, defaultOpen, onOpenChange, ...props}: DialogProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
+      defaultOpen ?? false,
   );
-
-  React.useEffect(() => {
-    if (props?.open !== undefined) setIsOpen(props.open);
-  }, [props?.open]);
+  const isControlled = open !== undefined;
+  const isOpen = open ?? uncontrolledOpen;
 
   const handleOpenChange = React.useCallback(
-      (open: boolean) => {
-        setIsOpen(open);
-        props.onOpenChange?.(open);
+      (nextOpen: boolean) => {
+        if (!isControlled) setUncontrolledOpen(nextOpen);
+        onOpenChange?.(nextOpen);
       },
-      [props],
+      [isControlled, onOpenChange],
   );
 
+  const contextValue = React.useMemo(() => ({isOpen}), [isOpen]);
+
   return (
-    <DialogContext.Provider value={{isOpen}}>
+    <DialogContext.Provider value={contextValue}>
       <DialogPrimitive.Root
         data-slot="dialog"
         {...props}
+        open={open}
+        defaultOpen={defaultOpen}
         onOpenChange={handleOpenChange}
       >
         {children}
@@ -86,7 +88,7 @@ function DialogOverlay({className, ...props}: DialogOverlayProps) {
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-          'fixed inset-0 z-50 bg-black/16 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 dark:bg-black/55',
+          'fixed inset-0 z-50 bg-black/16 backdrop-blur-[2px] will-change-transform transform-gpu data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 dark:bg-black/55',
           className,
       )}
       {...props}

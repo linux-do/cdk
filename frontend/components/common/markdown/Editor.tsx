@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useRef, useCallback, useEffect} from 'react';
+import {useState, useRef, useCallback, useEffect, useMemo} from 'react';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
 import {Tabs, TabsList, TabsTrigger} from '@/components/ui/tabs';
@@ -37,7 +37,7 @@ export function MarkdownEditor({
   const [displayLineCount, setDisplayLineCount] = useState(1);
   const [lineMapping, setLineMapping] = useState<Array<{ logicalLine: number; isFirstLineOfLogicalLine: boolean }>>([]);
 
-  const lines = value.split('\n');
+  const lines = useMemo(() => value.split('\n'), [value]);
   const calculateLineMapping = useCallback(() => {
     if (!textareaRef.current || lines.length === 0) {
       return [{logicalLine: 1, isFirstLineOfLogicalLine: true}];
@@ -109,32 +109,42 @@ export function MarkdownEditor({
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value);
-
-    setTimeout(() => {
-      const newLineMapping = calculateLineMapping();
-      setLineMapping(newLineMapping);
-      setDisplayLineCount(newLineMapping.length);
-    }, 0);
-  }, [onChange, calculateLineMapping]);
+  }, [onChange]);
 
   useEffect(() => {
+    let frameId: number | null = null;
     const updateDisplayLines = () => {
       const newLineMapping = calculateLineMapping();
-      setLineMapping(newLineMapping);
-      setDisplayLineCount(newLineMapping.length);
+      setLineMapping((current) => {
+        const unchanged = current.length === newLineMapping.length &&
+          current.every((line, index) =>
+            line.logicalLine === newLineMapping[index]?.logicalLine &&
+            line.isFirstLineOfLogicalLine === newLineMapping[index]?.isFirstLineOfLogicalLine,
+          );
+        return unchanged ? current : newLineMapping;
+      });
+      setDisplayLineCount((current) =>
+        current === newLineMapping.length ? current : newLineMapping.length,
+      );
+    };
+    const scheduleUpdate = () => {
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        frameId = null;
+        updateDisplayLines();
+      });
     };
 
     if (textareaRef.current) {
-      setTimeout(updateDisplayLines, 0);
+      scheduleUpdate();
 
-      const resizeObserver = new ResizeObserver(() => {
-        setTimeout(updateDisplayLines, 0);
-      });
+      const resizeObserver = new ResizeObserver(scheduleUpdate);
 
       resizeObserver.observe(textareaRef.current);
 
       return () => {
         resizeObserver.disconnect();
+        if (frameId !== null) cancelAnimationFrame(frameId);
       };
     }
   }, [calculateLineMapping]);
@@ -150,7 +160,8 @@ export function MarkdownEditor({
         }
       };
 
-      setTimeout(syncStyles, 0);
+      const frameId = requestAnimationFrame(syncStyles);
+      return () => cancelAnimationFrame(frameId);
     }
   }, [value, displayLineCount]);
 
