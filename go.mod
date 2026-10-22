@@ -1,6 +1,6 @@
 module github.com/linux-do/cdk
 
-go 1.26.9
+go 1.26.10
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.23.2

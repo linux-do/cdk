@@ -3,7 +3,7 @@
 🚀 Linux Do 社区 CDK (Content Distribution Kit) 快速分享平台
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Version](https://img.shields.io/badge/Go-1.24-blue.svg)](https://golang.org/)
+[![Go Version](https://img.shields.io/badge/Go-1.26.10-blue.svg)](https://golang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://reactjs.org/)
 
@@ -50,7 +50,7 @@ LINUX DO CDK 是一个为 Linux Do 社区打造的内容分发工具平台，旨
 ## 🛠️ 技术栈
 
 ### 后端
-- **[Go 1.24](https://go.dev/doc)** - 主要开发语言
+- **[Go 1.26.10](https://go.dev/doc)** - 主要开发语言
 - **[Gin](https://github.com/gin-gonic/gin)** - Web 框架
 - **[GORM](https://github.com/go-gorm/gorm)** - ORM 框架
 - **[Redis](https://github.com/redis/redis)** - 缓存和会话存储
@@ -68,8 +68,8 @@ LINUX DO CDK 是一个为 Linux Do 社区打造的内容分发工具平台，旨
 
 ## 📋 环境要求
 
-- **Go** >= 1.24
-- **Node.js** >= 18.0
+- **Go** 1.26.10
+- **Node.js** 24.22.1
 - **MySQL** >= 8.0
 - **Redis** >= 6.0
 - **pnpm** >= 8.0 (推荐)

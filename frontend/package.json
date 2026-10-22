@@ -3,6 +3,9 @@
   "version": "1.2.3",
   "buildDate": "2026-04-22 16:00:00",
   "private": true,
+  "engines": {
+    "node": ">=24.22.1 <25"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
