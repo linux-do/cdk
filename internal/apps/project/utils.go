@@ -205,3 +205,22 @@ func validateProjectPrice(ctx context.Context, price decimal.Decimal, dt Distrib
 	}
 	return nil
 }
+
+// filterNewItems removes values that already exist or occur earlier in items,
+// while preserving the order of the first occurrence in items.
+func filterNewItems(items, existingItems []string) []string {
+	existingSet := make(map[string]struct{}, len(existingItems)+len(items))
+	for _, item := range existingItems {
+		existingSet[item] = struct{}{}
+	}
+
+	filtered := make([]string, 0, len(items))
+	for _, item := range items {
+		if _, exists := existingSet[item]; exists {
+			continue
+		}
+		existingSet[item] = struct{}{}
+		filtered = append(filtered, item)
+	}
+	return filtered
+}

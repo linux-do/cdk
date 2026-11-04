@@ -313,19 +313,7 @@ func (p *Project) CreateItemsWithFilter(ctx context.Context, tx *gorm.DB, items 
 			return err
 		}
 
-		// Create a set of existing items for O(1) lookup
-		existingSet := make(map[string]bool)
-		for _, item := range existingItems {
-			existingSet[item] = true
-		}
-
-		// Filter out duplicates
-		filteredItems = make([]string, 0, len(items))
-		for _, item := range items {
-			if !existingSet[item] {
-				filteredItems = append(filteredItems, item)
-			}
-		}
+		filteredItems = filterNewItems(items, existingItems)
 	}
 
 	// Use the original CreateItems method with filtered items
@@ -350,21 +338,7 @@ func (p *Project) GetFilteredItemsCount(ctx context.Context, tx *gorm.DB, items 
 		return 0, err
 	}
 
-	// Create a set of existing items for O(1) lookup
-	existingSet := make(map[string]bool)
-	for _, item := range existingItems {
-		existingSet[item] = true
-	}
-
-	// Count unique items
-	uniqueCount := int64(0)
-	for _, item := range items {
-		if !existingSet[item] {
-			uniqueCount++
-		}
-	}
-
-	return uniqueCount, nil
+	return int64(len(filterNewItems(items, existingItems))), nil
 }
 
 func (p *Project) PrepareReceive(ctx context.Context, userName string) (uint64, error) {
