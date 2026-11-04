@@ -38,6 +38,7 @@ import (
 	"github.com/linux-do/cdk/internal/utils"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ProjectResponse struct {
@@ -280,6 +281,35 @@ func UpdateProject(c *gin.Context) {
 	// save to db
 	if err := db.DB(c.Request.Context()).Transaction(
 		func(tx *gorm.DB) error {
+			// Lock and reload the project inside the transaction.
+			//
+			// The project object from middleware was loaded before the
+			// transaction started. Using it directly for TotalItems += n can
+			// lose updates when multiple requests update the same project
+			// concurrently.
+			//
+			// Locking the project row serializes updates for the same project
+			// and makes subsequent item filtering observe previously committed
+			// updates.
+			if err := tx.
+				Clauses(clause.Locking{Strength: "UPDATE"}).
+				Where("id = ?", project.ID).
+				First(project).Error; err != nil {
+				return err
+			}
+
+			// First() reloads the persisted project state, so re-apply the
+			// editable fields from this request before saving.
+			project.Name = req.Name
+			project.Description = req.Description
+			project.StartTime = req.StartTime
+			project.EndTime = req.EndTime
+			project.MinimumTrustLevel = req.MinimumTrustLevel
+			project.AllowSameIP = req.AllowSameIP
+			project.RiskLevel = req.RiskLevel
+			project.HideFromExplore = req.HideFromExplore
+			project.Price = req.Price
+
 			// Calculate actual items to be added (considering filter)
 			actualItemsCount, err := project.GetFilteredItemsCount(c.Request.Context(), tx, req.ProjectItems, req.EnableFilter)
 			if err != nil {
@@ -326,22 +356,36 @@ func DeleteProject(c *gin.Context) {
 	// load project
 	project, _ := GetProjectFromContext(c)
 
-	// check for received
-	var count int64
-	if err := db.DB(c.Request.Context()).
-		Model(&ProjectItem{}).
-		Where("project_id = ? AND receiver_id IS NOT NULL", project.ID).
-		Count(&count).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
-		return
-	} else if count > 0 {
-		c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: AlreadyReceived})
-		return
-	}
+	errAlreadyReceived := errors.New(AlreadyReceived)
 
 	// do delete
-	if err := db.DB(c.Request.Context()).Transaction(
+	err := db.DB(c.Request.Context()).Transaction(
 		func(tx *gorm.DB) error {
+			// Keep the lock order consistent with UpdateProject:
+			// project -> project_tags -> project_items.
+			//
+			// This prevents UpdateProject and DeleteProject from holding
+			// locks in opposite orders and potentially deadlocking.
+			if err := tx.
+				Clauses(clause.Locking{Strength: "UPDATE"}).
+				Where("id = ?", project.ID).
+				First(project).Error; err != nil {
+				return err
+			}
+
+			// Check after acquiring the project lock so the decision to
+			// delete is made against the serialized project state.
+			var count int64
+			if err := tx.
+				Model(&ProjectItem{}).
+				Where("project_id = ? AND receiver_id IS NOT NULL", project.ID).
+				Count(&count).Error; err != nil {
+                    return err
+			}
+			if count > 0 {
+				return errAlreadyReceived
+			}
+
 			// delete project tag
 			if err := tx.Where("project_id = ?", project.ID).Delete(&ProjectTag{}).Error; err != nil {
 				return err
@@ -360,7 +404,13 @@ func DeleteProject(c *gin.Context) {
 			}
 			return nil
 		},
-	); err != nil {
+	)
+	if err != nil {
+		if errors.Is(err, errAlreadyReceived) {
+			c.JSON(http.StatusBadRequest, ProjectResponse{ErrorMsg: AlreadyReceived})
+			return
+		}
+
 		c.JSON(http.StatusInternalServerError, ProjectResponse{ErrorMsg: err.Error()})
 		return
 	}
